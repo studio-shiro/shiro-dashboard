@@ -10,6 +10,7 @@ Admin system for small and mid-sized physical retail businesses that manage stoc
 - **Styles:** Tailwind CSS + shadcn/ui
 - **Validation:** Zod (always in Server Actions, never client-side only)
 - **Charts:** Recharts — used for all dashboard data visualizations (bar charts, line charts, pie/donut charts). Always use `ResponsiveContainer` for layout, `"use client"` directive required.
+- **Global state:** Zustand — used for shared client state (e.g. period filter). Stores live in `store/`. Always define store type explicitly with `create<T>()`. Only use in client components.
 
 ## Commands
 
@@ -271,7 +272,7 @@ If any of these appear in a task, ask before implementing.
 - Shared types in `types/[module].ts`
 - No business logic in components — use Server Actions
 - Prefer `async/await` over `.then()/.catch()`
-- All code, comments, variable names, and file names in English, content must be in spanish
+- **Language rule:** Everything internal must be in English — variable names, function names, interface names, property names, type names, file names, JSX comments, and code comments. The only Spanish allowed is visible UI content: labels, headings, placeholder text, error messages, and other text rendered to the user.
 
 ## Deploy
 

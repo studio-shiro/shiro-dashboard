@@ -1,5 +1,6 @@
 "use client";
 import { FunnelIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { usePeriodStore } from "@/store/periodStore";
 
 function getMonthOptions() {
   const options: { value: string; label: string }[] = [];
@@ -7,18 +8,19 @@ function getMonthOptions() {
   for (let i = 0; i < 12; i++) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const label = date.toLocaleDateString("es-AR", {
+    const raw = date.toLocaleDateString("es-AR", {
       month: "long",
       year: "numeric",
     });
-    const labelFormatted =
-      label.charAt(0).toUpperCase() + label.slice(1).replace(" de ", " ");
-    options.push({ value, label: labelFormatted });
+    const label =
+      raw.charAt(0).toUpperCase() + raw.slice(1).replace(" de ", " ");
+    options.push({ value, label });
   }
   return options;
 }
 
 export function PeriodFilter() {
+  const { periodValue, setPeriod } = usePeriodStore();
   const options = getMonthOptions();
 
   return (
@@ -31,7 +33,8 @@ export function PeriodFilter() {
       </div>
       <div className="relative">
         <select
-          defaultValue={options[0]?.value}
+          value={periodValue}
+          onChange={(e) => setPeriod("month", e.target.value)}
           className="h-9 appearance-none rounded-md border border-border-300 bg-background-400 pl-4 pr-9 font-body text-sm text-text-500 outline-none transition-colors hover:border-border-400 focus:border-border-400"
         >
           {options.map((opt) => (

@@ -9,8 +9,11 @@ interface InsightCardProps {
   label: string;
   value: string;
   unit?: string;
+  /** Small top-right indicator: percentage + arrow + ? */
   trend?: number;
   trendLabel?: string;
+  /** Colors the main value text and adds a direction arrow beside it */
+  valueTrend?: "positive" | "negative";
   className?: string;
 }
 
@@ -20,9 +23,10 @@ export function InsightCard({
   unit,
   trend,
   trendLabel,
+  valueTrend,
   className,
 }: InsightCardProps) {
-  const isPositive = trend !== undefined && trend >= 0;
+  const isPositiveTrend = trend !== undefined && trend >= 0;
   const showTrend = trend !== undefined;
 
   return (
@@ -32,35 +36,57 @@ export function InsightCard({
         className,
       )}
     >
+      {/* Header row */}
       <div className="flex items-center justify-between gap-2">
         <span className="truncate font-body text-sm font-semibold leading-5 text-text-400">
           {label}
         </span>
-        {showTrend && (
+
+        {showTrend ? (
           <div className="flex shrink-0 items-center gap-0.5">
             <span
               className={cn(
                 "font-body text-xs font-medium leading-4",
-                isPositive ? "text-success-300" : "text-danger-300",
+                isPositiveTrend ? "text-success-300" : "text-danger-300",
               )}
             >
-              {isPositive ? "+" : ""}
+              {isPositiveTrend ? "+" : ""}
               {trendLabel ?? `${trend}%`}
             </span>
-            {isPositive ? (
+            {isPositiveTrend ? (
               <ArrowUpIcon className="size-3.5 text-success-300" />
             ) : (
               <ArrowDownIcon className="size-3.5 text-danger-300" />
             )}
             <QuestionMarkCircleIcon className="size-3.5 text-text-300" />
           </div>
-        )}
+        ) : valueTrend !== undefined ? (
+          <QuestionMarkCircleIcon className="size-3.5 shrink-0 text-text-300" />
+        ) : null}
       </div>
 
+      {/* Value row */}
       <div className="flex items-end justify-between">
-        <span className="font-body text-[28px] font-bold leading-none tracking-tight text-text-500">
-          {value}
-        </span>
+        <div className="flex items-center gap-1">
+          <span
+            className={cn(
+              "font-body text-[28px] font-bold leading-none tracking-tight",
+              valueTrend === "positive"
+                ? "text-success-300"
+                : valueTrend === "negative"
+                  ? "text-danger-300"
+                  : "text-text-500",
+            )}
+          >
+            {value}
+          </span>
+          {valueTrend === "positive" && (
+            <ArrowUpIcon className="mb-0.5 size-5 text-success-300" />
+          )}
+          {valueTrend === "negative" && (
+            <ArrowDownIcon className="mb-0.5 size-5 text-danger-300" />
+          )}
+        </div>
         {unit && (
           <span className="pb-0.5 font-body text-[10px] leading-3 text-text-400">
             {unit}
