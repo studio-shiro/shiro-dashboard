@@ -23,7 +23,9 @@
       "Bash(node *)",
       "mcp__figma__get_screenshot",
       "Bash(findstr *)",
-      "mcp__figma__get_design_context"
+      "mcp__figma__get_design_context",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(New-Item *)"
     ]
   }
 }

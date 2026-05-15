@@ -1,4 +1,4 @@
-﻿import { BalanceCard } from "@/components/dashboard/BalanceCard";
+import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
 import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
 import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
@@ -8,9 +8,11 @@ import { CustomersSection } from "@/components/dashboard/CustomersSection";
 import { DormantProductsTable } from "@/components/dashboard/DormantProductsTable";
 import { PeriodComparisonSection } from "@/components/dashboard/PeriodComparisonSection";
 import { createClient } from "@/lib/supabase/server";
-import { DORMANT_PRODUCTS } from "@/lib/dashboard/dormantProducts";
-import { STOCK_ALERT_ITEMS } from "@/lib/dashboard/stockAlerts";
-import { TOP_PRODUCTS_DATA } from "@/lib/dashboard/topProducts";
+import {
+  fetchStockAlerts,
+  fetchDormantProducts,
+  fetchTopProducts,
+} from "@/lib/dashboard/queries";
 import {
   SALES_METRICS,
   CUSTOMERS_METRICS,
@@ -23,7 +25,7 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const businessId = user?.user_metadata?.business_id;
+  const businessId = user?.user_metadata?.business_id as string;
 
   const today = new Date();
   const startOfMonth = new Date(
@@ -32,7 +34,13 @@ export default async function DashboardPage() {
     1,
   ).toISOString();
 
-  const [salesResult, lowStockResult] = await Promise.all([
+  const [
+    salesResult,
+    lowStockResult,
+    stockAlerts,
+    dormantProducts,
+    topProducts,
+  ] = await Promise.all([
     supabase
       .from("sales")
       .select("total")
@@ -43,10 +51,13 @@ export default async function DashboardPage() {
       .select("id", { count: "exact", head: true })
       .eq("business_id", businessId)
       .filter("quantity", "lte", "alert_threshold"),
+    fetchStockAlerts(supabase, businessId),
+    fetchDormantProducts(supabase, businessId),
+    fetchTopProducts(supabase, businessId, startOfMonth),
   ]);
 
   const monthlyRevenue = (salesResult.data ?? []).reduce(
-    (sum, s) => sum + (s.total ?? 0),
+    (sum, s) => sum + ((s.total as number) ?? 0),
     0,
   );
   const lowStockCount = lowStockResult.count ?? 0;
@@ -97,15 +108,15 @@ export default async function DashboardPage() {
 
       {/* Stock alert + Top products */}
       <div className="grid grid-cols-2 gap-6">
-        <StockAlertChart data={STOCK_ALERT_ITEMS} />
-        <TopProductsChart data={TOP_PRODUCTS_DATA} />
+        <StockAlertChart data={stockAlerts} />
+        <TopProductsChart data={topProducts} />
       </div>
 
       {/* Rendimiento Comercial */}
       <PerformanceSection metricsRecord={PERFORMANCE_METRICS} />
 
       {/* Tabla de productos sin movimiento */}
-      <DormantProductsTable data={DORMANT_PRODUCTS} />
+      <DormantProductsTable data={dormantProducts} />
 
       {/* Comparativa de Períodos */}
       <PeriodComparisonSection metricsRecord={PERFORMANCE_METRICS} />
