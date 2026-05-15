@@ -1,24 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/dashboard/sidebar";
-import Header from "@/components/dashboard/header";
-import { type User } from "@supabase/supabase-js";
-
-// AUTH BYPASS — restore before production
-// const mockUser = {
-//   id: "dev",
-//   email: "dev@local",
-//   user_metadata: { role: "admin" },
-// } as unknown as User;
+import TopBar from "@/components/dashboard/header";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // const user = mockUser;
-
-  // AUTH BYPASS — uncomment below and remove mockUser before production
   const supabase = await createClient();
   const {
     data: { user },
@@ -26,11 +15,11 @@ export default async function DashboardLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="flex h-screen bg-zinc-50">
+    <div className="flex h-screen gap-6 bg-background-300 p-3">
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header user={user} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-border-100 bg-background-400 shadow-[0px_12px_16px_-4px_rgba(112,113,116,0.1),0px_4px_6px_-2px_rgba(112,113,116,0.05)]">
+        <TopBar user={user} />
+        <main className="flex-1 overflow-y-auto px-4 pb-6">{children}</main>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+/* @import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -23,4 +23,158 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+@import "tailwindcss";
+
+/*
+  Shiro Studio — Design System
+  Tailwind CSS v4 theme tokens
+  Source: Figma Variables (Color Palette, Corner Radius, Spacing)
+  Fonts: Rokkit (display), Montserrat (body)
+*/
+
+@theme {
+  /* ============================================================
+     FONTS
+  ============================================================ */
+  --font-display: "Rokkit", serif;
+  --font-body: "Montserrat", sans-serif;
+
+  /* ============================================================
+     COLORS — Typography
+  ============================================================ */
+  --color-text-500: #212121;
+  --color-text-400: #616161;
+  --color-text-300: #d1d0c9;
+  --color-text-200: #e9e8e0;
+  --color-text-100: #f4f3ee;
+
+  /* ============================================================
+     COLORS — Background
+  ============================================================ */
+  --color-background-500: #fafaf8;
+  --color-background-400: #fffffd;
+  --color-background-300: #f4f3ee;
+  --color-background-200: #e9e8e0;
+  --color-background-100: #212121;
+
+  /* ============================================================
+     COLORS — Border
+  ============================================================ */
+  --color-border-400: #a3a4ab;
+  --color-border-300: #d1d0c9;
+  --color-border-200: #e8e8ea;
+  --color-border-100: #f9f9fa;
+
+  /* ============================================================
+     COLORS — Semantic / Danger (Red)
+  ============================================================ */
+  --color-danger-400: #911e23;
+  --color-danger-300: #cd2b31;
+  --color-danger-200: #e7b7b8;
+  --color-danger-100: #faf2f2;
+
+  /* ============================================================
+     COLORS — Semantic / Success (Green)
+  ============================================================ */
+  --color-success-400: #006922;
+  --color-success-300: #009530;
+  --color-success-200: #b4d1b7;
+  --color-success-100: #f2f6f2;
+
+  /* ============================================================
+     COLORS — Semantic / Warning (Orange)
+  ============================================================ */
+  --color-warning-400: #b46c00;
+  --color-warning-300: #ff9900;
+  --color-warning-200: #ffd2b4;
+  --color-warning-100: #fff7f2;
+
+  /* ============================================================
+     COLORS — Semantic / Info (Indigo)
+  ============================================================ */
+  --color-info-400: #3446a5;
+  --color-info-300: #4963ea;
+  --color-info-200: #bcc1f5;
+  --color-info-100: #f3f4fd;
+
+  /* ============================================================
+     COLORS — Accent
+  ============================================================ */
+  --color-accent: #e84911;
+  --color-accent-hover: #ff5a1f;
+  --color-accent-selected: #c23d0e;
+  --color-accent-disabled: #ff9c7a;
+
+  /* ============================================================
+     BORDER RADIUS
+  ============================================================ */
+  /* --radius-0: 0px;
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-20: 20px;
+  --radius-22: 22px;
+  --radius-24: 24px;
+  --radius-26: 26px;
+  --radius-28: 28px;
+  --radius-full: 99px; */
+
+  /* ============================================================
+     SPACING (Gap)
+  ============================================================ */
+  /* --spacing-0: 0px;
+  --spacing-2: 2px;
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-10: 10px;
+  --spacing-12: 12px;
+  --spacing-14: 14px;
+  --spacing-16: 16px;
+  --spacing-18: 18px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-30: 30px;
+  --spacing-32: 32px;
+  --spacing-36: 36px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-96: 96px;
+  --spacing-112: 112px;
+  --spacing-128: 128px; */
 }
+
+/* ============================================================
+   FONT IMPORTS — add to your layout.tsx <head> instead if
+   using next/font, which is recommended for Next.js
+============================================================ */
+/*
+  Rokkit: https://fonts.google.com/specimen/Rokkitt
+  Montserrat: https://fonts.google.com/specimen/Montserrat
+ 
+  Recommended next/font setup in app/layout.tsx:
+ 
+  import { Rokkitt, Montserrat } from "next/font/google";
+ 
+  const rokkitt = Rokkitt({
+    subsets: ["latin"],
+    variable: "--font-display",
+  });
+ 
+  const montserrat = Montserrat({
+    subsets: ["latin"],
+    variable: "--font-body",
+  });
+ 
+  // Apply to <html>: className={`${rokkitt.variable} ${montserrat.variable}`}
+*/

@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
-import { TrendingUp, ShoppingCart, Users, AlertTriangle } from "lucide-react";
+﻿import { createClient } from "@/lib/supabase/server";
+import { BalanceCard, InsightCard } from "@/components/dashboard/balanceCard";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -9,7 +9,11 @@ export default async function DashboardPage() {
   const businessId = user?.user_metadata?.business_id;
 
   const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+  const startOfMonth = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    1,
+  ).toISOString();
 
   const [salesResult, customersResult, lowStockResult] = await Promise.all([
     supabase
@@ -31,65 +35,130 @@ export default async function DashboardPage() {
 
   const monthlyRevenue = (salesResult.data ?? []).reduce(
     (sum, s) => sum + (s.total ?? 0),
-    0
+    0,
   );
   const newCustomers = customersResult.count ?? 0;
   const lowStockCount = lowStockResult.count ?? 0;
   const totalSales = salesResult.data?.length ?? 0;
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-zinc-900">Dashboard</h1>
+  const displayName = user?.user_metadata?.name ?? "Usuario";
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Monthly Revenue"
-          value={`$${monthlyRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}`}
-          icon={<TrendingUp className="h-5 w-5 text-zinc-500" />}
-        />
-        <StatCard
-          title="Sales this month"
-          value={String(totalSales)}
-          icon={<ShoppingCart className="h-5 w-5 text-zinc-500" />}
-        />
-        <StatCard
-          title="New customers"
-          value={String(newCustomers)}
-          icon={<Users className="h-5 w-5 text-zinc-500" />}
-        />
-        <StatCard
-          title="Low stock alerts"
-          value={String(lowStockCount)}
-          icon={<AlertTriangle className="h-5 w-5 text-amber-500" />}
-          alert={lowStockCount > 0}
-        />
-      </div>
-    </div>
-  );
-}
+  const now = new Date();
+  const lastUpdated = now.toLocaleString("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-function StatCard({
-  title,
-  value,
-  icon,
-  alert = false,
-}: {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  alert?: boolean;
-}) {
   return (
-    <div
-      className={`rounded-lg border bg-white p-5 ${
-        alert ? "border-amber-200" : "border-zinc-200"
-      }`}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm text-zinc-500">{title}</span>
-        {icon}
+    <div className="space-y-8">
+      {/* Welcome */}
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-body text-[28px] font-bold leading-none text-text-500">
+            Bienvenido, {displayName}
+          </h1>
+          <p className="font-body text-sm leading-5 text-text-400">
+            Aquí tenés un resumen de la actividad del negocio.
+          </p>
+        </div>
       </div>
-      <p className="text-2xl font-semibold text-zinc-900">{value}</p>
+
+      {/* Balance card */}
+      <BalanceCard
+        title="Saldo en Cuenta"
+        subtitle="Total acumulado en el período seleccionado."
+        lastUpdated={`Última actualización el ${lastUpdated}`}
+        value={`$${monthlyRevenue.toLocaleString("es-AR", { minimumFractionDigits: 0 })}`}
+        trend={1.23}
+        trendLabel="1.23%"
+      />
+
+      {/* Sales section */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-body text-2xl font-bold leading-none text-text-500">
+            Ventas
+          </h2>
+          <p className="font-body text-[10px] leading-3 text-text-400">
+            Última actualización el {lastUpdated}
+          </p>
+        </div>
+
+        {/* Row 1 */}
+        <div className="flex gap-3">
+          <InsightCard
+            label="Ventas Brutas"
+            value={`$${monthlyRevenue.toLocaleString("es-AR")}`}
+            trend={5.23}
+            trendLabel="5.23%"
+          />
+          <InsightCard
+            label="Ventas Netas"
+            value={`$${Math.round(monthlyRevenue * 0.85).toLocaleString("es-AR")}`}
+            trend={5.23}
+            trendLabel="5.23%"
+          />
+        </div>
+
+        {/* Row 2 */}
+        <div className="flex gap-3">
+          <InsightCard
+            label="Pedidos"
+            value={String(totalSales)}
+            unit="pedidos"
+            trend={5.23}
+            trendLabel="5.23%"
+          />
+          <InsightCard
+            label="Unidades Vendidas"
+            value={String(totalSales * 4)}
+            unit="unidades"
+            trend={-5.23}
+            trendLabel="5.23%"
+          />
+          <InsightCard
+            label="Ticket Promedio"
+            value={
+              totalSales > 0
+                ? `$${Math.round(monthlyRevenue / totalSales).toLocaleString("es-AR")}`
+                : "$0"
+            }
+            trend={-5.23}
+            trendLabel="5.23%"
+          />
+        </div>
+      </div>
+
+      {/* Customers section */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-body text-2xl font-bold leading-none text-text-500">
+            Clientes
+          </h2>
+          <p className="font-body text-[10px] leading-3 text-text-400">
+            Última actualización el {lastUpdated}
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <InsightCard
+            label="Nuevos Clientes"
+            value={String(newCustomers)}
+            unit="clientes"
+            trend={newCustomers > 0 ? 2.5 : undefined}
+            trendLabel="2.5%"
+          />
+          <InsightCard
+            label="Stock Bajo"
+            value={String(lowStockCount)}
+            unit="productos"
+            trend={lowStockCount > 0 ? -lowStockCount : undefined}
+            trendLabel={`${lowStockCount}`}
+          />
+        </div>
+      </div>
     </div>
   );
 }

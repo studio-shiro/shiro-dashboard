@@ -1,6 +1,6 @@
 # Shiro Studio — Admin Dashboard
 
-Admin panel for small and medium businesses. Centralizes management of products, stock, sales, customers, brands, and categories.
+Admin system for small and mid-sized physical retail businesses that manage stock. Centralizes management of products, stock, sales, customers, brands, and categories.
 
 ## Stack
 
@@ -165,13 +165,21 @@ Key metrics on login: sales for day/week/month with comparison to previous perio
 
 Full CRUD. Fields: name, description, price, image (Supabase Storage), category (FK), brand (FK), active. Views: list and detail. Filters by category and brand.
 
+**Batches and expiration dates (optional):** Products can have batches/variants with expiration date and quantity, modeled as `product → product_variants` where each variant is a batch with `expiration_date` and `quantity`. Businesses that don't handle perishables can disable this feature entirely. The system alerts when a batch is close to expiring.
+
 ### Stock
 
 Linked to products (not a standalone table). Fields: product_id, quantity, alert_threshold, updated_at. When quantity falls below threshold → alert shown on dashboard home (v1). Email via Resend in v2.
 
+**Stock-out prediction:** Beyond threshold alerts, the system projects stock-out dates based on sales velocity over the last 30 days: "At this rate, product X will run out of stock in 6 days." Calculated from existing sales data — no ML required.
+
 ### Sales
 
 Manual registration. Fields: product_id, customer_id (nullable), quantity, unit_price, total (computed), date, notes. Registering a sale automatically decrements stock in the same operation.
+
+**Gross/net sales:** The system should handle the difference between gross and net sales, calculated automatically. What discounts/costs apply for the net calculation is TBD with the client.
+
+**Bulk price updates:** Flow for updating product prices in bulk (by percentage or fixed value). TBD with the client.
 
 ### Customers
 
@@ -183,7 +191,35 @@ Catalog organization. Structure: name, description, optional image. Brands can h
 
 ### Settings
 
-Business name and logo (Supabase Storage), currency, contact info, stock alert thresholds. Logo appears in the header. Footer displays the Shiro Studio brand.
+Business name and logo (Supabase Storage), currency, contact info, stock alert thresholds, email/WhatsApp for notifications. Logo appears in the header. Footer displays the Shiro Studio brand.
+
+## Product differentiators
+
+Features that set this dashboard apart from generic tools. Prioritize in the demo:
+
+### 1. Conversational analytics (high priority — start here)
+
+The admin queries their business in natural language: "What was my best-selling product in April?", "Which customers haven't bought in the last 60 days?", "Which days of the week do I sell the most?". Claude receives the question, generates the Supabase query, and responds with real business data in natural language. Most impactful feature in a demo.
+
+### 2. Stock-out prediction
+
+Proactive alert based on 30-day sales velocity: "At this rate, product X will run out in 6 days." No ML — uses existing sales data.
+
+### 3. Supplier notifications
+
+When stock for a product drops to a set level, the system automatically emails or WhatsApps the supplier. Clear differentiator vs. generic tools.
+
+### 4. Automatic monthly report
+
+Monthly summary sent to the owner by email: top products, revenue, period comparisons.
+
+### 5. Expiration alerts
+
+For businesses using product batches, alerts when expiration dates are approaching. Optional — can be disabled per business.
+
+## Extra features (considered, not core)
+
+- **Barcode scanning:** `@zxing/browser` (QR + all formats), `quagga2` (EAN/UPC, better for linear barcodes), `react-qr-reader` (QR only, simpler).
 
 ## Database (Supabase)
 
@@ -191,6 +227,7 @@ Business name and logo (Supabase Storage), currency, contact info, stock alert t
 - RLS enabled on all tables from the start
 - Images always in Supabase Storage; store URL in DB, never base64
 - Explicit foreign keys between related tables
+- `product_variants` relation for batches with expiration date (optional per business)
 
 Table and column naming: **snake_case in English**.
 
@@ -209,6 +246,7 @@ The demo needs realistic data to communicate value:
 - 50 sales distributed over the last month (so dashboard charts have shape)
 - 15 customers with linked purchase history
 - Some products with low stock to demonstrate the alert system
+- Some batches with upcoming expiration dates (if the module is enabled in the demo)
 
 Seed lives in `supabase/seed.sql` or `scripts/seed.ts`.
 
@@ -232,10 +270,10 @@ If any of these appear in a task, ask before implementing.
 - Shared types in `types/[module].ts`
 - No business logic in components — use Server Actions
 - Prefer `async/await` over `.then()/.catch()`
-- All code, comments, variable names, and file names in English
+- All code, comments, variable names, and file names in English, content must be in spanish
 
 ## Deploy
 
 - **Dashboard:** Vercel (Next.js)
 - **DB/Auth/Storage:** Supabase
-- **WhatsApp chatbot (future):** separate NestJS service on Railway or Fly.io — does NOT live in this repo
+- **WhatsApp chatbot (future):** separate NestJS service on Railway or Fly.io — does NOT live in this repo. One server handles multiple clients, each with their own WhatsApp number pointing to `/webhook/[business-id]`. Use ngrok during development.
