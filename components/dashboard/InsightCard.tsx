@@ -1,0 +1,72 @@
+import {
+  ArrowUpIcon,
+  ArrowDownIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/outline";
+import { cn } from "@/lib/utils";
+
+interface InsightCardProps {
+  label: string;
+  value: string;
+  unit?: string;
+  trend?: number;
+  trendLabel?: string;
+  className?: string;
+}
+
+export function InsightCard({
+  label,
+  value,
+  unit,
+  trend,
+  trendLabel,
+  className,
+}: InsightCardProps) {
+  const isPositive = trend !== undefined && trend >= 0;
+  const showTrend = trend !== undefined;
+
+  return (
+    <div
+      className={cn(
+        "flex h-[100px] min-w-[180px] flex-1 flex-col justify-between overflow-hidden rounded-2xl border border-border-200 bg-background-400 px-4 py-3.5 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]",
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate font-body text-sm font-semibold leading-5 text-text-400">
+          {label}
+        </span>
+        {showTrend && (
+          <div className="flex shrink-0 items-center gap-0.5">
+            <span
+              className={cn(
+                "font-body text-xs font-medium leading-4",
+                isPositive ? "text-success-300" : "text-danger-300",
+              )}
+            >
+              {isPositive ? "+" : ""}
+              {trendLabel ?? `${trend}%`}
+            </span>
+            {isPositive ? (
+              <ArrowUpIcon className="size-3.5 text-success-300" />
+            ) : (
+              <ArrowDownIcon className="size-3.5 text-danger-300" />
+            )}
+            <QuestionMarkCircleIcon className="size-3.5 text-text-300" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-end justify-between">
+        <span className="font-body text-[28px] font-bold leading-none tracking-tight text-text-500">
+          {value}
+        </span>
+        {unit && (
+          <span className="pb-0.5 font-body text-[10px] leading-3 text-text-400">
+            {unit}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}

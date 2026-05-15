@@ -5,7 +5,18 @@
       "WebFetch(domain:www.figma.com)",
       "mcp__claude_ai_Figma__get_design_context",
       "Bash(python3 *)",
-      "mcp__claude_ai_Figma__get_screenshot"
+      "mcp__claude_ai_Figma__get_screenshot",
+      "Bash(Remove-Item *)",
+      "Bash(powershell *)",
+      "Bash(curl *)",
+      "Bash(grep -o \".\\\\{0,200\\\\}filtrar.\\\\{0,200\\\\}\" \"C:/Users/SSI/.claude/projects/D--Usuario-SSI-Escritorio-shiro-dashboard/15473b58-6a0c-4a40-a8ba-107c04189dfc/tool-results/mcp-claude_ai_Figma-get_design_context-1778856600679.txt\")",
+      "Bash(grep -oi \".\\\\{0,150\\\\}filter\\\\|Filtrar.\\\\{0,150\\\\}\" \"C:/Users/SSI/.claude/projects/D--Usuario-SSI-Escritorio-shiro-dashboard/15473b58-6a0c-4a40-a8ba-107c04189dfc/tool-results/mcp-claude_ai_Figma-get_design_context-1778856600679.txt\")",
+      "Bash(grep *)",
+      "Skill(frontend-design)",
+      "Bash(git mv *)",
+      "Bash(python -c ' *)",
+      "Bash(python *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/recharts/package.json'\\).version\\)\")"
     ]
   }
 }

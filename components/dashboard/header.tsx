@@ -18,7 +18,7 @@ const PAGE_LABELS: Record<string, string> = {
 
 function getBreadcrumb(pathname: string): string {
   const match = Object.entries(PAGE_LABELS).find(
-    ([key]) => pathname === key || pathname.startsWith(key + "/")
+    ([key]) => pathname === key || pathname.startsWith(key + "/"),
   );
   return match?.[1] ?? "Dashboard";
 }
@@ -33,8 +33,10 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
   const [pending, startTransition] = useTransition();
 
   const breadcrumb = getBreadcrumb(pathname);
-  const displayName = supabaseUser.user_metadata?.name ?? supabaseUser.email ?? "Usuario";
-  const role = supabaseUser.user_metadata?.role === "admin" ? "Administrador" : "Operador";
+  const displayName =
+    supabaseUser.user_metadata?.name ?? supabaseUser.email ?? "Usuario";
+  const role =
+    supabaseUser.user_metadata?.role === "admin" ? "Administrador" : "Operador";
 
   function handleLogout() {
     startTransition(() => logoutAction());
@@ -81,7 +83,10 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
 
           {open && (
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setOpen(false)}
+              />
               <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-lg border border-border-200 bg-background-400 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.1),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
                 <button
                   type="button"
@@ -100,4 +105,3 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
     </div>
   );
 }
-

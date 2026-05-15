@@ -9,6 +9,7 @@ Admin system for small and mid-sized physical retail businesses that manage stoc
 - **Language:** TypeScript (strict mode)
 - **Styles:** Tailwind CSS + shadcn/ui
 - **Validation:** Zod (always in Server Actions, never client-side only)
+- **Charts:** Recharts — used for all dashboard data visualizations (bar charts, line charts, pie/donut charts). Always use `ResponsiveContainer` for layout, `"use client"` directive required.
 
 ## Commands
 
@@ -264,7 +265,7 @@ If any of these appear in a task, ask before implementing.
 
 ## Code conventions
 
-- Components in PascalCase, files in kebab-case
+- Components in PascalCase (both component name and file name)
 - Server Actions in `actions/[module].ts` with verb prefix (e.g. `createProductAction`, `updateStockAction`)
 - Zod schemas in `lib/validations/[module].ts`
 - Shared types in `types/[module].ts`

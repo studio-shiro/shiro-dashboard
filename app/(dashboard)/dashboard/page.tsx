@@ -1,11 +1,18 @@
-﻿import { createClient } from "@/lib/supabase/server";
-import { BalanceCard, InsightCard } from "@/components/dashboard/balanceCard";
+﻿import { BalanceCard } from "@/components/dashboard/BalanceCard";
+import { InsightCard } from "@/components/dashboard/InsightCard";
+import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
+import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
+import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  console.log({ user });
+
   const businessId = user?.user_metadata?.business_id;
 
   const today = new Date();
@@ -41,8 +48,6 @@ export default async function DashboardPage() {
   const lowStockCount = lowStockResult.count ?? 0;
   const totalSales = salesResult.data?.length ?? 0;
 
-  const displayName = user?.user_metadata?.name ?? "Usuario";
-
   const now = new Date();
   const lastUpdated = now.toLocaleString("es-AR", {
     day: "numeric",
@@ -55,15 +60,17 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="font-body text-[28px] font-bold leading-none text-text-500">
-            Bienvenido, {displayName}
+            Dashboard
           </h1>
           <p className="font-body text-sm leading-5 text-text-400">
-            Aquí tenés un resumen de la actividad del negocio.
+            Podés hacer seguimiento de tus ventas, saldo en cuenta y otras
+            métricas clave.
           </p>
         </div>
+        <PeriodFilter />
       </div>
 
       {/* Balance card */}
@@ -82,7 +89,7 @@ export default async function DashboardPage() {
           <h2 className="font-body text-2xl font-bold leading-none text-text-500">
             Ventas
           </h2>
-          <p className="font-body text-[10px] leading-3 text-text-400">
+          <p className="font-body text-xs leading-4 text-text-400">
             Última actualización el {lastUpdated}
           </p>
         </div>
@@ -138,7 +145,7 @@ export default async function DashboardPage() {
           <h2 className="font-body text-2xl font-bold leading-none text-text-500">
             Clientes
           </h2>
-          <p className="font-body text-[10px] leading-3 text-text-400">
+          <p className="font-body text-xs leading-4 text-text-400">
             Última actualización el {lastUpdated}
           </p>
         </div>
@@ -158,6 +165,12 @@ export default async function DashboardPage() {
             trendLabel={`${lowStockCount}`}
           />
         </div>
+      </div>
+
+      {/* Stock alert + Top products */}
+      <div className="grid grid-cols-2 gap-6">
+        <StockAlertChart />
+        <TopProductsChart />
       </div>
     </div>
   );
