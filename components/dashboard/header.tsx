@@ -43,7 +43,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
   }
 
   return (
-    <div className="flex shrink-0 items-center justify-between px-2 pb-9 pt-5">
+    <div className="flex shrink-0 items-center justify-between px-6 pb-9 pt-5">
       {/* Breadcrumb */}
       <span className="font-body text-base leading-5 text-text-400">
         {breadcrumb}

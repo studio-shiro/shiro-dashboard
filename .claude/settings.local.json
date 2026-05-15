@@ -18,7 +18,12 @@
       "Bash(python *)",
       "Bash(node -e \"console.log\\(require\\('./node_modules/recharts/package.json'\\).version\\)\")",
       "Skill(figma-use)",
-      "Bash(yarn add *)"
+      "Bash(yarn add *)",
+      "mcp__figma__get_metadata",
+      "Bash(node *)",
+      "mcp__figma__get_screenshot",
+      "Bash(findstr *)",
+      "mcp__figma__get_design_context"
     ]
   }
 }

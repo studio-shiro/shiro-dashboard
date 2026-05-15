@@ -1,4 +1,4 @@
-import { BalanceCard } from "@/components/dashboard/BalanceCard";
+﻿import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
 import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
 import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
@@ -6,6 +6,7 @@ import { PerformanceSection } from "@/components/dashboard/PerformanceSection";
 import { SellSection } from "@/components/dashboard/SellSection";
 import { CustomersSection } from "@/components/dashboard/CustomersSection";
 import { DormantProductsTable } from "@/components/dashboard/DormantProductsTable";
+import { PeriodComparisonSection } from "@/components/dashboard/PeriodComparisonSection";
 import { createClient } from "@/lib/supabase/server";
 import { DORMANT_PRODUCTS } from "@/lib/dashboard/dormantProducts";
 import { STOCK_ALERT_ITEMS } from "@/lib/dashboard/stockAlerts";
@@ -105,6 +106,9 @@ export default async function DashboardPage() {
 
       {/* Tabla de productos sin movimiento */}
       <DormantProductsTable data={DORMANT_PRODUCTS} />
+
+      {/* Comparativa de Períodos */}
+      <PeriodComparisonSection metricsRecord={PERFORMANCE_METRICS} />
     </div>
   );
 }
