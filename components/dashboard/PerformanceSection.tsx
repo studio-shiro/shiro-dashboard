@@ -10,8 +10,9 @@ import {
   Tooltip,
 } from "recharts";
 import { usePeriodStore } from "@/store/periodStore";
-import { getChartConfig, getPerformanceMetrics } from "@/lib/dashboard/period";
+import { getChartConfig } from "@/lib/dashboard/period";
 import { InsightCard } from "@/components/dashboard/InsightCard";
+import type { PeriodType, PerformanceMetrics } from "@/types/dashboard";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload }: any) {
@@ -37,10 +38,14 @@ function CustomTooltip({ active, payload }: any) {
   );
 }
 
-export function PerformanceSection() {
+interface PerformanceSectionProps {
+  metricsRecord: Record<PeriodType, PerformanceMetrics>;
+}
+
+export function PerformanceSection({ metricsRecord }: PerformanceSectionProps) {
   const { periodType, periodValue } = usePeriodStore();
   const config = getChartConfig(periodType, periodValue);
-  const metrics = getPerformanceMetrics(periodType);
+  const metrics = metricsRecord[periodType];
 
   const tickMap = Object.fromEntries(
     config.xAxisTicks.map((t) => [t.value, t.label]),

@@ -16,7 +16,9 @@
       "Bash(git mv *)",
       "Bash(python -c ' *)",
       "Bash(python *)",
-      "Bash(node -e \"console.log\\(require\\('./node_modules/recharts/package.json'\\).version\\)\")"
+      "Bash(node -e \"console.log\\(require\\('./node_modules/recharts/package.json'\\).version\\)\")",
+      "Skill(figma-use)",
+      "Bash(yarn add *)"
     ]
   }
 }

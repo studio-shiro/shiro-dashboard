@@ -10,6 +10,7 @@ Admin system for small and mid-sized physical retail businesses that manage stoc
 - **Styles:** Tailwind CSS + shadcn/ui
 - **Validation:** Zod (always in Server Actions, never client-side only)
 - **Charts:** Recharts — used for all dashboard data visualizations (bar charts, line charts, pie/donut charts). Always use `ResponsiveContainer` for layout, `"use client"` directive required.
+- **Tables:** TanStack Table v8 (`@tanstack/react-table`) — headless table engine for all data tables. Use `createColumnHelper` for type-safe columns, `getSortedRowModel` + `getPaginationRowModel` for client-side sort/pagination. Style with Tailwind only — no table UI library.
 - **Global state:** Zustand — used for shared client state (e.g. period filter). Stores live in `store/`. Always define store type explicitly with `create<T>()`. Only use in client components.
 
 ## Commands

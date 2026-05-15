@@ -52,7 +52,7 @@ const YEARLY_DATA: number[] = [
 
 // ─── Performance metrics per period ──────────────────────────────────────────
 
-const PERFORMANCE_METRICS: Record<PeriodType, PerformanceMetrics> = {
+export const PERFORMANCE_METRICS: Record<PeriodType, PerformanceMetrics> = {
   today: {
     growth: "+5%",
     growthTrend: "positive",
@@ -212,7 +212,7 @@ function buildYearlyConfig(periodValue: string): ChartConfig {
 
 // ─── Sales & Customers dummy metrics ─────────────────────────────────────────
 
-const SALES_METRICS: Record<PeriodType, SellMetrics> = {
+export const SALES_METRICS: Record<PeriodType, SellMetrics> = {
   today: {
     grossSales: "$18.450",
     grossSalesTrend: 3.2,
@@ -263,7 +263,7 @@ const SALES_METRICS: Record<PeriodType, SellMetrics> = {
   },
 };
 
-const CUSTOMERS_METRICS: Record<PeriodType, CustomersMetrics> = {
+export const CUSTOMERS_METRICS: Record<PeriodType, CustomersMetrics> = {
   today: { newCustomers: 3, newCustomersTrend: 50 },
   week: { newCustomers: 18, newCustomersTrend: 12.5 },
   month: { newCustomers: 74, newCustomersTrend: 2.5 },

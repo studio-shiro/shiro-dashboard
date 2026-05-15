@@ -1,11 +1,20 @@
-﻿import { BalanceCard } from "@/components/dashboard/BalanceCard";
+import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
 import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
 import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
 import { PerformanceSection } from "@/components/dashboard/PerformanceSection";
 import { SellSection } from "@/components/dashboard/SellSection";
 import { CustomersSection } from "@/components/dashboard/CustomersSection";
+import { DormantProductsTable } from "@/components/dashboard/DormantProductsTable";
 import { createClient } from "@/lib/supabase/server";
+import { DORMANT_PRODUCTS } from "@/lib/dashboard/dormantProducts";
+import { STOCK_ALERT_ITEMS } from "@/lib/dashboard/stockAlerts";
+import { TOP_PRODUCTS_DATA } from "@/lib/dashboard/topProducts";
+import {
+  SALES_METRICS,
+  CUSTOMERS_METRICS,
+  PERFORMANCE_METRICS,
+} from "@/lib/dashboard/period";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -77,19 +86,25 @@ export default async function DashboardPage() {
       />
 
       {/* Sales section — period-aware */}
-      <SellSection />
+      <SellSection metricsRecord={SALES_METRICS} />
 
       {/* Customers section — period-aware, lowStockCount is static */}
-      <CustomersSection lowStockCount={lowStockCount} />
+      <CustomersSection
+        metricsRecord={CUSTOMERS_METRICS}
+        lowStockCount={lowStockCount}
+      />
 
       {/* Stock alert + Top products */}
       <div className="grid grid-cols-2 gap-6">
-        <StockAlertChart />
-        <TopProductsChart />
+        <StockAlertChart data={STOCK_ALERT_ITEMS} />
+        <TopProductsChart data={TOP_PRODUCTS_DATA} />
       </div>
 
       {/* Rendimiento Comercial */}
-      <PerformanceSection />
+      <PerformanceSection metricsRecord={PERFORMANCE_METRICS} />
+
+      {/* Tabla de productos sin movimiento */}
+      <DormantProductsTable data={DORMANT_PRODUCTS} />
     </div>
   );
 }

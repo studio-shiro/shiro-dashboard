@@ -55,3 +55,16 @@ export interface CustomersMetrics {
   newCustomers: number;
   newCustomersTrend?: number;
 }
+
+export interface StockAlertItem {
+  name: string;
+  quantity: number;
+  threshold: number;
+}
+
+export interface TopProduct {
+  name: string;
+  value: number;
+  color: string;
+  units: number;
+}

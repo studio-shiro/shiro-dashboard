@@ -1,11 +1,15 @@
 "use client";
 import { usePeriodStore } from "@/store/periodStore";
-import { getSellMetrics } from "@/lib/dashboard/period";
 import { InsightCard } from "@/components/dashboard/InsightCard";
+import type { PeriodType, SellMetrics } from "@/types/dashboard";
 
-export function SellSection() {
+interface SellSectionProps {
+  metricsRecord: Record<PeriodType, SellMetrics>;
+}
+
+export function SellSection({ metricsRecord }: SellSectionProps) {
   const { periodType } = usePeriodStore();
-  const m = getSellMetrics(periodType);
+  const m = metricsRecord[periodType];
 
   const lastUpdated = new Date().toLocaleString("es-AR", {
     day: "numeric",

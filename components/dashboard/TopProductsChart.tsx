@@ -8,14 +8,7 @@ import {
   Sector,
   Tooltip,
 } from "recharts";
-
-const TOP_PRODUCTS = [
-  { name: "Coca-Cola", value: 60, color: "#3446a5", units: 320 },
-  { name: "Caramelos", value: 20, color: "#4963ea", units: 107 },
-  { name: "Chocolates", value: 15, color: "#cd2b31", units: 80 },
-  { name: "Gomitas", value: 15, color: "#ff9900", units: 80 },
-  { name: "Snacks", value: 5, color: "#ff9c7a", units: 26 },
-];
+import type { TopProduct } from "@/types/dashboard";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload }: any) {
@@ -54,7 +47,11 @@ function CenterLabel() {
   );
 }
 
-export function TopProductsChart() {
+interface TopProductsChartProps {
+  data: TopProduct[];
+}
+
+export function TopProductsChart({ data }: TopProductsChartProps) {
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
 
   const renderActiveShape = useCallback(
@@ -115,7 +112,7 @@ export function TopProductsChart() {
             <PieChart>
               <Tooltip content={<CustomTooltip />} cursor={false} />
               <Pie
-                data={TOP_PRODUCTS}
+                data={data}
                 cx="50%"
                 cy="50%"
                 innerRadius={58}
@@ -129,7 +126,7 @@ export function TopProductsChart() {
                 onMouseEnter={(_, index) => setActiveIndex(index)}
                 onMouseLeave={() => setActiveIndex(undefined)}
               >
-                {TOP_PRODUCTS.map((entry, index) => (
+                {data.map((entry, index) => (
                   <Cell key={index} fill={entry.color} />
                 ))}
               </Pie>
@@ -140,7 +137,7 @@ export function TopProductsChart() {
 
         {/* Legend */}
         <div className="ml-6 flex flex-col gap-2.5">
-          {TOP_PRODUCTS.map((product, index) => (
+          {data.map((product, index) => (
             <div
               key={product.name}
               className="flex items-center gap-2 transition-opacity duration-150"

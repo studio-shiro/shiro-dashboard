@@ -1,15 +1,19 @@
 "use client";
 import { usePeriodStore } from "@/store/periodStore";
-import { getCustomersMetrics } from "@/lib/dashboard/period";
 import { InsightCard } from "@/components/dashboard/InsightCard";
+import type { PeriodType, CustomersMetrics } from "@/types/dashboard";
 
 interface CustomersSectionProps {
+  metricsRecord: Record<PeriodType, CustomersMetrics>;
   lowStockCount: number;
 }
 
-export function CustomersSection({ lowStockCount }: CustomersSectionProps) {
+export function CustomersSection({
+  metricsRecord,
+  lowStockCount,
+}: CustomersSectionProps) {
   const { periodType } = usePeriodStore();
-  const m = getCustomersMetrics(periodType);
+  const m = metricsRecord[periodType];
 
   const lastUpdated = new Date().toLocaleString("es-AR", {
     day: "numeric",
