@@ -9,10 +9,16 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { usePeriodStore } from "@/store/periodStore";
-import { getChartConfig } from "@/lib/dashboard/period";
 import { InsightCard } from "@/components/dashboard/InsightCard";
-import type { PeriodType, PerformanceMetrics } from "@/types/dashboard";
+import type { PerformanceMetrics, ChartConfig } from "@/types/dashboard";
+
+function formatCurrency(n: number): string {
+  return `$${Math.round(n).toLocaleString("es-AR")}`;
+}
+
+function formatPct(n: number): string {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload }: any) {
@@ -33,23 +39,30 @@ function CustomTooltip({ active, payload }: any) {
         whiteSpace: "nowrap" as const,
       }}
     >
-      <span style={{ fontWeight: 700 }}>{value}</span> ventas netas
+      <span style={{ fontWeight: 700 }}>{formatCurrency(value)}</span> en ventas
     </div>
   );
 }
 
 interface PerformanceSectionProps {
-  metricsRecord: Record<PeriodType, PerformanceMetrics>;
+  metrics: PerformanceMetrics;
+  chartConfig: ChartConfig;
 }
 
-export function PerformanceSection({ metricsRecord }: PerformanceSectionProps) {
-  const { periodType, periodValue } = usePeriodStore();
-  const config = getChartConfig(periodType, periodValue);
-  const metrics = metricsRecord[periodType];
-
+export function PerformanceSection({
+  metrics,
+  chartConfig: config,
+}: PerformanceSectionProps) {
   const tickMap = Object.fromEntries(
     config.xAxisTicks.map((t) => [t.value, t.label]),
   );
+
+  const growthTrend =
+    metrics.growth !== null
+      ? metrics.growth >= 0
+        ? "positive"
+        : "negative"
+      : undefined;
 
   const lastUpdated = new Date().toLocaleString("es-AR", {
     day: "numeric",
@@ -78,25 +91,31 @@ export function PerformanceSection({ metricsRecord }: PerformanceSectionProps) {
       <div className="flex gap-3">
         <InsightCard
           label="Crecimiento"
-          value={metrics.growth}
-          valueTrend={metrics.growthTrend}
+          value={metrics.growth !== null ? formatPct(metrics.growth) : "--"}
+          valueTrend={growthTrend}
         />
         <InsightCard
           label="Ticket Promedio"
-          value={metrics.averageTicket}
-          trend={metrics.averageTicketTrend}
-          trendLabel={`${Math.abs(metrics.averageTicketTrend).toFixed(2)}%`}
+          value={formatCurrency(metrics.averageTicket)}
+          trend={metrics.averageTicketTrend ?? undefined}
+          trendLabel={
+            metrics.averageTicketTrend !== null
+              ? `${Math.abs(metrics.averageTicketTrend).toFixed(1)}%`
+              : undefined
+          }
         />
         <InsightCard
           label="Frecuencia de Compra"
-          value={metrics.frequency}
-          valueTrend={metrics.frequencyTrend}
+          value={metrics.purchaseFrequency !== null ? formatPct(metrics.purchaseFrequency) : "--"}
+          valueTrend={
+            metrics.purchaseFrequency !== null
+              ? metrics.purchaseFrequency >= 0
+                ? "positive"
+                : "negative"
+              : undefined
+          }
         />
-        <InsightCard
-          label="Tasa de Reembolso"
-          value={metrics.refund}
-          valueTrend={metrics.refundTrend}
-        />
+        <InsightCard label="Tasa de Reembolso" value="--" />
       </div>
 
       <div className="rounded-2xl border border-border-200 bg-background-400 pb-4 pt-5 px-4 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
@@ -137,11 +156,7 @@ export function PerformanceSection({ metricsRecord }: PerformanceSectionProps) {
               tickFormatter={(v) => tickMap[v] ?? ""}
               axisLine={false}
               tickLine={false}
-              tick={{
-                fontFamily: "Montserrat",
-                fontSize: 11,
-                fill: "#616161",
-              }}
+              tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
             />
 
             <YAxis
@@ -149,11 +164,8 @@ export function PerformanceSection({ metricsRecord }: PerformanceSectionProps) {
               ticks={config.yTicks}
               axisLine={false}
               tickLine={false}
-              tick={{
-                fontFamily: "Montserrat",
-                fontSize: 11,
-                fill: "#616161",
-              }}
+              tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
+              tickFormatter={(v) => `$${(v as number).toLocaleString("es-AR")}`}
               label={{
                 value: config.yAxisLabel,
                 angle: -90,
@@ -166,7 +178,7 @@ export function PerformanceSection({ metricsRecord }: PerformanceSectionProps) {
                   textAnchor: "middle",
                 },
               }}
-              width={60}
+              width={70}
             />
 
             <Tooltip

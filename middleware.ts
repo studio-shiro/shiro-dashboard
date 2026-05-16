@@ -18,12 +18,12 @@ export async function middleware(request: NextRequest) {
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (cs) => {
-          cs.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value, options),
+          cs.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({ request });
           cs.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set({ name, value, ...options }),
           );
         },
       },

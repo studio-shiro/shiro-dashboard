@@ -1,16 +1,21 @@
 "use client";
-import { usePeriodStore } from "@/store/periodStore";
 import { InsightCard } from "@/components/dashboard/InsightCard";
-import type { PeriodType, SellMetrics } from "@/types/dashboard";
+import type { SellMetrics } from "@/types/dashboard";
 
-interface SellSectionProps {
-  metricsRecord: Record<PeriodType, SellMetrics>;
+function formatCurrency(n: number): string {
+  return `$${Math.round(n).toLocaleString("es-AR")}`;
 }
 
-export function SellSection({ metricsRecord }: SellSectionProps) {
-  const { periodType } = usePeriodStore();
-  const m = metricsRecord[periodType];
+function trendLabel(n: number | null): string | undefined {
+  if (n === null) return undefined;
+  return `${Math.abs(n).toFixed(1)}%`;
+}
 
+interface SellSectionProps {
+  metrics: SellMetrics;
+}
+
+export function SellSection({ metrics: m }: SellSectionProps) {
   const lastUpdated = new Date().toLocaleString("es-AR", {
     day: "numeric",
     month: "long",
@@ -32,15 +37,15 @@ export function SellSection({ metricsRecord }: SellSectionProps) {
       <div className="flex gap-3">
         <InsightCard
           label="Ventas Brutas"
-          value={m.grossSales}
-          trend={m.grossSalesTrend}
-          trendLabel={`${Math.abs(m.grossSalesTrend).toFixed(2)}%`}
+          value={formatCurrency(m.grossSales)}
+          trend={m.grossSalesTrend ?? undefined}
+          trendLabel={trendLabel(m.grossSalesTrend)}
         />
         <InsightCard
           label="Ventas Netas"
-          value={m.netSales}
-          trend={m.netSalesTrend}
-          trendLabel={`${Math.abs(m.netSalesTrend).toFixed(2)}%`}
+          value={formatCurrency(m.netSales)}
+          trend={m.netSalesTrend ?? undefined}
+          trendLabel={trendLabel(m.netSalesTrend)}
         />
       </div>
       <div className="flex gap-3">
@@ -48,21 +53,21 @@ export function SellSection({ metricsRecord }: SellSectionProps) {
           label="Pedidos"
           value={String(m.orders)}
           unit="pedidos"
-          trend={m.ordersTrend}
-          trendLabel={`${Math.abs(m.ordersTrend).toFixed(2)}%`}
+          trend={m.ordersTrend ?? undefined}
+          trendLabel={trendLabel(m.ordersTrend)}
         />
         <InsightCard
           label="Unidades Vendidas"
           value={String(m.units)}
           unit="unidades"
-          trend={m.unitsTrend}
-          trendLabel={`${Math.abs(m.unitsTrend).toFixed(2)}%`}
+          trend={m.unitsTrend ?? undefined}
+          trendLabel={trendLabel(m.unitsTrend)}
         />
         <InsightCard
           label="Ticket Promedio"
-          value={m.averageTicket}
-          trend={m.averageTicketTrend}
-          trendLabel={`${Math.abs(m.averageTicketTrend).toFixed(2)}%`}
+          value={formatCurrency(m.averageTicket)}
+          trend={m.averageTicketTrend ?? undefined}
+          trendLabel={trendLabel(m.averageTicketTrend)}
         />
       </div>
     </div>

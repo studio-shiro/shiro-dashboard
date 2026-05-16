@@ -1,6 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { StockAlertItem, TopProduct } from "@/types/dashboard";
-import type { DormantProduct } from "@/lib/dashboard/dormantProducts";
+import type {
+  StockAlertItem,
+  TopProduct,
+  DormantProduct,
+  SellMetrics,
+  CustomersMetrics,
+  ChartDataPoint,
+  PeriodType,
+} from "@/types/dashboard";
 
 const TOP_PRODUCT_COLORS = [
   "#3446a5",
@@ -9,6 +16,15 @@ const TOP_PRODUCT_COLORS = [
   "#ff9900",
   "#ff9c7a",
 ];
+
+// ─── Trend helper ─────────────────────────────────────────────────────────────
+
+function calcTrend(current: number, previous: number): number | null {
+  if (previous === 0) return null;
+  return ((current - previous) / previous) * 100;
+}
+
+// ─── Period-independent queries ───────────────────────────────────────────────
 
 export async function fetchStockAlerts(
   supabase: SupabaseClient,
@@ -52,7 +68,6 @@ export async function fetchDormantProducts(
       .order("date", { ascending: false }),
   ]);
 
-  // Most recent sale date per product
   const latestSale = new Map<string, string>();
   for (const s of salesResult.data ?? []) {
     if (!latestSale.has(s.product_id as string)) {
@@ -98,16 +113,18 @@ export async function fetchDormantProducts(
     .sort((a, b) => a.dormantDays - b.dormantDays);
 }
 
+// ─── Period-aware queries ─────────────────────────────────────────────────────
+
 export async function fetchTopProducts(
   supabase: SupabaseClient,
   businessId: string,
-  startOfMonth: string,
+  startDate: string,
 ): Promise<TopProduct[]> {
   const { data } = await supabase
     .from("sales")
     .select("product_id, quantity, products!inner(name)")
     .eq("business_id", businessId)
-    .gte("date", startOfMonth);
+    .gte("date", startDate);
 
   const unitsByProduct = new Map<string, { name: string; units: number }>();
   for (const s of data ?? []) {
@@ -117,7 +134,10 @@ export async function fetchTopProducts(
     if (existing) {
       existing.units += s.quantity as number;
     } else {
-      unitsByProduct.set(productId, { name: productName, units: s.quantity as number });
+      unitsByProduct.set(productId, {
+        name: productName,
+        units: s.quantity as number,
+      });
     }
   }
 
@@ -133,4 +153,164 @@ export async function fetchTopProducts(
     color: TOP_PRODUCT_COLORS[i] ?? "#aaaaaa",
     units: p.units,
   }));
+}
+
+export async function fetchSalesMetrics(
+  supabase: SupabaseClient,
+  businessId: string,
+  startDate: string,
+  endDate: string,
+  prevStartDate: string,
+  prevEndDate: string,
+): Promise<SellMetrics> {
+  const [currentResult, prevResult] = await Promise.all([
+    supabase
+      .from("sales")
+      .select("total, quantity")
+      .eq("business_id", businessId)
+      .gte("date", startDate)
+      .lt("date", endDate),
+    supabase
+      .from("sales")
+      .select("total, quantity")
+      .eq("business_id", businessId)
+      .gte("date", prevStartDate)
+      .lt("date", prevEndDate),
+  ]);
+
+  const current = currentResult.data ?? [];
+  const prev = prevResult.data ?? [];
+
+  const grossSales = current.reduce((sum, s) => sum + (s.total as number), 0);
+  const orders = current.length;
+  const units = current.reduce((sum, s) => sum + (s.quantity as number), 0);
+  const averageTicket = orders > 0 ? grossSales / orders : 0;
+
+  const prevGrossSales = prev.reduce((sum, s) => sum + (s.total as number), 0);
+  const prevOrders = prev.length;
+  const prevUnits = prev.reduce((sum, s) => sum + (s.quantity as number), 0);
+  const prevAverageTicket = prevOrders > 0 ? prevGrossSales / prevOrders : 0;
+
+  return {
+    grossSales,
+    grossSalesTrend: calcTrend(grossSales, prevGrossSales),
+    netSales: grossSales,
+    netSalesTrend: calcTrend(grossSales, prevGrossSales),
+    orders,
+    ordersTrend: calcTrend(orders, prevOrders),
+    units,
+    unitsTrend: calcTrend(units, prevUnits),
+    averageTicket,
+    averageTicketTrend: calcTrend(averageTicket, prevAverageTicket),
+  };
+}
+
+export async function fetchCustomersMetrics(
+  supabase: SupabaseClient,
+  businessId: string,
+  startDate: string,
+  endDate: string,
+  prevStartDate: string,
+  prevEndDate: string,
+): Promise<CustomersMetrics> {
+  const [currentResult, prevResult] = await Promise.all([
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .gte("created_at", startDate)
+      .lt("created_at", endDate),
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", businessId)
+      .gte("created_at", prevStartDate)
+      .lt("created_at", prevEndDate),
+  ]);
+
+  const newCustomers = currentResult.count ?? 0;
+  const prevCustomers = prevResult.count ?? 0;
+
+  return {
+    newCustomers,
+    newCustomersTrend: calcTrend(newCustomers, prevCustomers),
+  };
+}
+
+function calcFrequency(rows: { customer_id: string | null }[]): number | null {
+  const identified = rows.filter((r) => r.customer_id !== null);
+  if (identified.length === 0) return null;
+  const uniqueCustomers = new Set(identified.map((r) => r.customer_id)).size;
+  return uniqueCustomers > 0 ? identified.length / uniqueCustomers : null;
+}
+
+export async function fetchPurchaseFrequency(
+  supabase: SupabaseClient,
+  businessId: string,
+  startDate: string,
+  endDate: string,
+  prevStartDate: string,
+  prevEndDate: string,
+): Promise<number | null> {
+  const [currentResult, prevResult] = await Promise.all([
+    supabase
+      .from("sales")
+      .select("customer_id")
+      .eq("business_id", businessId)
+      .gte("date", startDate)
+      .lt("date", endDate),
+    supabase
+      .from("sales")
+      .select("customer_id")
+      .eq("business_id", businessId)
+      .gte("date", prevStartDate)
+      .lt("date", prevEndDate),
+  ]);
+
+  const current = calcFrequency(currentResult.data ?? []);
+  const prev = calcFrequency(prevResult.data ?? []);
+
+  return calcTrend(current ?? 0, prev ?? 0);
+}
+
+export async function fetchChartData(
+  supabase: SupabaseClient,
+  businessId: string,
+  startDate: string,
+  endDate: string,
+  periodType: PeriodType,
+): Promise<ChartDataPoint[]> {
+  const { data } = await supabase
+    .from("sales")
+    .select("date, total")
+    .eq("business_id", businessId)
+    .gte("date", startDate)
+    .lt("date", endDate);
+
+  const buckets = new Map<number, number>();
+
+  for (const sale of data ?? []) {
+    const d = new Date(sale.date as string);
+    let bucket: number;
+
+    switch (periodType) {
+      case "today":
+        bucket = d.getUTCHours();
+        break;
+      case "week":
+        // 0 = Monday … 6 = Sunday
+        bucket = (d.getUTCDay() + 6) % 7;
+        break;
+      case "month":
+        bucket = d.getUTCDate();
+        break;
+      case "year":
+        bucket = d.getUTCMonth();
+        break;
+    }
+
+    buckets.set(bucket, (buckets.get(bucket) ?? 0) + (sale.total as number));
+  }
+
+  return Array.from(buckets.entries()).map(([x, sales]) => ({ x, sales }));
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useTransition } from "react";
 import {
   AreaChart,
   Area,
@@ -11,17 +11,24 @@ import {
   Tooltip,
 } from "recharts";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { usePeriodStore } from "@/store/periodStore";
-import { getChartConfig } from "@/lib/dashboard/period";
-import {
-  getPeriodOptions,
-  getDefaultPeriodValues,
-  type PeriodOption,
-} from "@/lib/dashboard/periodComparison";
+import { getPeriodOptions, type PeriodOption } from "@/lib/dashboard/periodComparison";
 import { InsightCard } from "@/components/dashboard/InsightCard";
-import type { PeriodType, PerformanceMetrics, ChartConfig } from "@/types/dashboard";
+import type {
+  PeriodType,
+  ComparisonSideData,
+  ChartConfig,
+} from "@/types/dashboard";
+import type { fetchComparisonDataAction } from "@/actions/dashboard";
 
-// ─── Shared tooltip ───────────────────────────────────────────────────────────
+function formatCurrency(n: number): string {
+  return `$${Math.round(n).toLocaleString("es-AR")}`;
+}
+
+function formatPct(n: number): string {
+  return `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
+}
+
+// ─── Tooltip ──────────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ComparisonTooltip({ active, payload, color }: any) {
@@ -41,7 +48,7 @@ function ComparisonTooltip({ active, payload, color }: any) {
         whiteSpace: "nowrap" as const,
       }}
     >
-      <span style={{ fontWeight: 700 }}>{value}</span> ventas netas
+      <span style={{ fontWeight: 700 }}>{formatCurrency(value)}</span> en ventas
     </div>
   );
 }
@@ -52,16 +59,18 @@ interface PeriodSelectorProps {
   options: PeriodOption[];
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-function PeriodSelector({ options, value, onChange }: PeriodSelectorProps) {
+function PeriodSelector({ options, value, onChange, disabled }: PeriodSelectorProps) {
   const selected = options.find((o) => o.value === value);
   return (
     <div className="relative w-full">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full cursor-pointer appearance-none rounded-xl border border-border-200 bg-background-400 px-4 py-2.5 font-body text-sm font-bold text-text-500 focus:outline-none"
+        disabled={disabled}
+        className="w-full cursor-pointer appearance-none rounded-xl border border-border-200 bg-background-400 px-4 py-2.5 font-body text-sm font-bold text-text-500 focus:outline-none disabled:opacity-50"
         aria-label="Seleccionar período"
       >
         {options.map((opt) => (
@@ -70,7 +79,6 @@ function PeriodSelector({ options, value, onChange }: PeriodSelectorProps) {
           </option>
         ))}
       </select>
-      {/* Visible label overlay — pointer-events-none so the select receives clicks */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-4">
         <span className="font-body text-sm font-bold text-text-500">
           {selected?.label ?? value}
@@ -81,7 +89,7 @@ function PeriodSelector({ options, value, onChange }: PeriodSelectorProps) {
   );
 }
 
-// ─── Area chart for one column ────────────────────────────────────────────────
+// ─── Chart ────────────────────────────────────────────────────────────────────
 
 interface ComparisonChartProps {
   config: ChartConfig;
@@ -111,11 +119,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             </linearGradient>
           </defs>
 
-          <CartesianGrid
-            vertical={false}
-            stroke="#e8e8ea"
-            strokeDasharray="4 4"
-          />
+          <CartesianGrid vertical={false} stroke="#e8e8ea" strokeDasharray="4 4" />
 
           {config.referenceLineXValues.map((x) => (
             <ReferenceLine
@@ -142,6 +146,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             axisLine={false}
             tickLine={false}
             tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
+            tickFormatter={(v) => `$${(v as number).toLocaleString("es-AR")}`}
             label={{
               value: config.yAxisLabel,
               angle: -90,
@@ -154,18 +159,12 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
                 textAnchor: "middle",
               },
             }}
-            width={60}
+            width={70}
           />
 
           <Tooltip
-            content={(props) => (
-              <ComparisonTooltip {...props} color={color} />
-            )}
-            cursor={{
-              stroke: "#d1d0c9",
-              strokeWidth: 1,
-              strokeDasharray: "4 4",
-            }}
+            content={(props) => <ComparisonTooltip {...props} color={color} />}
+            cursor={{ stroke: "#d1d0c9", strokeWidth: 1, strokeDasharray: "4 4" }}
           />
 
           <Area
@@ -175,12 +174,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             strokeWidth={2}
             fill={`url(#${gradientId})`}
             dot={false}
-            activeDot={{
-              r: 4,
-              fill: color,
-              stroke: "#fffffd",
-              strokeWidth: 2,
-            }}
+            activeDot={{ r: 4, fill: color, stroke: "#fffffd", strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -188,93 +182,108 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
   );
 }
 
-// ─── Single comparison column ─────────────────────────────────────────────────
+// ─── Single column ────────────────────────────────────────────────────────────
 
 interface ComparisonColumnProps {
-  metrics: PerformanceMetrics;
-  chartConfig: ChartConfig;
-  chartColor: string;
+  data: ComparisonSideData;
+  color: string;
   options: PeriodOption[];
   selectedValue: string;
   onValueChange: (value: string) => void;
+  isPending: boolean;
 }
 
 function ComparisonColumn({
-  metrics: m,
-  chartConfig,
-  chartColor,
+  data: d,
+  color,
   options,
   selectedValue,
   onValueChange,
+  isPending,
 }: ComparisonColumnProps) {
+  const growthTrend =
+    d.growth !== null ? (d.growth >= 0 ? "positive" : "negative") : undefined;
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col gap-3 transition-opacity ${isPending ? "opacity-60" : ""}`}>
       <PeriodSelector
         options={options}
         value={selectedValue}
         onChange={onValueChange}
+        disabled={isPending}
       />
 
       <div className="grid grid-cols-2 gap-3">
         <InsightCard
           label="Crecimiento"
-          value={m.growth}
-          valueTrend={m.growthTrend}
+          value={d.growth !== null ? formatPct(d.growth) : "--"}
+          valueTrend={growthTrend}
         />
         <InsightCard
           label="Ticket Promedio"
-          value={m.averageTicket}
-          trend={m.averageTicketTrend}
-          trendLabel={`${Math.abs(m.averageTicketTrend).toFixed(2)}%`}
+          value={formatCurrency(d.averageTicket)}
         />
         <InsightCard
           label="Frecuencia de Compra"
-          value={m.frequency}
-          valueTrend={m.frequencyTrend}
+          value={d.purchaseFrequency !== null ? formatPct(d.purchaseFrequency) : "--"}
+          valueTrend={
+            d.purchaseFrequency !== null
+              ? d.purchaseFrequency >= 0
+                ? "positive"
+                : "negative"
+              : undefined
+          }
         />
-        <InsightCard
-          label="Tasa de Reembolso"
-          value={m.refund}
-          valueTrend={m.refundTrend}
-        />
+        <InsightCard label="Tasa de Reembolso" value="--" />
       </div>
 
-      <ComparisonChart config={chartConfig} color={chartColor} />
+      <ComparisonChart config={d.chartConfig} color={color} />
     </div>
   );
 }
 
 // ─── Main section ─────────────────────────────────────────────────────────────
 
-interface PeriodComparisonSectionProps {
-  metricsRecord: Record<PeriodType, PerformanceMetrics>;
-}
-
 const LEFT_COLOR = "#e84911";
 const RIGHT_COLOR = "#4963ea";
 
+interface PeriodComparisonSectionProps {
+  periodType: PeriodType;
+  initialLeft: string;
+  initialRight: string;
+  initialData: { left: ComparisonSideData; right: ComparisonSideData };
+  fetchComparisonData: typeof fetchComparisonDataAction;
+}
+
 export function PeriodComparisonSection({
-  metricsRecord,
+  periodType,
+  initialLeft,
+  initialRight,
+  initialData,
+  fetchComparisonData,
 }: PeriodComparisonSectionProps) {
-  const { periodType } = usePeriodStore();
-
-  const [leftValue, setLeftValue] = useState(
-    () => getDefaultPeriodValues(periodType)[0],
-  );
-  const [rightValue, setRightValue] = useState(
-    () => getDefaultPeriodValues(periodType)[1],
-  );
-
-  useEffect(() => {
-    const [left, right] = getDefaultPeriodValues(periodType);
-    setLeftValue(left);
-    setRightValue(right);
-  }, [periodType]);
+  const [leftValue, setLeftValue] = useState(initialLeft);
+  const [rightValue, setRightValue] = useState(initialRight);
+  const [data, setData] = useState(initialData);
+  const [isPending, startTransition] = useTransition();
 
   const options = getPeriodOptions(periodType);
-  const metrics = metricsRecord[periodType];
-  const leftConfig = getChartConfig(periodType, leftValue);
-  const rightConfig = getChartConfig(periodType, rightValue);
+
+  function handleLeftChange(newLeft: string) {
+    setLeftValue(newLeft);
+    startTransition(async () => {
+      const result = await fetchComparisonData(periodType, newLeft, rightValue);
+      if (!("error" in result)) setData(result);
+    });
+  }
+
+  function handleRightChange(newRight: string) {
+    setRightValue(newRight);
+    startTransition(async () => {
+      const result = await fetchComparisonData(periodType, leftValue, newRight);
+      if (!("error" in result)) setData(result);
+    });
+  }
 
   const lastUpdated = new Date().toLocaleString("es-AR", {
     day: "numeric",
@@ -292,7 +301,7 @@ export function PeriodComparisonSection({
         </h2>
         <div className="flex flex-col">
           <p className="font-body text-sm leading-5 text-text-400">
-            Compará dos períodos.
+            Compará dos períodos del mismo tipo.
           </p>
           <p className="font-body text-xs leading-4 text-text-400">
             Última actualización el {lastUpdated}
@@ -302,20 +311,20 @@ export function PeriodComparisonSection({
 
       <div className="grid grid-cols-2 gap-6">
         <ComparisonColumn
-          metrics={metrics}
-          chartConfig={leftConfig}
-          chartColor={LEFT_COLOR}
+          data={data.left}
+          color={LEFT_COLOR}
           options={options}
           selectedValue={leftValue}
-          onValueChange={setLeftValue}
+          onValueChange={handleLeftChange}
+          isPending={isPending}
         />
         <ComparisonColumn
-          metrics={metrics}
-          chartConfig={rightConfig}
-          chartColor={RIGHT_COLOR}
+          data={data.right}
+          color={RIGHT_COLOR}
           options={options}
           selectedValue={rightValue}
-          onValueChange={setRightValue}
+          onValueChange={handleRightChange}
+          isPending={isPending}
         />
       </div>
     </div>

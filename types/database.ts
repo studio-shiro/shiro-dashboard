@@ -40,6 +40,7 @@ export type Sale = {
   business_id: string;
   product_id: string;
   customer_id: string | null;
+  batch_id: string | null;
   quantity: number;
   unit_price: number;
   total: number;

@@ -25,7 +25,9 @@
       "Bash(findstr *)",
       "mcp__figma__get_design_context",
       "Bash(Get-ChildItem *)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "Bash(cd D:\\\\Usuario\\\\SSI\\\\Escritorio\\\\shiro-dashboard *)",
+      "Bash(yarn build *)"
     ]
   }
 }

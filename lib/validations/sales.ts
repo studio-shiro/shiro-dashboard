@@ -7,6 +7,7 @@ export const saleSchema = z.object({
   unit_price: z.coerce.number().positive("Price must be positive"),
   date: z.string().min(1, "Date is required"),
   notes: z.string().optional(),
+  batch_id: z.string().uuid().optional(),
 });
 
 export type SaleInput = z.infer<typeof saleSchema>;

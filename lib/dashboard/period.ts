@@ -3,196 +3,138 @@ import type {
   ChartConfig,
   ChartDataPoint,
   XAxisTick,
-  PerformanceMetrics,
-  SellMetrics,
-  CustomersMetrics,
 } from "@/types/dashboard";
 
-// ─── Dummy data seeds per granularity ────────────────────────────────────────
+// ─── Y-axis helpers ───────────────────────────────────────────────────────────
 
-const MONTHLY_DATA: number[] = [
-  35,
-  28,
-  42,
-  38,
-  45,
-  55,
-  50, // Week 1
-  40,
-  35,
-  28,
-  45,
-  52,
-  58,
-  48, // Week 2
-  62,
-  68,
-  70,
-  85,
-  72,
-  65,
-  55, // Week 3
-  48,
-  35,
-  50,
-  62,
-  68,
-  60,
-  15, // Week 4 (month end drop)
-];
+function buildYAxis(data: ChartDataPoint[]): {
+  yDomain: [number, number];
+  yTicks: number[];
+} {
+  const max = Math.max(...data.map((d) => d.sales), 0);
+  if (max === 0) return { yDomain: [0, 100], yTicks: [0, 25, 50, 75, 100] };
 
-const WEEKLY_DATA: number[] = [45, 52, 38, 61, 70, 85, 48];
+  // Round up to a "nice" ceiling with ~5 ticks
+  const rawCeil = max * 1.25;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawCeil)));
+  const niceCeil = Math.ceil(rawCeil / magnitude) * magnitude;
+  const step = niceCeil / 4;
 
-// Every 2 hours: 00, 02, 04, 06, 08, 10, 12, 14, 16, 18, 20, 22
-const HOURLY_DATA: number[] = [0, 2, 5, 12, 22, 35, 48, 55, 52, 40, 30, 18];
-
-const YEARLY_DATA: number[] = [
-  2800, 3200, 3800, 4200, 3600, 4800, 5200, 4900, 4400, 3800, 4200, 3600,
-];
-
-// ─── Performance metrics per period ──────────────────────────────────────────
-
-export const PERFORMANCE_METRICS: Record<PeriodType, PerformanceMetrics> = {
-  today: {
-    growth: "+5%",
-    growthTrend: "positive",
-    averageTicket: "$3.850",
-    averageTicketTrend: 2.1,
-    frequency: "+1.2%",
-    frequencyTrend: "positive",
-    refund: "-0.5%",
-    refundTrend: "negative",
-  },
-  week: {
-    growth: "+8%",
-    growthTrend: "positive",
-    averageTicket: "$4.120",
-    averageTicketTrend: -1.5,
-    frequency: "+2.3%",
-    frequencyTrend: "positive",
-    refund: "-1.1%",
-    refundTrend: "negative",
-  },
-  month: {
-    growth: "+12%",
-    growthTrend: "positive",
-    averageTicket: "$4.520",
-    averageTicketTrend: -5.23,
-    frequency: "+3.8%",
-    frequencyTrend: "positive",
-    refund: "-2.1%",
-    refundTrend: "negative",
-  },
-  year: {
-    growth: "+24%",
-    growthTrend: "positive",
-    averageTicket: "$4.890",
-    averageTicketTrend: 8.4,
-    frequency: "+7.2%",
-    frequencyTrend: "positive",
-    refund: "-3.8%",
-    refundTrend: "negative",
-  },
-};
+  return {
+    yDomain: [0, niceCeil],
+    yTicks: [0, step, step * 2, step * 3, niceCeil],
+  };
+}
 
 // ─── Chart config builders ────────────────────────────────────────────────────
 
-function buildMonthlyConfig(periodValue: string): ChartConfig {
-  const [year, month] = periodValue.split("-").map(Number);
-  const monthName = new Date(year, month - 1, 1).toLocaleDateString("es-AR", {
+function buildDailyConfig(periodValue: string, raw: ChartDataPoint[]): ChartConfig {
+  // Bucket by hour (0-23), fill gaps with 0
+  const byHour = new Map(raw.map((d) => [d.x, d.sales]));
+  const data: ChartDataPoint[] = Array.from({ length: 24 }, (_, i) => ({
+    x: i,
+    sales: byHour.get(i) ?? 0,
+  }));
+
+  const xAxisTicks: XAxisTick[] = [0, 6, 12, 18].map((h) => ({
+    value: h,
+    label: `${String(h).padStart(2, "0")}hs`,
+  }));
+
+  const date = new Date(`${periodValue}T12:00:00.000Z`);
+  const label = date.toLocaleDateString("es-AR", {
+    weekday: "long",
+    day: "numeric",
     month: "long",
   });
-  const capitalizedMonth =
-    monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-  const data: ChartDataPoint[] = MONTHLY_DATA.map((sales, i) => ({
-    x: i + 1,
-    sales,
-  }));
-
-  // Label at midpoint of each 7-day block
-  const xAxisTicks: XAxisTick[] = [4, 11, 18, 25].map((x, i) => ({
-    value: x,
-    label: `Semana ${i + 1}`,
-  }));
-
-  return {
-    granularity: "weekly",
-    chartTitle: `Mes de ${capitalizedMonth}`,
-    yAxisLabel: "Ventas Netas",
-    yDomain: [0, 100],
-    yTicks: [0, 20, 40, 60, 80, 100],
-    data,
-    xAxisTicks,
-    referenceLineXValues: [7.5, 14.5, 21.5],
-  };
-}
-
-function buildWeeklyConfig(): ChartConfig {
-  const DAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-  const data: ChartDataPoint[] = WEEKLY_DATA.map((sales, i) => ({
-    x: i,
-    sales,
-  }));
-  const xAxisTicks: XAxisTick[] = DAY_LABELS.map((label, i) => ({
-    value: i,
-    label,
-  }));
-
-  return {
-    granularity: "daily",
-    chartTitle: "Esta semana",
-    yAxisLabel: "Ventas Netas",
-    yDomain: [0, 100],
-    yTicks: [0, 20, 40, 60, 80, 100],
-    data,
-    xAxisTicks,
-    referenceLineXValues: [4.5], // weekend boundary
-  };
-}
-
-function buildDailyConfig(): ChartConfig {
-  const data: ChartDataPoint[] = HOURLY_DATA.map((sales, i) => ({
-    x: i * 2,
-    sales,
-  }));
-  const xAxisTicks: XAxisTick[] = [0, 6, 12, 18].map((hour) => ({
-    value: hour,
-    label: `${String(hour).padStart(2, "0")}hs`,
-  }));
 
   return {
     granularity: "hourly",
-    chartTitle: "Hoy",
-    yAxisLabel: "Ventas Netas",
-    yDomain: [0, 70],
-    yTicks: [0, 20, 40, 60],
+    chartTitle: label.charAt(0).toUpperCase() + label.slice(1),
+    yAxisLabel: "Ventas",
+    ...buildYAxis(data),
     data,
     xAxisTicks,
     referenceLineXValues: [6, 12, 18],
   };
 }
 
-function buildYearlyConfig(periodValue: string): ChartConfig {
-  const MONTH_LABELS = [
-    "Ene",
-    "Feb",
-    "Mar",
-    "Abr",
-    "May",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dic",
-  ];
-  const year = periodValue;
-  const data: ChartDataPoint[] = YEARLY_DATA.map((sales, i) => ({
+function buildWeeklyConfig(periodValue: string, raw: ChartDataPoint[]): ChartConfig {
+  const DAY_LABELS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+  const byDay = new Map(raw.map((d) => [d.x, d.sales]));
+  const data: ChartDataPoint[] = Array.from({ length: 7 }, (_, i) => ({
     x: i,
-    sales,
+    sales: byDay.get(i) ?? 0,
   }));
+
+  const xAxisTicks: XAxisTick[] = DAY_LABELS.map((label, i) => ({
+    value: i,
+    label,
+  }));
+
+  // Build label from the Monday date
+  const start = new Date(`${periodValue}T12:00:00.000Z`);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("es-AR", { day: "numeric", month: "short" });
+
+  return {
+    granularity: "daily",
+    chartTitle: `${fmt(start)} — ${fmt(end)}`,
+    yAxisLabel: "Ventas",
+    ...buildYAxis(data),
+    data,
+    xAxisTicks,
+    referenceLineXValues: [4.5],
+  };
+}
+
+function buildMonthlyConfig(periodValue: string, raw: ChartDataPoint[]): ChartConfig {
+  const [year, month] = periodValue.split("-").map(Number);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+  const byDay = new Map(raw.map((d) => [d.x, d.sales]));
+  const data: ChartDataPoint[] = Array.from({ length: daysInMonth }, (_, i) => ({
+    x: i + 1,
+    sales: byDay.get(i + 1) ?? 0,
+  }));
+
+  // Week-midpoint ticks
+  const xAxisTicks: XAxisTick[] = [4, 11, 18, 25]
+    .filter((x) => x <= daysInMonth)
+    .map((x, i) => ({ value: x, label: `Semana ${i + 1}` }));
+
+  // Use local constructor (not UTC) so toLocaleDateString sees the correct month
+  // regardless of the server's timezone offset.
+  const monthName = new Date(year, month - 1, 1).toLocaleDateString(
+    "es-AR",
+    { month: "long", year: "numeric" },
+  );
+
+  return {
+    granularity: "weekly",
+    chartTitle: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+    yAxisLabel: "Ventas",
+    ...buildYAxis(data),
+    data,
+    xAxisTicks,
+    referenceLineXValues: [7.5, 14.5, 21.5].filter((x) => x < daysInMonth),
+  };
+}
+
+function buildYearlyConfig(periodValue: string, raw: ChartDataPoint[]): ChartConfig {
+  const MONTH_LABELS = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
+  ];
+
+  const byMonth = new Map(raw.map((d) => [d.x, d.sales]));
+  const data: ChartDataPoint[] = Array.from({ length: 12 }, (_, i) => ({
+    x: i,
+    sales: byMonth.get(i) ?? 0,
+  }));
+
   const xAxisTicks: XAxisTick[] = MONTH_LABELS.map((label, i) => ({
     value: i,
     label,
@@ -200,104 +142,30 @@ function buildYearlyConfig(periodValue: string): ChartConfig {
 
   return {
     granularity: "monthly",
-    chartTitle: `Año ${year}`,
-    yAxisLabel: "Ventas Netas",
-    yDomain: [0, 6000],
-    yTicks: [0, 1500, 3000, 4500, 6000],
+    chartTitle: `Año ${periodValue}`,
+    yAxisLabel: "Ventas",
+    ...buildYAxis(data),
     data,
     xAxisTicks,
-    referenceLineXValues: [2.5, 5.5, 8.5], // quarter boundaries
+    referenceLineXValues: [2.5, 5.5, 8.5],
   };
 }
-
-// ─── Sales & Customers dummy metrics ─────────────────────────────────────────
-
-export const SALES_METRICS: Record<PeriodType, SellMetrics> = {
-  today: {
-    grossSales: "$18.450",
-    grossSalesTrend: 3.2,
-    netSales: "$15.682",
-    netSalesTrend: 3.2,
-    orders: 24,
-    ordersTrend: -1.5,
-    units: 87,
-    unitsTrend: 2.8,
-    averageTicket: "$769",
-    averageTicketTrend: 4.7,
-  },
-  week: {
-    grossSales: "$124.300",
-    grossSalesTrend: 8.1,
-    netSales: "$105.655",
-    netSalesTrend: 8.1,
-    orders: 163,
-    ordersTrend: 5.4,
-    units: 591,
-    unitsTrend: 6.2,
-    averageTicket: "$762",
-    averageTicketTrend: 2.5,
-  },
-  month: {
-    grossSales: "$487.200",
-    grossSalesTrend: 5.23,
-    netSales: "$414.120",
-    netSalesTrend: 5.23,
-    orders: 642,
-    ordersTrend: 5.23,
-    units: 2568,
-    unitsTrend: -5.23,
-    averageTicket: "$758",
-    averageTicketTrend: -5.23,
-  },
-  year: {
-    grossSales: "$5.846.400",
-    grossSalesTrend: 18.4,
-    netSales: "$4.969.440",
-    netSalesTrend: 18.4,
-    orders: 7704,
-    ordersTrend: 12.7,
-    units: 30816,
-    unitsTrend: 15.3,
-    averageTicket: "$759",
-    averageTicketTrend: 5.0,
-  },
-};
-
-export const CUSTOMERS_METRICS: Record<PeriodType, CustomersMetrics> = {
-  today: { newCustomers: 3, newCustomersTrend: 50 },
-  week: { newCustomers: 18, newCustomersTrend: 12.5 },
-  month: { newCustomers: 74, newCustomersTrend: 2.5 },
-  year: { newCustomers: 612, newCustomersTrend: 24.1 },
-};
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function getChartConfig(
   periodType: PeriodType,
   periodValue: string,
+  data: ChartDataPoint[],
 ): ChartConfig {
   switch (periodType) {
     case "today":
-      return buildDailyConfig();
+      return buildDailyConfig(periodValue, data);
     case "week":
-      return buildWeeklyConfig();
+      return buildWeeklyConfig(periodValue, data);
     case "month":
-      return buildMonthlyConfig(periodValue);
+      return buildMonthlyConfig(periodValue, data);
     case "year":
-      return buildYearlyConfig(periodValue);
+      return buildYearlyConfig(periodValue, data);
   }
-}
-
-export function getPerformanceMetrics(
-  periodType: PeriodType,
-): PerformanceMetrics {
-  return PERFORMANCE_METRICS[periodType];
-}
-
-export function getSellMetrics(periodType: PeriodType): SellMetrics {
-  return SALES_METRICS[periodType];
-}
-
-export function getCustomersMetrics(periodType: PeriodType): CustomersMetrics {
-  return CUSTOMERS_METRICS[periodType];
 }

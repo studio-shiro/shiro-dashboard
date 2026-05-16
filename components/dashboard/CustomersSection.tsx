@@ -1,20 +1,13 @@
 "use client";
-import { usePeriodStore } from "@/store/periodStore";
 import { InsightCard } from "@/components/dashboard/InsightCard";
-import type { PeriodType, CustomersMetrics } from "@/types/dashboard";
+import type { CustomersMetrics } from "@/types/dashboard";
 
 interface CustomersSectionProps {
-  metricsRecord: Record<PeriodType, CustomersMetrics>;
+  metrics: CustomersMetrics;
   lowStockCount: number;
 }
 
-export function CustomersSection({
-  metricsRecord,
-  lowStockCount,
-}: CustomersSectionProps) {
-  const { periodType } = usePeriodStore();
-  const m = metricsRecord[periodType];
-
+export function CustomersSection({ metrics: m, lowStockCount }: CustomersSectionProps) {
   const lastUpdated = new Date().toLocaleString("es-AR", {
     day: "numeric",
     month: "long",
@@ -38,9 +31,9 @@ export function CustomersSection({
           label="Nuevos Clientes"
           value={String(m.newCustomers)}
           unit="clientes"
-          trend={m.newCustomersTrend}
+          trend={m.newCustomersTrend ?? undefined}
           trendLabel={
-            m.newCustomersTrend !== undefined
+            m.newCustomersTrend !== null
               ? `${Math.abs(m.newCustomersTrend).toFixed(1)}%`
               : undefined
           }

@@ -7,6 +7,7 @@ export const productSchema = z.object({
   category_id: z.string().uuid().optional(),
   brand_id: z.string().uuid().optional(),
   active: z.coerce.boolean().default(true),
+  tracks_batches: z.coerce.boolean().default(false),
 });
 
 export const updateProductSchema = productSchema.partial().extend({

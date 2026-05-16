@@ -11,18 +11,43 @@ export async function createSaleAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const total = parsed.data.quantity * parsed.data.unit_price;
+  const { batch_id, ...saleData } = parsed.data;
+  const total = saleData.quantity * saleData.unit_price;
 
-  // Decrement stock and insert sale atomically via RPC
+  // Decrement aggregate stock
   const { error: stockError } = await supabase.rpc("decrement_stock", {
-    p_product_id: parsed.data.product_id,
-    p_quantity: parsed.data.quantity,
+    p_product_id: saleData.product_id,
+    p_quantity: saleData.quantity,
     p_business_id: user.user_metadata.business_id,
   });
   if (stockError) return { error: stockError.message };
 
+  // If this sale is tied to a specific batch, decrement its quantity too
+  if (batch_id) {
+    const { data: batch, error: fetchErr } = await supabase
+      .from("product_batches")
+      .select("quantity")
+      .eq("id", batch_id)
+      .eq("business_id", user.user_metadata.business_id)
+      .single();
+
+    if (fetchErr || !batch) return { error: "Batch not found" };
+
+    const newQty = (batch.quantity as number) - saleData.quantity;
+    if (newQty < 0) return { error: "Insufficient batch quantity" };
+
+    const { error: batchUpdateError } = await supabase
+      .from("product_batches")
+      .update({ quantity: newQty })
+      .eq("id", batch_id)
+      .eq("business_id", user.user_metadata.business_id);
+
+    if (batchUpdateError) return { error: batchUpdateError.message };
+  }
+
   const { error } = await supabase.from("sales").insert({
-    ...parsed.data,
+    ...saleData,
+    batch_id: batch_id ?? null,
     total,
     business_id: user.user_metadata.business_id,
   });
@@ -39,6 +64,16 @@ export async function deleteSaleAction(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
+  // Fetch before deleting so we can restore stock
+  const { data: sale, error: fetchErr } = await supabase
+    .from("sales")
+    .select("product_id, quantity, batch_id")
+    .eq("id", id)
+    .eq("business_id", user.user_metadata.business_id)
+    .single();
+
+  if (fetchErr || !sale) return { error: "Sale not found" };
+
   const { error } = await supabase
     .from("sales")
     .delete()
@@ -46,7 +81,34 @@ export async function deleteSaleAction(id: string) {
     .eq("business_id", user.user_metadata.business_id);
   if (error) return { error: error.message };
 
+  // Restore aggregate stock
+  const { error: stockError } = await supabase.rpc("increment_stock", {
+    p_product_id: sale.product_id,
+    p_quantity: sale.quantity,
+    p_business_id: user.user_metadata.business_id,
+  });
+  if (stockError) return { error: stockError.message };
+
+  // Restore batch quantity if the sale was tied to one
+  if (sale.batch_id) {
+    const { data: batch, error: batchFetchErr } = await supabase
+      .from("product_batches")
+      .select("quantity")
+      .eq("id", sale.batch_id)
+      .eq("business_id", user.user_metadata.business_id)
+      .single();
+
+    if (!batchFetchErr && batch) {
+      await supabase
+        .from("product_batches")
+        .update({ quantity: (batch.quantity as number) + (sale.quantity as number) })
+        .eq("id", sale.batch_id)
+        .eq("business_id", user.user_metadata.business_id);
+    }
+  }
+
   revalidatePath("/sales");
+  revalidatePath("/stock");
   revalidatePath("/dashboard");
   return { success: true };
 }
