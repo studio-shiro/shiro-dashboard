@@ -27,7 +27,9 @@
       "Bash(Get-ChildItem *)",
       "PowerShell(New-Item *)",
       "Bash(cd D:\\\\Usuario\\\\SSI\\\\Escritorio\\\\shiro-dashboard *)",
-      "Bash(yarn build *)"
+      "Bash(yarn build *)",
+      "Bash(Select-Object FullName)",
+      "PowerShell(Get-Content D:\\\\Usuario\\\\SSI\\\\Escritorio\\\\shiro-dashboard\\\\.env.local | Select-String \"SUPABASE\" | ForEach-Object { \\($_ -split \"=\"\\)[0] })"
     ]
   }
 }
