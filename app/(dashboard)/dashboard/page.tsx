@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+﻿import { Suspense } from "react";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
 import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
@@ -82,8 +82,21 @@ export default async function DashboardPage({
       range.prevStartDate,
       range.prevEndDate,
     ),
-    fetchChartData(supabase, businessId, range.startDate, range.endDate, periodType),
-    fetchPurchaseFrequency(supabase, businessId, range.startDate, range.endDate, range.prevStartDate, range.prevEndDate),
+    fetchChartData(
+      supabase,
+      businessId,
+      range.startDate,
+      range.endDate,
+      periodType,
+    ),
+    fetchPurchaseFrequency(
+      supabase,
+      businessId,
+      range.startDate,
+      range.endDate,
+      range.prevStartDate,
+      range.prevEndDate,
+    ),
     fetchStockAlerts(supabase, businessId),
     fetchDormantProducts(supabase, businessId),
     fetchTopProducts(supabase, businessId, range.startDate),
@@ -92,8 +105,20 @@ export default async function DashboardPage({
       .select("id", { count: "exact", head: true })
       .eq("business_id", businessId)
       .filter("quantity", "lte", "alert_threshold"),
-    fetchChartData(supabase, businessId, leftRange.startDate, leftRange.endDate, periodType),
-    fetchChartData(supabase, businessId, rightRange.startDate, rightRange.endDate, periodType),
+    fetchChartData(
+      supabase,
+      businessId,
+      leftRange.startDate,
+      leftRange.endDate,
+      periodType,
+    ),
+    fetchChartData(
+      supabase,
+      businessId,
+      rightRange.startDate,
+      rightRange.endDate,
+      periodType,
+    ),
     fetchSalesMetrics(
       supabase,
       businessId,
@@ -110,8 +135,22 @@ export default async function DashboardPage({
       rightRange.prevStartDate,
       rightRange.prevEndDate,
     ),
-    fetchPurchaseFrequency(supabase, businessId, leftRange.startDate, leftRange.endDate, leftRange.prevStartDate, leftRange.prevEndDate),
-    fetchPurchaseFrequency(supabase, businessId, rightRange.startDate, rightRange.endDate, rightRange.prevStartDate, rightRange.prevEndDate),
+    fetchPurchaseFrequency(
+      supabase,
+      businessId,
+      leftRange.startDate,
+      leftRange.endDate,
+      leftRange.prevStartDate,
+      leftRange.prevEndDate,
+    ),
+    fetchPurchaseFrequency(
+      supabase,
+      businessId,
+      rightRange.startDate,
+      rightRange.endDate,
+      rightRange.prevStartDate,
+      rightRange.prevEndDate,
+    ),
   ]);
 
   const chartConfig = getChartConfig(periodType, periodValue, chartData);
@@ -152,7 +191,7 @@ export default async function DashboardPage({
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-9">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
@@ -173,32 +212,37 @@ export default async function DashboardPage({
         </Suspense>
       </div>
 
-      <BalanceCard
-        title="Ventas del Período"
-        subtitle="Total de ventas brutas en el período seleccionado."
-        lastUpdated={`Última actualización el ${lastUpdated}`}
-        value={formatCurrency(salesMetrics.grossSales)}
-        trend={salesMetrics.grossSalesTrend ?? undefined}
-        trendLabel={
-          salesMetrics.grossSalesTrend !== null
-            ? `${Math.abs(salesMetrics.grossSalesTrend).toFixed(1)}%`
-            : undefined
-        }
-      />
+      <div className="grid grid-cols-2">
+        <BalanceCard
+          title="Ventas del Período"
+          subtitle="Total de ventas brutas en el período seleccionado."
+          lastUpdated={`Última actualización el ${lastUpdated}`}
+          value={formatCurrency(salesMetrics.grossSales)}
+          trend={salesMetrics.grossSalesTrend ?? undefined}
+          trendLabel={
+            salesMetrics.grossSalesTrend !== null
+              ? `${Math.abs(salesMetrics.grossSalesTrend).toFixed(1)}%`
+              : undefined
+          }
+        />
+      </div>
 
       <SellSection metrics={salesMetrics} />
 
-      <CustomersSection
+      {/* <CustomersSection
         metrics={customersMetrics}
         lowStockCount={lowStockResult.count ?? 0}
-      />
+      /> */}
 
       <div className="grid grid-cols-2 gap-6">
         <StockAlertChart data={stockAlerts} />
         <TopProductsChart data={topProducts} />
       </div>
 
-      <PerformanceSection metrics={performanceMetrics} chartConfig={chartConfig} />
+      <PerformanceSection
+        metrics={performanceMetrics}
+        chartConfig={chartConfig}
+      />
 
       <DormantProductsTable data={dormantProducts} />
 

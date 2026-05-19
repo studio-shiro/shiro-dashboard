@@ -76,7 +76,9 @@ export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
   }
 }
 
-export function getDefaultPeriodValues(periodType: PeriodType): [string, string] {
+export function getDefaultPeriodValues(
+  periodType: PeriodType,
+): [string, string] {
   const now = new Date();
 
   switch (periodType) {
@@ -103,7 +105,10 @@ export function getDefaultPeriodValues(periodType: PeriodType): [string, string]
     case "today": {
       const yesterday = new Date(now);
       yesterday.setDate(now.getDate() - 1);
-      return [now.toISOString().slice(0, 10), yesterday.toISOString().slice(0, 10)];
+      return [
+        now.toISOString().slice(0, 10),
+        yesterday.toISOString().slice(0, 10),
+      ];
     }
 
     case "year": {
