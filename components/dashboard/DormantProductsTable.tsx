@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { LastUpdated } from "@/components/shared/LastUpdated";
 import {
   useReactTable,
   getCoreRowModel,
@@ -148,13 +149,6 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
   const totalPages = table.getPageCount();
   const pageRange = buildPageRange(currentPage, totalPages);
 
-  const lastUpdated = new Date().toLocaleString("es-AR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
   return (
     <div className="flex flex-col gap-3">
@@ -164,7 +158,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
           Productos Sin Movimiento
         </h2>
         <p className="font-body text-xs leading-4 text-text-400">
-          Última actualización el {lastUpdated}
+          Última actualización el <LastUpdated />
         </p>
       </div>
 

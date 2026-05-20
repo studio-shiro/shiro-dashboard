@@ -1,6 +1,7 @@
 "use client";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import type { SellMetrics } from "@/types/dashboard";
+import { LastUpdated } from "@/components/shared/LastUpdated";
 
 function formatCurrency(n: number): string {
   return `$${Math.round(n).toLocaleString("es-AR")}`;
@@ -16,13 +17,6 @@ interface SellSectionProps {
 }
 
 export function SellSection({ metrics: m }: SellSectionProps) {
-  const lastUpdated = new Date().toLocaleString("es-AR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
   return (
     <div className="flex flex-col gap-3">
@@ -31,7 +25,7 @@ export function SellSection({ metrics: m }: SellSectionProps) {
           Ventas
         </h2>
         <p className="font-body text-xs leading-4 text-text-400">
-          Última actualización el {lastUpdated}
+          Última actualización el <LastUpdated />
         </p>
       </div>
       <div className="flex gap-3">
