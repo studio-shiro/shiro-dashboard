@@ -27,6 +27,7 @@ export default async function SuperadminLayout({
               width={120}
               height={30}
               alt="Shiro Studio"
+              className="w-auto h-auto"
             />
             <span className="rounded-md bg-accent px-2 py-0.5 font-body text-xs font-medium text-white">
               Admin

@@ -1,9 +1,37 @@
 "use client";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { loginAction } from "@/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    // Supabase falls back to sending auth tokens as a URL hash fragment when
+    // the redirectTo URL is not in the project's allowed redirect list.
+    // We intercept that here so the user doesn't hit a dead end.
+    const hash = window.location.hash;
+    if (!hash.includes("access_token")) return;
+
+    const params = new URLSearchParams(hash.slice(1));
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+    const type = params.get("type");
+    if (!accessToken || !refreshToken) return;
+
+    const supabase = createClient();
+    supabase.auth
+      .setSession({ access_token: accessToken, refresh_token: refreshToken })
+      .then(({ error }) => {
+        if (error) return;
+        // invite/recovery flows need a new password; anything else goes to dashboard.
+        window.location.replace(
+          type === "invite" || type === "recovery"
+            ? "/set-password"
+            : "/dashboard",
+        );
+      });
+  }, []);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

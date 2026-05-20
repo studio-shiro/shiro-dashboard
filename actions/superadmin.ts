@@ -3,12 +3,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createBusinessSchema } from "@/lib/validations/superadmin";
+import { sendInviteEmail } from "@/lib/email";
 
 export async function createBusinessWithOwnerAction(formData: FormData) {
   const parsed = createBusinessSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
 
-  // Auth check — regular client is enough to verify identity and role.
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,23 +31,43 @@ export async function createBusinessWithOwnerAction(formData: FormData) {
   if (bizError || !business)
     return { error: bizError?.message ?? "Error al crear el negocio" };
 
-  // 2. Invite the owner — the INSERT trigger on auth.users will auto-create
-  //    the business_members row with status 'pending'.
-  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-    parsed.data.owner_email,
-    {
-      data: {
-        business_id: business.id,
-        role: "owner",
-        full_name: parsed.data.owner_name,
+  // 2. Generate the invite link without sending Supabase's default email.
+  //    This creates the user in auth.users and returns the action link.
+  //    The handle_new_user trigger fires here and creates the business_members row.
+  const { data: linkData, error: linkError } =
+    await admin.auth.admin.generateLink({
+      type: "invite",
+      email: parsed.data.owner_email,
+      options: {
+        data: {
+          business_id: business.id,
+          role: "owner",
+          full_name: parsed.data.owner_name,
+        },
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/set-password`,
       },
-    },
-  );
+    });
 
-  if (inviteError) {
-    // Roll back the business so we don't leave orphaned rows.
+  if (linkError || !linkData.properties) {
     await admin.from("businesses").delete().eq("id", business.id);
-    return { error: inviteError.message };
+    return { error: linkError?.message ?? "Error al generar el enlace de invitación" };
+  }
+
+  // 3. Send our branded invite email via Resend.
+  const { error: emailError } = await sendInviteEmail({
+    recipientName: parsed.data.owner_name,
+    recipientEmail: parsed.data.owner_email,
+    businessName: parsed.data.business_name,
+    actionLink: linkData.properties.action_link,
+  });
+
+  if (emailError) {
+    // Roll back both the business and the newly created auth user.
+    await Promise.all([
+      admin.from("businesses").delete().eq("id", business.id),
+      admin.auth.admin.deleteUser(linkData.user.id),
+    ]);
+    return { error: "Error al enviar el email de invitación" };
   }
 
   revalidatePath("/superadmin");

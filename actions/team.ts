@@ -6,6 +6,7 @@ import {
   inviteMemberSchema,
   updateMemberRoleSchema,
 } from "@/lib/validations/team";
+import { sendInviteEmail } from "@/lib/email";
 
 const OWNER_ROLES = ["owner", "superadmin"] as const;
 
@@ -26,23 +27,34 @@ export async function inviteTeamMemberAction(formData: FormData) {
   const businessId = user.user_metadata?.business_id as string;
   const admin = createAdminClient();
 
-  // Creates the user in auth.users immediately and sends the invite email.
-  // The metadata is embedded in the JWT when they accept and log in.
-  const { data: invited, error: inviteError } =
-    await admin.auth.admin.inviteUserByEmail(parsed.data.email, {
-      data: {
-        business_id: businessId,
-        role: parsed.data.role,
-        full_name: parsed.data.full_name,
+  // Fetch business name for the invite email.
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("name")
+    .eq("id", businessId)
+    .single();
+
+  // Generate invite link without sending Supabase's default email.
+  const { data: linkData, error: linkError } =
+    await admin.auth.admin.generateLink({
+      type: "invite",
+      email: parsed.data.email,
+      options: {
+        data: {
+          business_id: businessId,
+          role: parsed.data.role,
+          full_name: parsed.data.full_name,
+        },
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/set-password`,
       },
     });
-  if (inviteError) return { error: inviteError.message };
+  if (linkError || !linkData.properties) return { error: linkError?.message ?? "Error al generar el enlace" };
 
   // Upsert instead of insert: the INSERT trigger on auth.users may have
   // already created the row. ignoreDuplicates avoids a conflict error.
   const { error: dbError } = await supabase.from("business_members").upsert(
     {
-      user_id: invited.user.id,
+      user_id: linkData.user.id,
       business_id: businessId,
       email: parsed.data.email,
       full_name: parsed.data.full_name,
@@ -52,6 +64,14 @@ export async function inviteTeamMemberAction(formData: FormData) {
     { onConflict: "business_id,user_id", ignoreDuplicates: true },
   );
   if (dbError) return { error: dbError.message };
+
+  const { error: emailError } = await sendInviteEmail({
+    recipientName: parsed.data.full_name,
+    recipientEmail: parsed.data.email,
+    businessName: business?.name ?? "tu negocio",
+    actionLink: linkData.properties.action_link,
+  });
+  if (emailError) return { error: "Error al enviar el email de invitación" };
 
   revalidatePath("/settings");
   return { success: true };
