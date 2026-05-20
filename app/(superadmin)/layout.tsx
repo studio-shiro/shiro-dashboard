@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logoutAction } from "@/actions/auth";
+import Image from "next/image";
+import Button from "@/components/shared/Button";
 
 export default async function SuperadminLayout({
   children,
@@ -20,9 +22,12 @@ export default async function SuperadminLayout({
       <header className="border-b border-border-200 bg-background-400">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
-            <span className="font-display text-lg font-semibold text-text-500">
-              Shiro
-            </span>
+            <Image
+              src="/logo-shiro-studio.svg"
+              width={120}
+              height={30}
+              alt="Shiro Studio"
+            />
             <span className="rounded-md bg-accent px-2 py-0.5 font-body text-xs font-medium text-white">
               Admin
             </span>
@@ -32,12 +37,9 @@ export default async function SuperadminLayout({
               {user.email}
             </span>
             <form action={logoutAction}>
-              <button
-                type="submit"
-                className="font-body text-xs text-text-400 transition-colors hover:text-text-500"
-              >
+              <Button type="submit" size="xs">
                 Cerrar sesión
-              </button>
+              </Button>
             </form>
           </div>
         </div>

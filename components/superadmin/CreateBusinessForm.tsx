@@ -2,6 +2,7 @@
 import { useState, useTransition } from "react";
 import { Plus, X } from "lucide-react";
 import { createBusinessWithOwnerAction } from "@/actions/superadmin";
+import Button from "../shared/Button";
 
 type FieldErrors = {
   business_name?: string[];
@@ -36,9 +37,7 @@ export default function CreateBusinessForm() {
           setFieldErrors(result.error as FieldErrors);
         }
       } else {
-        setSuccess(
-          `Negocio creado. Invitación enviada a ${ownerEmail}.`,
-        );
+        setSuccess(`Negocio creado. Invitación enviada a ${ownerEmail}.`);
         setShowForm(false);
         (e.target as HTMLFormElement).reset();
       }
@@ -54,17 +53,15 @@ export default function CreateBusinessForm() {
       )}
 
       {!showForm ? (
-        <button
-          type="button"
+        <Button
+          icon={Plus}
           onClick={() => {
             setShowForm(true);
             setSuccess(null);
           }}
-          className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2.5 font-body text-sm font-medium text-white transition-colors hover:bg-accent-hover"
         >
-          <Plus className="size-4" />
           Nuevo negocio
-        </button>
+        </Button>
       ) : (
         <div className="rounded-xl border border-border-200 bg-background-400">
           <div className="flex items-center justify-between border-b border-border-200 px-6 py-4">
@@ -172,13 +169,10 @@ export default function CreateBusinessForm() {
                 Se enviará una invitación al email del dueño para que configure
                 su contraseña.
               </p>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="rounded-lg bg-accent px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-              >
+
+              <Button type="submit" disabled={isPending}>
                 {isPending ? "Creando..." : "Crear y enviar invitación"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

@@ -5,7 +5,6 @@ import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
 import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
 import { PerformanceSection } from "@/components/dashboard/PerformanceSection";
 import { SellSection } from "@/components/dashboard/SellSection";
-import { CustomersSection } from "@/components/dashboard/CustomersSection";
 import { DormantProductsTable } from "@/components/dashboard/DormantProductsTable";
 import { PeriodComparisonSection } from "@/components/dashboard/PeriodComparisonSection";
 import { createClient } from "@/lib/supabase/server";
@@ -228,11 +227,6 @@ export default async function DashboardPage({
       </div>
 
       <SellSection metrics={salesMetrics} />
-
-      {/* <CustomersSection
-        metrics={customersMetrics}
-        lowStockCount={lowStockResult.count ?? 0}
-      /> */}
 
       <div className="grid grid-cols-2 gap-6">
         <StockAlertChart data={stockAlerts} />

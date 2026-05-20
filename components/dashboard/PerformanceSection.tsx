@@ -106,7 +106,11 @@ export function PerformanceSection({
         />
         <InsightCard
           label="Frecuencia de Compra"
-          value={metrics.purchaseFrequency !== null ? formatPct(metrics.purchaseFrequency) : "--"}
+          value={
+            metrics.purchaseFrequency !== null
+              ? formatPct(metrics.purchaseFrequency)
+              : "--"
+          }
           valueTrend={
             metrics.purchaseFrequency !== null
               ? metrics.purchaseFrequency >= 0
