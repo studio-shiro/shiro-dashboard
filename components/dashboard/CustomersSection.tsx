@@ -1,6 +1,7 @@
 "use client";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import type { CustomersMetrics } from "@/types/dashboard";
+import { LastUpdated } from "@/components/shared/LastUpdated";
 
 interface CustomersSectionProps {
   metrics: CustomersMetrics;
@@ -8,13 +9,6 @@ interface CustomersSectionProps {
 }
 
 export function CustomersSection({ metrics: m, lowStockCount }: CustomersSectionProps) {
-  const lastUpdated = new Date().toLocaleString("es-AR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
   return (
     <div className="flex flex-col gap-3">
@@ -23,7 +17,7 @@ export function CustomersSection({ metrics: m, lowStockCount }: CustomersSection
           Clientes
         </h2>
         <p className="font-body text-xs leading-4 text-text-400">
-          Última actualización el {lastUpdated}
+          Última actualización el <LastUpdated />
         </p>
       </div>
       <div className="flex gap-3">
