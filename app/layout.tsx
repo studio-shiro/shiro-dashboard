@@ -2,13 +2,24 @@ import type { Metadata } from "next";
 import { Rokkitt, Montserrat } from "next/font/google";
 import "./globals.css";
 
-const rokkitt = Rokkitt({
+// const rokkitt = Rokkitt({
+//   subsets: ["latin"],
+//   variable: "--font-display",
+//   display: "swap",
+// });
+
+// const montserrat = Montserrat({
+//   subsets: ["latin"],
+//   variable: "--font-body",
+//   display: "swap",
+// });
+
+const displayFont = Montserrat({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-body",
   display: "swap",
 });
-
-const montserrat = Montserrat({
+const bodyFont = Montserrat({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
@@ -27,7 +38,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${rokkitt.variable} ${montserrat.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-[var(--font-body)]">
         {children}

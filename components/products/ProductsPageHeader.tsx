@@ -150,13 +150,7 @@ export function ProductsPageHeader({
         {/* Agregar Producto — only when there are products */}
         {!isEmpty && (
           <Button icon={PlusIcon}>
-            <Link
-              href="/products/new"
-              // className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 font-body text-sm font-semibold text-white transition-colors hover:bg-accent-hover active:bg-accent-selected"
-            >
-              {/* <Plus className="size-4 shrink-0" /> */}
-              Agregar Producto
-            </Link>
+            <Link href="/products/new">Agregar Producto</Link>
           </Button>
         )}
       </div>

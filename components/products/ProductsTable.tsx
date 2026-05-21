@@ -24,14 +24,15 @@ import {
 } from "@/actions/products";
 import type { ProductTableRow } from "@/types/database";
 import { Pagination } from "@/components/shared/Pagination";
-import { buildColumns } from "./columns";
+
 import { BatchesSubTable } from "./BatchesSubTable";
+import { buildColumns } from "./ProductsColumns";
 
 export {
   FIXED_COLUMN_IDS,
   OPTIONAL_COLUMN_IDS,
   DEFAULT_COLUMN_VISIBILITY,
-} from "./columns";
+} from "./ProductsColumns";
 
 interface ProductsTableProps {
   products: ProductTableRow[];
@@ -236,7 +237,10 @@ export function ProductsTable({
                 <tr className="border-b border-border-100 last:border-0 hover:bg-background-300/40">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-4 py-4">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </td>
                   ))}
                 </tr>
