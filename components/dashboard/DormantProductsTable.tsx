@@ -13,10 +13,9 @@ import {
 import {
   ChevronUpIcon,
   ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import type { DormantProduct } from "@/lib/dashboard/dormantProducts";
+import { Pagination } from "@/components/shared/Pagination";
 
 const PAGE_SIZE = 5;
 
@@ -114,15 +113,6 @@ const COLUMNS = [
   }),
 ];
 
-// ─── Pagination helper ────────────────────────────────────────────────────────
-
-function buildPageRange(current: number, total: number): (number | "...")[] {
-  if (total <= 5) return Array.from({ length: total }, (_, i) => i);
-  if (current <= 2) return [0, 1, 2, "...", total - 1];
-  if (current >= total - 3) return [0, "...", total - 3, total - 2, total - 1];
-  return [0, "...", current - 1, current, current + 1, "...", total - 1];
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 interface DormantProductsTableProps {
@@ -144,11 +134,6 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
       pagination: { pageSize: PAGE_SIZE },
     },
   });
-
-  const currentPage = table.getState().pagination.pageIndex;
-  const totalPages = table.getPageCount();
-  const pageRange = buildPageRange(currentPage, totalPages);
-
 
   return (
     <div className="flex flex-col gap-3">
@@ -227,51 +212,17 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
           </table>
         </div>
 
-        {/* Pagination — center-aligned */}
-        <div className="flex items-center justify-center gap-0.5 border-t border-border-200 px-5 py-3">
-          <button
-            type="button"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="flex size-8 items-center justify-center rounded-lg text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Página anterior"
-          >
-            <ChevronLeftIcon className="size-4" />
-          </button>
-
-          {pageRange.map((page, i) =>
-            page === "..." ? (
-              <span
-                key={`ellipsis-${i}`}
-                className="flex size-8 items-center justify-center font-body text-sm text-text-300"
-              >
-                ···
-              </span>
-            ) : (
-              <button
-                key={page}
-                type="button"
-                onClick={() => table.setPageIndex(page as number)}
-                className={`flex size-8 items-center justify-center rounded-lg font-body text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-[rgba(232,73,17,0.12)] text-accent"
-                    : "text-text-400 hover:bg-background-300 hover:text-text-500"
-                }`}
-              >
-                {(page as number) + 1}
-              </button>
-            ),
-          )}
-
-          <button
-            type="button"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="flex size-8 items-center justify-center rounded-lg text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Página siguiente"
-          >
-            <ChevronRightIcon className="size-4" />
-          </button>
+        {/* Pagination */}
+        <div className="border-t border-border-200">
+          <Pagination
+            pageIndex={table.getState().pagination.pageIndex}
+            pageCount={Math.max(1, table.getPageCount())}
+            canPrevious={table.getCanPreviousPage()}
+            canNext={table.getCanNextPage()}
+            onPrevious={() => table.previousPage()}
+            onNext={() => table.nextPage()}
+            onGoTo={(p) => table.setPageIndex(p)}
+          />
         </div>
       </div>
     </div>

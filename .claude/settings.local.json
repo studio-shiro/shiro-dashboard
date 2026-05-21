@@ -30,7 +30,8 @@
       "Bash(yarn build *)",
       "Bash(Select-Object FullName)",
       "PowerShell(Get-Content D:\\\\Usuario\\\\SSI\\\\Escritorio\\\\shiro-dashboard\\\\.env.local | Select-String \"SUPABASE\" | ForEach-Object { \\($_ -split \"=\"\\)[0] })",
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "mcp__claude_ai_Figma__get_metadata"
     ]
   }
 }

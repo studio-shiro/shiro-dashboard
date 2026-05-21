@@ -7,7 +7,7 @@ export const customerSchema = z.object({
 });
 
 export const updateCustomerSchema = customerSchema.partial().extend({
-  id: z.string().uuid(),
+  id: z.guid(),
 });
 
 export type CustomerInput = z.infer<typeof customerSchema>;
