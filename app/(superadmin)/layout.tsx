@@ -32,12 +32,12 @@ export default async function SuperadminLayout({
                 className="w-auto h-auto"
               />
             </Link>
-            <span className="rounded-md bg-accent px-2 py-0.5 font-body text-xs font-medium text-white">
+            <span className="rounded-md bg-accent px-2 py-0.5 body-sm-medium text-white">
               Admin
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="font-body text-xs text-text-400">
+            <span className="body-sm-regular text-text-400">
               {user.email}
             </span>
             <form action={logoutAction}>

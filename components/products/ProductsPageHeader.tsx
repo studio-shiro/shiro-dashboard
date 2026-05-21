@@ -64,14 +64,12 @@ export function ProductsPageHeader({
       {/* Left — title + badge + last updated */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-[28px] font-bold leading-9 text-text-500">
-            Productos
-          </h1>
-          <span className="rounded-full border border-border-100 px-2.5 py-0.5 font-body text-xs font-medium text-text-400">
+          <h1 className="heading-2xl text-text-500">Productos</h1>
+          <span className="rounded-full border border-border-100 px-2.5 py-0.5 text-text-400 body-sm-regular">
             {productCount} {productCount === 1 ? "Producto" : "Productos"}
           </span>
         </div>
-        <p className="font-body text-xs text-text-400">
+        <p className="body-sm-regular text-text-400">
           Última actualización el <LastUpdated />
         </p>
       </div>
@@ -88,7 +86,7 @@ export function ProductsPageHeader({
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Buscar por nombre, SKU o precio…"
-              className="w-52 bg-transparent font-body text-sm text-text-500 outline-none placeholder:text-text-400"
+              className="w-52 bg-transparent body-md-regular text-text-500 outline-none placeholder:text-text-400"
             />
             <button
               type="button"
@@ -130,7 +128,7 @@ export function ProductsPageHeader({
             onClick={() => setIsEditColumnsOpen((v) => !v)}
             className={cn(
               iconButtonClass,
-              "w-auto px-3 font-body text-sm font-medium text-text-500",
+              "w-auto px-3 body-md-medium text-text-500",
               isEditColumnsOpen && "bg-background-300",
             )}
           >

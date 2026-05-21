@@ -47,7 +47,7 @@ export function BatchesSubTable({ batches }: BatchesSubTableProps) {
             {HEADERS.map((h) => (
               <th
                 key={h}
-                className="px-3 py-2.5 text-left font-body text-xs font-semibold text-text-400"
+                className="px-3 py-2.5 text-left body-sm-semibold text-text-400"
               >
                 {h}
               </th>
@@ -68,22 +68,22 @@ export function BatchesSubTable({ batches }: BatchesSubTableProps) {
                   isExpired && "bg-danger-300/30",
                 )}
               >
-                <td className="px-3 py-3 font-body text-sm text-text-500">
+                <td className="px-3 py-3 body-md-regular text-text-500">
                   {batch.lot_number ?? "—"}
                 </td>
-                <td className="px-3 py-3 font-body text-sm text-text-400">—</td>
-                <td className="px-3 py-3 font-body text-sm text-text-500">
+                <td className="px-3 py-3 body-md-regular text-text-400">—</td>
+                <td className="px-3 py-3 body-md-regular text-text-500">
                   {formatDate(batch.received_at)}
                 </td>
-                <td className="px-3 py-3 font-body text-sm text-text-500">
+                <td className="px-3 py-3 body-md-regular text-text-500">
                   {formatDate(batch.expiration_date)}
                 </td>
-                <td className="px-3 py-3 font-body text-sm text-text-500">
+                <td className="px-3 py-3 body-md-regular text-text-500">
                   {batch.quantity}
                 </td>
                 <td className="px-3 py-3">
                   {days === null ? (
-                    <span className="font-body text-sm text-text-400">—</span>
+                    <span className="body-md-regular text-text-400">—</span>
                   ) : isExpired ? (
                     <Tag variant="danger">Vencido</Tag>
                   ) : isExpiringSoon ? (

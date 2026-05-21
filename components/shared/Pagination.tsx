@@ -30,7 +30,7 @@ export function Pagination({
   onGoTo,
 }: PaginationProps) {
   const btnBase =
-    "flex size-8 items-center justify-center rounded-md font-body text-sm transition-colors";
+    "flex size-8 items-center justify-center rounded-md body-md-regular transition-colors";
   const btnInactive = "text-text-400 hover:bg-background-300";
   const btnDisabled = "text-text-300 cursor-not-allowed opacity-40";
 
@@ -52,7 +52,7 @@ export function Pagination({
         page === "..." ? (
           <span
             key={`ellipsis-${i}`}
-            className="flex size-8 items-center justify-center font-body text-sm text-text-400"
+            className="flex size-8 items-center justify-center body-md-regular text-text-400"
           >
             …
           </span>

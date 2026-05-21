@@ -40,7 +40,7 @@ export function PeriodFilter() {
     <div className="flex shrink-0 items-center gap-3">
       <div className="flex items-center gap-1.5">
         <FunnelIcon className="size-4 text-text-400" />
-        <span className="font-body text-sm leading-5 text-text-400">
+        <span className="body-md-regular text-text-400">
           Filtrar por:
         </span>
       </div>
@@ -52,7 +52,7 @@ export function PeriodFilter() {
             key={type}
             onClick={() => handleTypeChange(type)}
             className={cn(
-              "rounded-md px-3 py-1.5 font-body text-sm transition-colors",
+              "rounded-md px-3 py-1.5 body-md-regular transition-colors",
               currentType === type
                 ? "bg-background-400 font-medium text-text-500 shadow-sm"
                 : "text-text-400 hover:text-text-500",
@@ -68,7 +68,7 @@ export function PeriodFilter() {
         <select
           value={currentValue}
           onChange={(e) => handleValueChange(e.target.value)}
-          className="h-9 appearance-none rounded-md border border-border-300 bg-background-400 pl-4 pr-9 font-body text-sm text-text-500 outline-none transition-colors hover:border-border-400 focus:border-border-400"
+          className="h-9 appearance-none rounded-md border border-border-300 bg-background-400 pl-4 pr-9 body-md-regular text-text-500 outline-none transition-colors hover:border-border-400 focus:border-border-400"
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>

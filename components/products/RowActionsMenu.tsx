@@ -39,7 +39,7 @@ export function RowActionsMenu({ productId, onDelete }: RowActionsMenuProps) {
           <Link
             href={`/products/${productId}/edit`}
             onClick={() => setOpen(false)}
-            className="flex w-full items-center px-3 py-2 font-body text-sm text-text-500 transition-colors hover:bg-background-300"
+            className="flex w-full items-center px-3 py-2 body-md-regular text-text-500 transition-colors hover:bg-background-300"
           >
             Editar
           </Link>
@@ -49,7 +49,7 @@ export function RowActionsMenu({ productId, onDelete }: RowActionsMenuProps) {
               setOpen(false);
               onDelete();
             }}
-            className="flex w-full items-center px-3 py-2 font-body text-sm text-red-600 transition-colors hover:bg-red-50"
+            className="flex w-full items-center px-3 py-2 body-md-regular text-red-600 transition-colors hover:bg-red-50"
           >
             Eliminar
           </button>

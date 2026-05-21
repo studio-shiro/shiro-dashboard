@@ -20,7 +20,7 @@ export function Tag({ variant = "neutral", children, className }: TagProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-2 py-0.5 font-body text-xs font-medium",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-2 py-0.5 body-sm-medium",
         variantStyles[variant],
         className,
       )}

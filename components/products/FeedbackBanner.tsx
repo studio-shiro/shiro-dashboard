@@ -28,7 +28,7 @@ export function FeedbackBanner({ banner, onClose }: FeedbackBannerProps) {
         <ExclamationTriangleIcon className="mt-px size-4 shrink-0 text-red-500" />
       )}
 
-      <p className="flex-1 font-body text-sm leading-snug">{banner.message}</p>
+      <p className="flex-1 body-md-regular leading-snug">{banner.message}</p>
 
       <button
         type="button"

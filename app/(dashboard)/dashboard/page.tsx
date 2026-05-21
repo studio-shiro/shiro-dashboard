@@ -1,4 +1,4 @@
-﻿import { Suspense } from "react";
+import { Suspense } from "react";
 import { BalanceCard } from "@/components/dashboard/BalanceCard";
 import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
 import { StockAlertChart } from "@/components/dashboard/StockAlertChart";
@@ -197,7 +197,7 @@ export default async function DashboardPage({
           <h1 className="font-body text-[28px] font-bold leading-none text-text-500">
             Dashboard
           </h1>
-          <p className="font-body text-sm leading-5 text-text-400">
+          <p className="body-md-regular text-text-400">
             Podés hacer seguimiento de tus ventas, saldo en cuenta y otras
             métricas clave.
           </p>

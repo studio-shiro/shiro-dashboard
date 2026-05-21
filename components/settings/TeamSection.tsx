@@ -34,7 +34,7 @@ const STATUS_STYLES: Record<
 function MemberAvatar({ name, email }: { name: string | null; email: string }) {
   const initial = (name ?? email).charAt(0).toUpperCase();
   return (
-    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background-200 font-body text-sm font-semibold text-text-500">
+    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background-200 body-md-semibold text-text-500">
       {initial}
     </div>
   );
@@ -100,10 +100,10 @@ export default function TeamSection({ members, currentUserId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-200 px-6 py-4">
         <div>
-          <h2 className="font-body text-sm font-semibold text-text-500">
+          <h2 className="body-md-semibold text-text-500">
             Equipo
           </h2>
-          <p className="mt-0.5 font-body text-xs text-text-400">
+          <p className="mt-0.5 body-sm-regular text-text-400">
             {activeMembers.length}{" "}
             {activeMembers.length === 1 ? "miembro activo" : "miembros activos"}
           </p>
@@ -114,7 +114,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
             setShowForm((v) => !v);
             setFormError(null);
           }}
-          className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 font-body text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 body-sm-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
           disabled={isPending}
         >
           {showForm ? (
@@ -132,12 +132,12 @@ export default function TeamSection({ members, currentUserId }: Props) {
           onSubmit={handleInvite}
           className="border-b border-border-200 bg-background-300 px-6 py-4"
         >
-          <p className="mb-3 font-body text-xs font-semibold text-text-500">
+          <p className="mb-3 body-sm-semibold text-text-500">
             Nueva invitación
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="flex flex-col gap-1">
-              <label className="font-body text-xs text-text-400">
+              <label className="body-sm-regular text-text-400">
                 Nombre completo
               </label>
               <input
@@ -145,25 +145,25 @@ export default function TeamSection({ members, currentUserId }: Props) {
                 type="text"
                 required
                 placeholder="Ana García"
-                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 font-body text-sm text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-body text-xs text-text-400">Email</label>
+              <label className="body-sm-regular text-text-400">Email</label>
               <input
                 name="email"
                 type="email"
                 required
                 placeholder="ana@empresa.com"
-                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 font-body text-sm text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="font-body text-xs text-text-400">Rol</label>
+              <label className="body-sm-regular text-text-400">Rol</label>
               <select
                 name="role"
                 defaultValue="operator"
-                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 font-body text-sm text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
               >
                 <option value="operator">Operador</option>
                 <option value="owner">Dueño</option>
@@ -171,7 +171,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
             </div>
           </div>
           {formError && (
-            <p className="mt-2 font-body text-xs text-danger-300">
+            <p className="mt-2 body-sm-regular text-danger-300">
               {formError}
             </p>
           )}
@@ -179,7 +179,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-lg bg-accent px-4 py-2 font-body text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+              className="rounded-lg bg-accent px-4 py-2 body-sm-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
             >
               {isPending ? "Enviando..." : "Enviar invitación"}
             </button>
@@ -190,7 +190,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
       {/* Member list */}
       <div className="divide-y divide-border-200">
         {members.length === 0 && (
-          <p className="px-6 py-8 text-center font-body text-sm text-text-300">
+          <p className="px-6 py-8 text-center body-md-regular text-text-300">
             No hay miembros en el equipo todavía.
           </p>
         )}
@@ -207,15 +207,15 @@ export default function TeamSection({ members, currentUserId }: Props) {
               <MemberAvatar name={member.full_name} email={member.email} />
 
               <div className="min-w-0 flex-1">
-                <p className="truncate font-body text-sm font-medium text-text-500">
+                <p className="truncate body-md-medium text-text-500">
                   {member.full_name ?? member.email}
                   {isCurrentUser && (
-                    <span className="ml-2 font-body text-xs text-text-300">
+                    <span className="ml-2 body-sm-regular text-text-300">
                       (tú)
                     </span>
                   )}
                 </p>
-                <p className="truncate font-body text-xs text-text-400">
+                <p className="truncate body-sm-regular text-text-400">
                   {member.email}
                 </p>
               </div>
@@ -223,7 +223,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
               {/* Role */}
               <div className="flex shrink-0 items-center gap-2">
                 {isCurrentUser || isRevoked ? (
-                  <span className="rounded-md bg-info-100 px-2 py-0.5 font-body text-xs font-medium text-info-400">
+                  <span className="rounded-md bg-info-100 px-2 py-0.5 body-sm-medium text-info-400">
                     {ROLE_LABELS[member.role]}
                   </span>
                 ) : (
@@ -233,7 +233,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
                       handleRoleChange(member.id, e.target.value)
                     }
                     disabled={isPending}
-                    className="rounded-md border border-border-200 bg-info-100 px-2 py-0.5 font-body text-xs font-medium text-info-400 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-md border border-border-200 bg-info-100 px-2 py-0.5 body-sm-medium text-info-400 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="operator">Operador</option>
                     <option value="owner">Dueño</option>
@@ -242,7 +242,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
 
                 {/* Status badge */}
                 <span
-                  className={`rounded-md px-2 py-0.5 font-body text-xs font-medium ${statusStyle.className}`}
+                  className={`rounded-md px-2 py-0.5 body-sm-medium ${statusStyle.className}`}
                 >
                   {statusStyle.label}
                 </span>
@@ -253,21 +253,21 @@ export default function TeamSection({ members, currentUserId }: Props) {
                 <div className="shrink-0">
                   {confirmRevoke === member.id ? (
                     <div className="flex items-center gap-2">
-                      <span className="font-body text-xs text-danger-300">
+                      <span className="body-sm-regular text-danger-300">
                         ¿Confirmar?
                       </span>
                       <button
                         type="button"
                         onClick={() => handleRevoke(member.id)}
                         disabled={isPending}
-                        className="rounded-md bg-danger-100 px-2.5 py-1 font-body text-xs font-medium text-danger-400 transition-colors hover:bg-danger-200 disabled:opacity-50"
+                        className="rounded-md bg-danger-100 px-2.5 py-1 body-sm-medium text-danger-400 transition-colors hover:bg-danger-200 disabled:opacity-50"
                       >
                         Sí, revocar
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmRevoke(null)}
-                        className="font-body text-xs text-text-400 hover:text-text-500"
+                        className="body-sm-regular text-text-400 hover:text-text-500"
                       >
                         Cancelar
                       </button>
@@ -277,7 +277,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
                       type="button"
                       onClick={() => handleRevoke(member.id)}
                       disabled={isPending}
-                      className="rounded-md px-2.5 py-1 font-body text-xs text-text-400 transition-colors hover:bg-danger-100 hover:text-danger-400 disabled:opacity-50"
+                      className="rounded-md px-2.5 py-1 body-sm-regular text-text-400 transition-colors hover:bg-danger-100 hover:text-danger-400 disabled:opacity-50"
                     >
                       Revocar
                     </button>

@@ -27,7 +27,7 @@ function ProductAvatar({ name }: { name: string }) {
   const color = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
   return (
     <div className="flex size-14 shrink-0 items-center justify-center rounded-lg border border-border-200 bg-background-300">
-      <span style={{ color }} className="font-body text-xl font-bold">
+      <span style={{ color }} className="heading-lg">
         {name.charAt(0).toUpperCase()}
       </span>
     </div>
@@ -50,7 +50,7 @@ const COLUMNS = [
   columnHelper.accessor("reference", {
     header: "N° Referencia",
     cell: (info) => (
-      <span className="font-body text-sm font-bold text-text-500">
+      <span className="heading-sm text-text-500">
         {info.getValue()}
       </span>
     ),
@@ -66,13 +66,13 @@ const COLUMNS = [
   columnHelper.accessor("name", {
     header: "Nombre",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">{info.getValue()}</span>
+      <span className="body-md-regular text-text-400">{info.getValue()}</span>
     ),
   }),
   columnHelper.accessor("category", {
     header: "Categoría",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">{info.getValue()}</span>
+      <span className="body-md-regular text-text-400">{info.getValue()}</span>
     ),
     size: 130,
   }),
@@ -86,7 +86,7 @@ const COLUMNS = [
         .toLocaleDateString("es-AR", { month: "long" })
         .replace(/^\w/, (c) => c.toUpperCase());
       return (
-        <span className="font-body text-sm text-text-400">
+        <span className="body-md-regular text-text-400">
           {day} de {month} {d.getFullYear()}
         </span>
       );
@@ -96,7 +96,7 @@ const COLUMNS = [
   columnHelper.accessor("stock", {
     header: "Stock",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">
+      <span className="body-md-regular text-text-400">
         {info.getValue()} unidades
       </span>
     ),
@@ -105,7 +105,7 @@ const COLUMNS = [
   columnHelper.accessor("dormantDays", {
     header: "Sin movimiento",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">
+      <span className="body-md-regular text-text-400">
         {info.getValue()} días
       </span>
     ),
@@ -142,7 +142,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
         <h2 className="font-body text-2xl font-bold leading-none text-text-500">
           Productos Sin Movimiento
         </h2>
-        <p className="font-body text-xs leading-4 text-text-400">
+        <p className="body-sm-regular text-text-400">
           Última actualización el <LastUpdated />
         </p>
       </div>
@@ -167,7 +167,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
                         <button
                           type="button"
                           onClick={header.column.getToggleSortingHandler()}
-                          className="flex cursor-pointer items-center gap-1.5 font-body text-sm font-bold leading-5 text-text-500 transition-colors hover:text-text-500"
+                          className="flex cursor-pointer items-center gap-1.5 heading-sm text-text-500 transition-colors hover:text-text-500"
                         >
                           {flexRender(
                             header.column.columnDef.header,
@@ -176,7 +176,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
                           <SortIndicator sorted={header.column.getIsSorted()} />
                         </button>
                       ) : (
-                        <span className="font-body text-sm font-bold leading-5 text-text-500">
+                        <span className="heading-sm text-text-500">
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext(),

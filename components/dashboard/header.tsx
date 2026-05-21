@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useTransition } from "react";
 // import { Bell, ChevronDown, User, LogOut } from "lucide-react";
 import {
@@ -55,7 +55,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
   return (
     <div className="flex shrink-0 items-center justify-between px-6 pb-9 pt-5">
       {/* Breadcrumb */}
-      <span className="font-body text-base leading-5 text-text-400">
+      <span className="body-lg-regular text-text-400">
         {breadcrumb}
       </span>
 
@@ -81,10 +81,10 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
               <UserIcon className="size-5 text-text-400" />
             </div>
             <div className="flex w-28 flex-col items-start overflow-hidden">
-              <span className="w-full truncate font-body text-sm font-semibold leading-5 text-text-500">
+              <span className="w-full truncate body-md-semibold text-text-500">
                 {displayName}
               </span>
-              <span className="w-full truncate font-body text-xs leading-4 text-text-400">
+              <span className="w-full truncate body-sm-regular text-text-400">
                 {role}
               </span>
             </div>
@@ -102,7 +102,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
                   type="button"
                   onClick={handleLogout}
                   disabled={pending}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 font-body text-sm text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:opacity-50"
+                  className="flex w-full items-center gap-2 px-4 py-2.5 body-md-regular text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:opacity-50"
                 >
                   <ArrowLeftStartOnRectangleIcon className="size-4" />
                   Cerrar sesión

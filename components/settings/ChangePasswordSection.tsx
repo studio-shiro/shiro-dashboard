@@ -40,10 +40,10 @@ export default function ChangePasswordSection() {
   return (
     <section className="rounded-xl border border-border-200 bg-background-400">
       <div className="border-b border-border-200 px-6 py-4">
-        <h2 className="font-body text-sm font-semibold text-text-500">
+        <h2 className="body-md-semibold text-text-500">
           Seguridad
         </h2>
-        <p className="mt-0.5 font-body text-xs text-text-400">
+        <p className="mt-0.5 body-sm-regular text-text-400">
           Cambiá tu contraseña de acceso
         </p>
       </div>
@@ -51,7 +51,7 @@ export default function ChangePasswordSection() {
       <form onSubmit={handleSubmit} className="px-6 py-5">
         <div className="max-w-sm space-y-4">
           <div className="flex flex-col gap-1">
-            <label className="font-body text-xs font-medium text-text-400">
+            <label className="body-sm-medium text-text-400">
               Contraseña actual
             </label>
             <input
@@ -59,17 +59,17 @@ export default function ChangePasswordSection() {
               type="password"
               required
               autoComplete="current-password"
-              className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+              className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
             />
             {fieldErrors.current_password?.[0] && (
-              <p className="font-body text-xs text-danger-300">
+              <p className="body-sm-regular text-danger-300">
                 {fieldErrors.current_password[0]}
               </p>
             )}
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="font-body text-xs font-medium text-text-400">
+            <label className="body-sm-medium text-text-400">
               Nueva contraseña
             </label>
             <input
@@ -77,17 +77,17 @@ export default function ChangePasswordSection() {
               type="password"
               required
               autoComplete="new-password"
-              className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+              className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
             />
             {fieldErrors.new_password?.[0] && (
-              <p className="font-body text-xs text-danger-300">
+              <p className="body-sm-regular text-danger-300">
                 {fieldErrors.new_password[0]}
               </p>
             )}
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="font-body text-xs font-medium text-text-400">
+            <label className="body-sm-medium text-text-400">
               Confirmá la nueva contraseña
             </label>
             <input
@@ -95,21 +95,21 @@ export default function ChangePasswordSection() {
               type="password"
               required
               autoComplete="new-password"
-              className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+              className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
             />
             {fieldErrors.confirm_password?.[0] && (
-              <p className="font-body text-xs text-danger-300">
+              <p className="body-sm-regular text-danger-300">
                 {fieldErrors.confirm_password[0]}
               </p>
             )}
           </div>
 
           {generalError && (
-            <p className="font-body text-xs text-danger-300">{generalError}</p>
+            <p className="body-sm-regular text-danger-300">{generalError}</p>
           )}
 
           {success && (
-            <p className="font-body text-xs text-success-400">
+            <p className="body-sm-regular text-success-400">
               Contraseña actualizada correctamente.
             </p>
           )}
@@ -117,7 +117,7 @@ export default function ChangePasswordSection() {
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-lg bg-accent px-4 py-2 font-body text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="rounded-lg bg-accent px-4 py-2 body-md-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {isPending ? "Guardando..." : "Cambiar contraseña"}
           </button>

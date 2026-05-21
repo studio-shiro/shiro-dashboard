@@ -39,7 +39,7 @@ function CustomTooltip({ active, payload }: any) {
 function CenterLabel() {
   return (
     <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-      <span className="font-body text-xs leading-4 text-text-400">Top</span>
+      <span className="body-sm-regular text-text-400">Top</span>
       <span className="font-body text-[28px] font-bold leading-none text-text-500">
         5
       </span>
@@ -96,10 +96,10 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
           Productos Destacados
         </h2>
         <div className="flex flex-col">
-          <p className="font-body text-sm leading-5 text-text-400">
+          <p className="body-md-regular text-text-400">
             Tu top 5 de lo más vendido.
           </p>
-          <p className="font-body text-xs leading-4 text-text-400">
+          <p className="body-sm-regular text-text-400">
             Última actualización el 24 de mayo de 2026 a las 10:30hs
           </p>
         </div>
@@ -150,10 +150,10 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                 className="size-3 shrink-0 rounded-full"
                 style={{ backgroundColor: product.color }}
               />
-              <span className="font-body text-sm font-bold leading-5 text-text-500">
+              <span className="heading-sm text-text-500">
                 {product.value}%
               </span>
-              <span className="font-body text-sm leading-5 text-text-400">
+              <span className="body-md-regular text-text-400">
                 {product.name}
               </span>
             </div>

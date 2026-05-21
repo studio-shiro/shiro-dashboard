@@ -164,7 +164,7 @@ export function ProductsTable({
                   <th
                     key={header.id}
                     className={cn(
-                      "px-4 py-3 text-left font-body text-xs font-medium text-text-400",
+                      "px-4 py-3 text-left body-sm-medium text-text-400",
                       canSort &&
                         "cursor-pointer select-none hover:text-text-500",
                     )}
@@ -204,19 +204,19 @@ export function ProductsTable({
             <tr>
               <td colSpan={visibleColCount} className="py-16 text-center">
                 <div className="mx-auto flex max-w-xs flex-col items-center gap-4">
-                  <p className="font-body text-base font-medium text-text-500">
+                  <p className="body-lg-medium text-text-500">
                     Comenzá a cargar tus Productos
                   </p>
                   <Link
                     href="/products/new"
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 font-body text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 body-md-semibold text-white transition-colors hover:bg-accent-hover"
                   >
                     <PlusIcon className="size-4" />
                     Agregar Producto
                   </Link>
                   <button
                     type="button"
-                    className="w-full rounded-lg border border-border-100 px-4 py-2.5 font-body text-sm text-text-500 transition-colors hover:bg-background-300"
+                    className="w-full rounded-lg border border-border-100 px-4 py-2.5 body-md-regular text-text-500 transition-colors hover:bg-background-300"
                   >
                     Importá tus Productos
                   </button>
@@ -226,7 +226,7 @@ export function ProductsTable({
           ) : isSearchEmpty ? (
             <tr>
               <td colSpan={visibleColCount} className="py-16 text-center">
-                <p className="font-body text-sm text-text-400">
+                <p className="body-md-regular text-text-400">
                   Sin Resultados
                 </p>
               </td>

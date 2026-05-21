@@ -93,7 +93,7 @@ const NavItem = ({
     <Link
       href={href}
       className={cn(
-        "relative flex h-10 w-full items-center gap-2 pl-4 pr-2.5 font-body text-base transition-colors",
+        "relative flex h-10 w-full items-center gap-2 pl-4 pr-2.5 body-lg-regular transition-colors",
         active
           ? "bg-[rgba(232,73,17,0.15)] font-semibold text-accent"
           : "font-normal text-text-400 hover:bg-[rgba(232,73,17,0.06)] hover:text-text-500",
@@ -131,7 +131,7 @@ export default function Sidebar() {
       <div className="px-3 pb-0 pt-0">
         <Link
           href="/products/new"
-          className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 font-body text-xs font-semibold text-text-100 shadow-[0px_1px_3px_0px_rgba(112,113,116,0.1),0px_1px_2px_0px_rgba(112,113,116,0.06)] transition-colors hover:bg-accent-hover active:bg-accent-selected"
+          className="flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 body-sm-semibold text-text-100 shadow-[0px_1px_3px_0px_rgba(112,113,116,0.1),0px_1px_2px_0px_rgba(112,113,116,0.06)] transition-colors hover:bg-accent-hover active:bg-accent-selected"
         >
           <Plus className="size-3.5 shrink-0" />
           Agregar Producto

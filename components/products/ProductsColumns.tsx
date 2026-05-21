@@ -68,7 +68,7 @@ export function buildColumns(
           <div className="flex items-center gap-1.5">
             <Link
               href={`/products/${row.original.id}`}
-              className="font-body text-sm font-medium text-text-500 underline underline-offset-2 transition-opacity hover:opacity-70"
+              className="body-md-medium text-text-500 underline underline-offset-2 transition-opacity hover:opacity-70"
             >
               {row.original.name}
             </Link>
@@ -129,7 +129,7 @@ export function buildColumns(
       header: "Marca",
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="font-body text-sm text-text-500">
+        <span className="body-md-regular text-text-500">
           {getValue() ?? "—"}
         </span>
       ),
@@ -140,7 +140,7 @@ export function buildColumns(
       header: "Categoría",
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="font-body text-sm text-text-500">
+        <span className="body-md-regular text-text-500">
           {getValue() ?? "—"}
         </span>
       ),
@@ -156,7 +156,7 @@ export function buildColumns(
         return (
           // justify-between
           <div className="flex items-center gap-1">
-            <span className="font-body text-sm text-text-500">{count}</span>
+            <span className="body-md-regular text-text-500">{count}</span>
             {count > 0 && (
               <button
                 type="button"
@@ -180,7 +180,7 @@ export function buildColumns(
       header: "Costo por Unidad",
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="font-body text-sm text-text-500">
+        <span className="body-md-regular text-text-500">
           {formatCurrency(getValue())}
         </span>
       ),
@@ -191,7 +191,7 @@ export function buildColumns(
       header: "Precio Final por Unidad",
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="font-body text-sm text-text-500">
+        <span className="body-md-regular text-text-500">
           {formatCurrency(getValue())}
         </span>
       ),
@@ -204,7 +204,7 @@ export function buildColumns(
       cell: ({ getValue }) => {
         const qty = getValue();
         return (
-          <span className="font-body text-sm text-text-500">{qty ?? "—"}</span>
+          <span className="body-md-regular text-text-500">{qty ?? "—"}</span>
         );
       },
     }),
