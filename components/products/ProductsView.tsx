@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import type { ProductTableRow } from "@/types/database";
+import { exportProductsToExcel } from "@/lib/exportProducts";
 import { ProductsPageHeader } from "./ProductsPageHeader";
 import { FeedbackBanner } from "./FeedbackBanner";
 import {
@@ -27,6 +28,7 @@ export function ProductsView({ products }: ProductsViewProps) {
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Load persisted column visibility from localStorage after mount
   useEffect(() => {
@@ -70,6 +72,20 @@ export function ProductsView({ products }: ProductsViewProps) {
     setBanner({ type: "error", message });
   const closeBanner = () => setBanner(null);
 
+  async function handleDownload() {
+    setIsDownloading(true);
+    try {
+      exportProductsToExcel(filteredProducts, columnVisibility);
+      showSuccessBanner("Documento descargado correctamente");
+    } catch {
+      showErrorBanner(
+        "El documento no se descargó correctamente. Vuelva a intentar nuevamente.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <ProductsPageHeader
@@ -79,14 +95,8 @@ export function ProductsView({ products }: ProductsViewProps) {
         onSearchChange={setSearchTerm}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={handleColumnVisibilityChange}
-        onDownloadSuccess={() =>
-          showSuccessBanner("Documento descargado correctamente")
-        }
-        onDownloadError={() =>
-          showErrorBanner(
-            "El documento no se descargó correctamente. Vuelva a intentar nuevamente.",
-          )
-        }
+        onDownload={handleDownload}
+        isDownloading={isDownloading}
       />
 
       {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}

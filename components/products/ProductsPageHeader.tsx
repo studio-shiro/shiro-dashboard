@@ -20,8 +20,8 @@ interface ProductsPageHeaderProps {
   onSearchChange: (term: string) => void;
   columnVisibility: Record<string, boolean>;
   onColumnVisibilityChange: (next: Record<string, boolean>) => void;
-  onDownloadSuccess: () => void;
-  onDownloadError: () => void;
+  onDownload: () => void;
+  isDownloading?: boolean;
 }
 
 export function ProductsPageHeader({
@@ -31,8 +31,8 @@ export function ProductsPageHeader({
   onSearchChange,
   columnVisibility,
   onColumnVisibilityChange,
-  onDownloadSuccess,
-  onDownloadError,
+  onDownload,
+  isDownloading = false,
 }: ProductsPageHeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isEditColumnsOpen, setIsEditColumnsOpen] = useState(false);
@@ -111,10 +111,9 @@ export function ProductsPageHeader({
         {/* Download */}
         <button
           type="button"
-          onClick={() => {
-            // TODO: implement Excel export — call onDownloadSuccess / onDownloadError
-          }}
-          className={iconButtonClass}
+          onClick={onDownload}
+          disabled={isDownloading}
+          className={cn(iconButtonClass, isDownloading && "opacity-50 cursor-not-allowed")}
           aria-label="Descargar Excel"
         >
           <ArrowDownTrayIcon className="size-4" />
