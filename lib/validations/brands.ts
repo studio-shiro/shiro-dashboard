@@ -6,7 +6,7 @@ export const brandSchema = z.object({
 });
 
 export const updateBrandSchema = brandSchema.partial().extend({
-  id: z.string().uuid(),
+  id: z.guid(),
 });
 
 export type BrandInput = z.infer<typeof brandSchema>;

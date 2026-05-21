@@ -6,7 +6,7 @@ export const categorySchema = z.object({
 });
 
 export const updateCategorySchema = categorySchema.partial().extend({
-  id: z.string().uuid(),
+  id: z.guid(),
 });
 
 export type CategoryInput = z.infer<typeof categorySchema>;

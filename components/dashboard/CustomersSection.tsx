@@ -16,7 +16,7 @@ export function CustomersSection({ metrics: m, lowStockCount }: CustomersSection
         <h2 className="font-body text-2xl font-bold leading-none text-text-500">
           Clientes
         </h2>
-        <p className="font-body text-xs leading-4 text-text-400">
+        <p className="body-sm-regular text-text-400">
           Última actualización el <LastUpdated />
         </p>
       </div>

@@ -73,10 +73,10 @@ export function PerformanceSection({
           Rendimiento Comercial
         </h2>
         <div className="flex flex-col">
-          <p className="font-body text-sm leading-5 text-text-400">
+          <p className="body-md-regular text-text-400">
             Cómo está performando el negocio en el periodo seleccionado.
           </p>
-          <p className="font-body text-xs leading-4 text-text-400">
+          <p className="body-sm-regular text-text-400">
             Última actualización el <LastUpdated />
           </p>
         </div>
@@ -117,7 +117,7 @@ export function PerformanceSection({
       </div>
 
       <div className="rounded-2xl border border-border-200 bg-background-400 pb-4 pt-5 px-4 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
-        <p className="mb-4 text-center font-body text-sm font-bold text-text-500">
+        <p className="mb-4 text-center heading-sm text-text-500">
           {config.chartTitle}
         </p>
         <ResponsiveContainer width="100%" height={280}>

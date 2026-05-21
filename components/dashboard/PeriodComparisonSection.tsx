@@ -71,7 +71,7 @@ function PeriodSelector({ options, value, onChange, disabled }: PeriodSelectorPr
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full cursor-pointer appearance-none rounded-xl border border-border-200 bg-background-400 px-4 py-2.5 font-body text-sm font-bold text-text-500 focus:outline-none disabled:opacity-50"
+        className="w-full cursor-pointer appearance-none rounded-xl border border-border-200 bg-background-400 px-4 py-2.5 heading-sm text-text-500 focus:outline-none disabled:opacity-50"
         aria-label="Seleccionar período"
       >
         {options.map((opt) => (
@@ -81,7 +81,7 @@ function PeriodSelector({ options, value, onChange, disabled }: PeriodSelectorPr
         ))}
       </select>
       <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-4">
-        <span className="font-body text-sm font-bold text-text-500">
+        <span className="heading-sm text-text-500">
           {selected?.label ?? value}
         </span>
         <ChevronDownIcon className="size-4 text-text-400" />
@@ -105,7 +105,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
 
   return (
     <div className="rounded-2xl border border-border-200 bg-background-400 pb-4 pt-5 px-4 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
-      <p className="mb-4 text-center font-body text-sm font-bold text-text-500">
+      <p className="mb-4 text-center heading-sm text-text-500">
         {config.chartTitle}
       </p>
       <ResponsiveContainer width="100%" height={220}>
@@ -294,10 +294,10 @@ export function PeriodComparisonSection({
           Comparativa de Períodos
         </h2>
         <div className="flex flex-col">
-          <p className="font-body text-sm leading-5 text-text-400">
+          <p className="body-md-regular text-text-400">
             Compará dos períodos del mismo tipo.
           </p>
-          <p className="font-body text-xs leading-4 text-text-400">
+          <p className="body-sm-regular text-text-400">
             Última actualización el <LastUpdated />
           </p>
         </div>

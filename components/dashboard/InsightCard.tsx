@@ -38,7 +38,7 @@ export function InsightCard({
     >
       {/* Header row */}
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate font-body text-sm font-semibold leading-5 text-text-400">
+        <span className="truncate body-md-semibold text-text-400">
           {label}
         </span>
 
@@ -46,7 +46,7 @@ export function InsightCard({
           <div className="flex shrink-0 items-center gap-0.5">
             <span
               className={cn(
-                "font-body text-xs font-medium leading-4",
+                "body-sm-medium",
                 isPositiveTrend ? "text-success-300" : "text-danger-300",
               )}
             >

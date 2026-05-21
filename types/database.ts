@@ -17,6 +17,7 @@ export type Product = {
   name: string;
   description: string | null;
   price: number;
+  cost_price: number | null;
   image_url: string | null;
   category_id: string | null;
   brand_id: string | null;
@@ -93,6 +94,19 @@ export type ProductWithRelations = Product & {
   category: Pick<Category, "id" | "name"> | null;
   brand: Pick<Brand, "id" | "name"> | null;
   stock: Pick<Stock, "quantity" | "alert_threshold"> | null;
+};
+
+export type BatchForTable = {
+  id: string;
+  lot_number: string | null;
+  quantity: number;
+  expiration_date: string | null;
+  received_at: string;
+};
+
+export type ProductTableRow = ProductWithRelations & {
+  batch_count: number;
+  batches: BatchForTable[];
 };
 
 export type SaleWithRelations = Sale & {

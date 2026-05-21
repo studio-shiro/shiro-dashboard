@@ -18,7 +18,7 @@ export default function BusinessList({ businesses }: Props) {
     return (
       <div className="rounded-xl border border-border-200 bg-background-400 px-6 py-12 text-center">
         <Building2 className="mx-auto mb-3 size-8 text-text-300" />
-        <p className="font-body text-sm text-text-400">
+        <p className="body-md-regular text-text-400">
           Todavía no hay negocios registrados.
         </p>
       </div>
@@ -50,10 +50,10 @@ export default function BusinessList({ businesses }: Props) {
               {/* Left: business info */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-body text-sm font-semibold text-text-500">
+                  <h3 className="body-md-semibold text-text-500">
                     {business.name}
                   </h3>
-                  <span className="rounded-md bg-background-300 px-2 py-0.5 font-body text-xs text-text-400">
+                  <span className="rounded-md bg-background-300 px-2 py-0.5 body-sm-regular text-text-400">
                     {business.currency}
                   </span>
                 </div>
@@ -61,17 +61,17 @@ export default function BusinessList({ businesses }: Props) {
                 {/* Owner */}
                 <div className="mt-1">
                   {owner ? (
-                    <p className="font-body text-xs text-text-400">
+                    <p className="body-sm-regular text-text-400">
                       <span className="text-text-300">Dueño:</span>{" "}
                       {owner.full_name ? `${owner.full_name} — ` : ""}
                       {owner.email}
                     </p>
                   ) : pendingOwner ? (
-                    <p className="font-body text-xs text-warning-400">
+                    <p className="body-sm-regular text-warning-400">
                       Invitación pendiente — {pendingOwner.email}
                     </p>
                   ) : (
-                    <p className="font-body text-xs text-danger-300">
+                    <p className="body-sm-regular text-danger-300">
                       Sin dueño asignado
                     </p>
                   )}
@@ -82,7 +82,7 @@ export default function BusinessList({ businesses }: Props) {
               <div className="flex shrink-0 items-center gap-4">
                 <div className="flex items-center gap-1.5 text-text-400">
                   <Users className="size-3.5" />
-                  <span className="font-body text-xs">
+                  <span className="body-sm-regular">
                     {activeCount} activo{activeCount !== 1 ? "s" : ""}
                     {pendingCount > 0 && (
                       <span className="ml-1 text-warning-400">
@@ -93,7 +93,7 @@ export default function BusinessList({ businesses }: Props) {
                   </span>
                 </div>
 
-                <span className="font-body text-xs text-text-300">
+                <span className="body-sm-regular text-text-300">
                   {formatDate(business.created_at)}
                 </span>
               </div>

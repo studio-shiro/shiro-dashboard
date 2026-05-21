@@ -48,7 +48,7 @@ export default function CreateBusinessForm() {
     <div className="space-y-4">
       {success && (
         <div className="rounded-lg border border-success-200 bg-success-100 px-4 py-3">
-          <p className="font-body text-sm text-success-400">{success}</p>
+          <p className="body-md-regular text-success-400">{success}</p>
         </div>
       )}
 
@@ -65,7 +65,7 @@ export default function CreateBusinessForm() {
       ) : (
         <div className="rounded-xl border border-border-200 bg-background-400">
           <div className="flex items-center justify-between border-b border-border-200 px-6 py-4">
-            <h3 className="font-body text-sm font-semibold text-text-500">
+            <h3 className="body-md-semibold text-text-500">
               Crear nuevo negocio
             </h3>
             <button
@@ -85,7 +85,7 @@ export default function CreateBusinessForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Business name */}
               <div className="flex flex-col gap-1">
-                <label className="font-body text-xs font-medium text-text-400">
+                <label className="body-sm-medium text-text-400">
                   Nombre del negocio
                 </label>
                 <input
@@ -93,10 +93,10 @@ export default function CreateBusinessForm() {
                   type="text"
                   required
                   placeholder="Almacén El Sol"
-                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
                 />
                 {fieldErrors.business_name?.[0] && (
-                  <p className="font-body text-xs text-danger-300">
+                  <p className="body-sm-regular text-danger-300">
                     {fieldErrors.business_name[0]}
                   </p>
                 )}
@@ -104,13 +104,13 @@ export default function CreateBusinessForm() {
 
               {/* Currency */}
               <div className="flex flex-col gap-1">
-                <label className="font-body text-xs font-medium text-text-400">
+                <label className="body-sm-medium text-text-400">
                   Moneda
                 </label>
                 <select
                   name="currency"
                   defaultValue="ARS"
-                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
                 >
                   <option value="ARS">ARS — Peso argentino</option>
                   <option value="USD">USD — Dólar</option>
@@ -121,7 +121,7 @@ export default function CreateBusinessForm() {
 
               {/* Owner name */}
               <div className="flex flex-col gap-1">
-                <label className="font-body text-xs font-medium text-text-400">
+                <label className="body-sm-medium text-text-400">
                   Nombre del dueño
                 </label>
                 <input
@@ -129,10 +129,10 @@ export default function CreateBusinessForm() {
                   type="text"
                   required
                   placeholder="María Rodríguez"
-                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
                 />
                 {fieldErrors.owner_name?.[0] && (
-                  <p className="font-body text-xs text-danger-300">
+                  <p className="body-sm-regular text-danger-300">
                     {fieldErrors.owner_name[0]}
                   </p>
                 )}
@@ -140,7 +140,7 @@ export default function CreateBusinessForm() {
 
               {/* Owner email */}
               <div className="flex flex-col gap-1">
-                <label className="font-body text-xs font-medium text-text-400">
+                <label className="body-sm-medium text-text-400">
                   Email del dueño
                 </label>
                 <input
@@ -148,10 +148,10 @@ export default function CreateBusinessForm() {
                   type="email"
                   required
                   placeholder="maria@negocio.com"
-                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 font-body text-sm text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
                 />
                 {fieldErrors.owner_email?.[0] && (
-                  <p className="font-body text-xs text-danger-300">
+                  <p className="body-sm-regular text-danger-300">
                     {fieldErrors.owner_email[0]}
                   </p>
                 )}
@@ -159,13 +159,13 @@ export default function CreateBusinessForm() {
             </div>
 
             {generalError && (
-              <p className="mt-3 font-body text-xs text-danger-300">
+              <p className="mt-3 body-sm-regular text-danger-300">
                 {generalError}
               </p>
             )}
 
             <div className="mt-5 flex items-center justify-between border-t border-border-200 pt-4">
-              <p className="font-body text-xs text-text-400">
+              <p className="body-sm-regular text-text-400">
                 Se enviará una invitación al email del dueño para que configure
                 su contraseña.
               </p>

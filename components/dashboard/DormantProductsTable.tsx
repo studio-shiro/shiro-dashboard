@@ -13,10 +13,9 @@ import {
 import {
   ChevronUpIcon,
   ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import type { DormantProduct } from "@/lib/dashboard/dormantProducts";
+import { Pagination } from "@/components/shared/Pagination";
 
 const PAGE_SIZE = 5;
 
@@ -28,7 +27,7 @@ function ProductAvatar({ name }: { name: string }) {
   const color = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
   return (
     <div className="flex size-14 shrink-0 items-center justify-center rounded-lg border border-border-200 bg-background-300">
-      <span style={{ color }} className="font-body text-xl font-bold">
+      <span style={{ color }} className="heading-lg">
         {name.charAt(0).toUpperCase()}
       </span>
     </div>
@@ -51,7 +50,7 @@ const COLUMNS = [
   columnHelper.accessor("reference", {
     header: "N° Referencia",
     cell: (info) => (
-      <span className="font-body text-sm font-bold text-text-500">
+      <span className="heading-sm text-text-500">
         {info.getValue()}
       </span>
     ),
@@ -67,13 +66,13 @@ const COLUMNS = [
   columnHelper.accessor("name", {
     header: "Nombre",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">{info.getValue()}</span>
+      <span className="body-md-regular text-text-400">{info.getValue()}</span>
     ),
   }),
   columnHelper.accessor("category", {
     header: "Categoría",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">{info.getValue()}</span>
+      <span className="body-md-regular text-text-400">{info.getValue()}</span>
     ),
     size: 130,
   }),
@@ -87,7 +86,7 @@ const COLUMNS = [
         .toLocaleDateString("es-AR", { month: "long" })
         .replace(/^\w/, (c) => c.toUpperCase());
       return (
-        <span className="font-body text-sm text-text-400">
+        <span className="body-md-regular text-text-400">
           {day} de {month} {d.getFullYear()}
         </span>
       );
@@ -97,7 +96,7 @@ const COLUMNS = [
   columnHelper.accessor("stock", {
     header: "Stock",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">
+      <span className="body-md-regular text-text-400">
         {info.getValue()} unidades
       </span>
     ),
@@ -106,22 +105,13 @@ const COLUMNS = [
   columnHelper.accessor("dormantDays", {
     header: "Sin movimiento",
     cell: (info) => (
-      <span className="font-body text-sm text-text-400">
+      <span className="body-md-regular text-text-400">
         {info.getValue()} días
       </span>
     ),
     size: 150,
   }),
 ];
-
-// ─── Pagination helper ────────────────────────────────────────────────────────
-
-function buildPageRange(current: number, total: number): (number | "...")[] {
-  if (total <= 5) return Array.from({ length: total }, (_, i) => i);
-  if (current <= 2) return [0, 1, 2, "...", total - 1];
-  if (current >= total - 3) return [0, "...", total - 3, total - 2, total - 1];
-  return [0, "...", current - 1, current, current + 1, "...", total - 1];
-}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -145,11 +135,6 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
     },
   });
 
-  const currentPage = table.getState().pagination.pageIndex;
-  const totalPages = table.getPageCount();
-  const pageRange = buildPageRange(currentPage, totalPages);
-
-
   return (
     <div className="flex flex-col gap-3">
       {/* Section header */}
@@ -157,7 +142,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
         <h2 className="font-body text-2xl font-bold leading-none text-text-500">
           Productos Sin Movimiento
         </h2>
-        <p className="font-body text-xs leading-4 text-text-400">
+        <p className="body-sm-regular text-text-400">
           Última actualización el <LastUpdated />
         </p>
       </div>
@@ -182,7 +167,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
                         <button
                           type="button"
                           onClick={header.column.getToggleSortingHandler()}
-                          className="flex cursor-pointer items-center gap-1.5 font-body text-sm font-bold leading-5 text-text-500 transition-colors hover:text-text-500"
+                          className="flex cursor-pointer items-center gap-1.5 heading-sm text-text-500 transition-colors hover:text-text-500"
                         >
                           {flexRender(
                             header.column.columnDef.header,
@@ -191,7 +176,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
                           <SortIndicator sorted={header.column.getIsSorted()} />
                         </button>
                       ) : (
-                        <span className="font-body text-sm font-bold leading-5 text-text-500">
+                        <span className="heading-sm text-text-500">
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext(),
@@ -227,51 +212,17 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
           </table>
         </div>
 
-        {/* Pagination — center-aligned */}
-        <div className="flex items-center justify-center gap-0.5 border-t border-border-200 px-5 py-3">
-          <button
-            type="button"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className="flex size-8 items-center justify-center rounded-lg text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Página anterior"
-          >
-            <ChevronLeftIcon className="size-4" />
-          </button>
-
-          {pageRange.map((page, i) =>
-            page === "..." ? (
-              <span
-                key={`ellipsis-${i}`}
-                className="flex size-8 items-center justify-center font-body text-sm text-text-300"
-              >
-                ···
-              </span>
-            ) : (
-              <button
-                key={page}
-                type="button"
-                onClick={() => table.setPageIndex(page as number)}
-                className={`flex size-8 items-center justify-center rounded-lg font-body text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-[rgba(232,73,17,0.12)] text-accent"
-                    : "text-text-400 hover:bg-background-300 hover:text-text-500"
-                }`}
-              >
-                {(page as number) + 1}
-              </button>
-            ),
-          )}
-
-          <button
-            type="button"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className="flex size-8 items-center justify-center rounded-lg text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Página siguiente"
-          >
-            <ChevronRightIcon className="size-4" />
-          </button>
+        {/* Pagination */}
+        <div className="border-t border-border-200">
+          <Pagination
+            pageIndex={table.getState().pagination.pageIndex}
+            pageCount={Math.max(1, table.getPageCount())}
+            canPrevious={table.getCanPreviousPage()}
+            canNext={table.getCanNextPage()}
+            onPrevious={() => table.previousPage()}
+            onNext={() => table.nextPage()}
+            onGoTo={(p) => table.setPageIndex(p)}
+          />
         </div>
       </div>
     </div>

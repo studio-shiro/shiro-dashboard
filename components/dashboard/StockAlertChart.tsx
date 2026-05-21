@@ -35,10 +35,10 @@ export function StockAlertChart({ data }: StockAlertChartProps) {
           Alerta de stock
         </h2>
         <div className="flex flex-col">
-          <p className="font-body text-sm leading-5 text-text-400">
+          <p className="body-md-regular text-text-400">
             Tus alertas más urgentes.
           </p>
-          <p className="font-body text-xs leading-4 text-text-400">
+          <p className="body-sm-regular text-text-400">
             Última actualización el 24 de mayo de 2026 a las 10:30hs
           </p>
         </div>

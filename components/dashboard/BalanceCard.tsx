@@ -33,7 +33,7 @@ export function BalanceCard({
         </h2>
         <div className="flex flex-col">
           {subtitle && (
-            <p className="font-body text-sm leading-5 text-text-400">
+            <p className="body-md-regular text-text-400">
               {subtitle}
             </p>
           )}
@@ -65,7 +65,7 @@ export function BalanceCard({
             </div>
             <span
               className={cn(
-                "font-body text-sm font-medium leading-5",
+                "body-md-medium",
                 isPositive ? "text-success-300" : "text-danger-300",
               )}
             >

@@ -32,7 +32,7 @@ export default async function SuperadminPage() {
         <h1 className="font-display text-2xl font-semibold text-text-500">
           Panel de administración
         </h1>
-        <p className="mt-1 font-body text-sm text-text-400">
+        <p className="mt-1 body-md-regular text-text-400">
           Gestioná los negocios y sus accesos
         </p>
       </div>
@@ -54,7 +54,7 @@ export default async function SuperadminPage() {
 
       {/* Create form */}
       <section className="space-y-3">
-        <h2 className="font-body text-sm font-semibold text-text-500">
+        <h2 className="body-md-semibold text-text-500">
           Crear negocio
         </h2>
         <CreateBusinessForm />
@@ -62,7 +62,7 @@ export default async function SuperadminPage() {
 
       {/* Business list */}
       <section className="space-y-3">
-        <h2 className="font-body text-sm font-semibold text-text-500">
+        <h2 className="body-md-semibold text-text-500">
           Negocios registrados{" "}
           <span className="font-normal text-text-400">
             ({businesses.length})
@@ -77,7 +77,7 @@ export default async function SuperadminPage() {
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border border-border-200 bg-background-400 px-5 py-4">
-      <p className="font-body text-xs text-text-400">{label}</p>
+      <p className="body-sm-regular text-text-400">{label}</p>
       <p className="mt-1 font-display text-2xl font-semibold text-text-500">
         {value}
       </p>

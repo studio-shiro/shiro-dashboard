@@ -27,7 +27,7 @@ export default async function SettingsPage() {
         <h1 className="font-body text-xl font-semibold text-text-500">
           Configuración
         </h1>
-        <p className="mt-1 font-body text-sm text-text-400">
+        <p className="mt-1 body-md-regular text-text-400">
           Gestioná tu equipo y la seguridad de tu cuenta
         </p>
       </div>

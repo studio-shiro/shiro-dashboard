@@ -7,7 +7,7 @@ export const inviteMemberSchema = z.object({
 });
 
 export const updateMemberRoleSchema = z.object({
-  member_id: z.string().uuid(),
+  member_id: z.guid(),
   role: z.enum(["owner", "operator"]),
 });
 
