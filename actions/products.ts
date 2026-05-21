@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { productSchema, updateProductSchema } from "@/lib/validations/products";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import type { ProductTableRow } from "@/types/database";
+import type { ProductTableRow, BatchForTable } from "@/types/database";
 
 export async function getProductsAction(): Promise<
   { data: ProductTableRow[]; error?: never } | { data?: never; error: string }
@@ -24,7 +24,7 @@ export async function getProductsAction(): Promise<
       brand:brands(id, name),
       category:categories(id, name),
       stock:stock(quantity, alert_threshold),
-      product_batches(expiration_date)
+      product_batches(id, lot_number, quantity, expiration_date, received_at)
     `,
     )
     .eq("business_id", businessId)
@@ -34,7 +34,13 @@ export async function getProductsAction(): Promise<
 
   const rows: ProductTableRow[] = (data ?? []).map((p) => {
     const { product_batches, stock, ...rest } = p as typeof p & {
-      product_batches: { expiration_date: string | null }[];
+      product_batches: {
+        id: string;
+        lot_number: string | null;
+        quantity: number;
+        expiration_date: string | null;
+        received_at: string;
+      }[];
       stock:
         | { quantity: number; alert_threshold: number }
         | { quantity: number; alert_threshold: number }[]
@@ -43,14 +49,12 @@ export async function getProductsAction(): Promise<
 
     const stockEntry = Array.isArray(stock) ? (stock[0] ?? null) : stock;
 
-    const batches = (product_batches ?? []) as {
-      expiration_date: string | null;
-    }[];
+    const batches = (product_batches ?? []) as BatchForTable[];
     const batch_count = batches.filter(
       (b) => b.expiration_date !== null,
     ).length;
 
-    return { ...rest, stock: stockEntry, batch_count };
+    return { ...rest, stock: stockEntry, batch_count, batches };
   });
 
   return { data: rows };

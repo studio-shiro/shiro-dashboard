@@ -1,6 +1,12 @@
 ﻿"use client";
 import { useState, useTransition } from "react";
-import { Bell, ChevronDown, User, LogOut } from "lucide-react";
+// import { Bell, ChevronDown, User, LogOut } from "lucide-react";
+import {
+  BellAlertIcon,
+  ChevronDownIcon,
+  UserIcon,
+  ArrowLeftStartOnRectangleIcon,
+} from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/actions/auth";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -61,7 +67,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
           className="flex size-9 items-center justify-center rounded-full text-text-400 transition-colors hover:bg-background-300 hover:text-text-500"
           aria-label="Notificaciones"
         >
-          <Bell className="size-5" />
+          <BellAlertIcon className="size-6" />
         </button>
 
         {/* User dropdown */}
@@ -72,7 +78,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
             className="flex items-center gap-2.5"
           >
             <div className="flex size-[34px] shrink-0 items-center justify-center rounded-full border border-accent-selected bg-background-300">
-              <User className="size-5 text-text-400" />
+              <UserIcon className="size-5 text-text-400" />
             </div>
             <div className="flex w-28 flex-col items-start overflow-hidden">
               <span className="w-full truncate font-body text-sm font-semibold leading-5 text-text-500">
@@ -82,7 +88,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
                 {role}
               </span>
             </div>
-            <ChevronDown className="size-[15px] text-text-400" />
+            <ChevronDownIcon className="size-[15px] text-text-400" />
           </button>
 
           {open && (
@@ -98,7 +104,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
                   disabled={pending}
                   className="flex w-full items-center gap-2 px-4 py-2.5 font-body text-sm text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:opacity-50"
                 >
-                  <LogOut className="size-4" />
+                  <ArrowLeftStartOnRectangleIcon className="size-4" />
                   Cerrar sesión
                 </button>
               </div>

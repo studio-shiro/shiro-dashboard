@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition, useState, useEffect, Fragment } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -17,7 +18,6 @@ import {
   PlusIcon,
 } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
-import { useTransition, useState, useEffect } from "react";
 import {
   toggleProductActiveAction,
   deleteProductAction,
@@ -25,6 +25,7 @@ import {
 import type { ProductTableRow } from "@/types/database";
 import { Pagination } from "@/components/shared/Pagination";
 import { buildColumns } from "./columns";
+import { BatchesSubTable } from "./BatchesSubTable";
 
 export {
   FIXED_COLUMN_IDS,
@@ -58,6 +59,7 @@ export function ProductsTable({
   });
   const [localActive, setLocalActive] = useState<Record<string, boolean>>({});
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [, startTransition] = useTransition();
 
   // Reset to page 0 when filtered results change
@@ -65,11 +67,25 @@ export function ProductsTable({
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   }, [products.length]);
 
+  function handleToggleExpand(id: string) {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
   const columns = buildColumns(
     localActive,
     pendingIds,
     handleToggle,
     handleDelete,
+    expandedRows,
+    handleToggleExpand,
   );
 
   const table = useReactTable({
@@ -216,16 +232,23 @@ export function ProductsTable({
             </tr>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-b border-border-100 last:border-0 hover:bg-background-300/40"
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-4">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
+              <Fragment key={row.id}>
+                <tr className="border-b border-border-100 last:border-0 hover:bg-background-300/40">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-4 py-4">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+                {expandedRows.has(row.original.id) &&
+                  row.original.batch_count > 0 && (
+                    <tr>
+                      <td colSpan={visibleColCount} className="p-0">
+                        <BatchesSubTable batches={row.original.batches} />
+                      </td>
+                    </tr>
+                  )}
+              </Fragment>
             ))
           )}
         </tbody>

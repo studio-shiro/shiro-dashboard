@@ -96,8 +96,17 @@ export type ProductWithRelations = Product & {
   stock: Pick<Stock, "quantity" | "alert_threshold"> | null;
 };
 
+export type BatchForTable = {
+  id: string;
+  lot_number: string | null;
+  quantity: number;
+  expiration_date: string | null;
+  received_at: string;
+};
+
 export type ProductTableRow = ProductWithRelations & {
   batch_count: number;
+  batches: BatchForTable[];
 };
 
 export type SaleWithRelations = Sale & {

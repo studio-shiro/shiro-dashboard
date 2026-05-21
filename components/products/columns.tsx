@@ -2,7 +2,11 @@
 
 import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
-import { ChevronRightIcon, CubeIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronRightIcon,
+  ChevronDownIcon,
+  CubeIcon,
+} from "@heroicons/react/24/outline";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { RowActionsMenu } from "./RowActionsMenu";
 import formatCurrency from "@/helpers/formatCurrency";
@@ -48,21 +52,42 @@ export function buildColumns(
   pendingIds: Set<string>,
   onToggle: (product: ProductTableRow) => void,
   onDelete: (id: string) => void,
+  expandedRows: Set<string>,
+  onToggleExpand: (id: string) => void,
 ) {
   return [
     columnHelper.accessor("name", {
       id: "producto",
       header: "Producto",
       enableSorting: true,
-      cell: ({ row }) => (
-        <Link
-          href={`/products/${row.original.id}`}
-          className="flex items-center gap-1 font-body text-sm font-medium text-text-500 underline underline-offset-2 transition-opacity hover:opacity-70"
-        >
-          {row.original.name}
-          <ChevronRightIcon className="size-3.5 shrink-0 text-text-400" />
-        </Link>
-      ),
+      cell: ({ row }) => {
+        const hasExpiry = row.original.batch_count > 0;
+        const isExpanded = expandedRows.has(row.original.id);
+        return (
+          // justify-between
+          <div className="flex items-center gap-1.5">
+            <Link
+              href={`/products/${row.original.id}`}
+              className="font-body text-sm font-medium text-text-500 underline underline-offset-2 transition-opacity hover:opacity-70"
+            >
+              {row.original.name}
+            </Link>
+            {hasExpiry && (
+              <button
+                type="button"
+                onClick={() => onToggleExpand(row.original.id)}
+                className="shrink-0 text-text-400 transition-colors hover:text-text-500"
+              >
+                {isExpanded ? (
+                  <ChevronDownIcon className="size-6" />
+                ) : (
+                  <ChevronRightIcon className="size-6" />
+                )}
+              </button>
+            )}
+          </div>
+        );
+      },
     }),
 
     columnHelper.accessor("reference", {
@@ -70,7 +95,9 @@ export function buildColumns(
       header: "SKU",
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="font-body text-sm text-text-400">#{getValue()}</span>
+        <span className="font-body font-semibold text-sm text-text-400">
+          {getValue()}
+        </span>
       ),
     }),
 
@@ -123,13 +150,25 @@ export function buildColumns(
       id: "vencimientos",
       header: "Vencimientos",
       enableSorting: false,
-      cell: ({ getValue }) => {
-        const count = getValue();
+      cell: ({ row }) => {
+        const count = row.original.batch_count;
+        const isExpanded = expandedRows.has(row.original.id);
         return (
+          // justify-between
           <div className="flex items-center gap-1">
             <span className="font-body text-sm text-text-500">{count}</span>
             {count > 0 && (
-              <ChevronRightIcon className="size-3.5 shrink-0 text-text-400" />
+              <button
+                type="button"
+                onClick={() => onToggleExpand(row.original.id)}
+                className="shrink-0 text-text-400 transition-colors hover:text-text-500"
+              >
+                {isExpanded ? (
+                  <ChevronDownIcon className="size-6" />
+                ) : (
+                  <ChevronRightIcon className="size-6" />
+                )}
+              </button>
             )}
           </div>
         );
