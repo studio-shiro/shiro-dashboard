@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { LastUpdated } from "@/components/shared/LastUpdated";
 import Button from "../shared/Button";
 import { EditColumnsPopover } from "./EditColumnsPopover";
+import { Tag } from "../shared/Tag";
 
 interface ProductsPageHeaderProps {
   productCount: number;
@@ -56,18 +57,15 @@ export function ProductsPageHeader({
     onSearchChange("");
   }
 
-  const iconButtonClass =
-    "flex size-9 items-center justify-center rounded-lg border border-border-100 bg-background-400 text-text-400 transition-colors hover:bg-background-300 hover:text-text-500";
-
   return (
     <div className="flex items-start justify-between gap-4">
       {/* Left — title + badge + last updated */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-3">
           <h1 className="heading-2xl text-text-500">Productos</h1>
-          <span className="rounded-full border border-border-100 px-2.5 py-0.5 text-text-400 body-sm-regular">
+          <Tag variant="neutral">
             {productCount} {productCount === 1 ? "Producto" : "Productos"}
-          </span>
+          </Tag>
         </div>
         <p className="body-sm-regular text-text-400">
           Última actualización el <LastUpdated />
@@ -78,8 +76,8 @@ export function ProductsPageHeader({
       <div className="flex shrink-0 items-center gap-2">
         {/* Search — collapses to icon, expands to input */}
         {isSearchOpen ? (
-          <div className="flex items-center gap-2 rounded-lg border border-border-100 bg-background-400 px-3 py-2">
-            <MagnifyingGlassIcon className="size-4 shrink-0 text-text-400" />
+          <div className="group flex items-center gap-2 rounded-lg border border-border-100 bg-background-400 px-3 py-2 transition-colors focus-within:border-accent-hover">
+            <MagnifyingGlassIcon className="size-4 shrink-0 text-text-400 transition-colors group-focus-within:text-accent-hover" />
             <input
               ref={inputRef}
               type="text"
@@ -91,48 +89,44 @@ export function ProductsPageHeader({
             <button
               type="button"
               onClick={closeSearch}
-              className="ml-1 text-text-400 transition-colors hover:text-text-500"
+              className="ml-1 text-text-400 transition-colors hover:text-text-500 group-focus-within:text-accent-hover"
               aria-label="Cerrar búsqueda"
             >
-              <XMarkIcon className="size-4" />
+              <XMarkIcon className="size-5" />
             </button>
           </div>
         ) : (
-          <button
-            type="button"
+          <Button
             onClick={() => setIsSearchOpen(true)}
-            className={iconButtonClass}
+            variant="tertiary"
             aria-label="Buscar"
           >
-            <MagnifyingGlassIcon className="size-4" />
-          </button>
+            <MagnifyingGlassIcon className="size-5" />
+          </Button>
         )}
 
         {/* Download */}
-        <button
-          type="button"
+        <Button
           onClick={onDownload}
           disabled={isDownloading}
-          className={cn(iconButtonClass, isDownloading && "opacity-50 cursor-not-allowed")}
+          variant="tertiary"
           aria-label="Descargar Excel"
         >
           <ArrowDownTrayIcon className="size-4" />
-        </button>
+        </Button>
 
         {/* Editar Tabla */}
         <div className="relative">
-          <button
+          <Button
             ref={editColumnsButtonRef}
             type="button"
+            variant="tertiary"
+            size="xs"
             onClick={() => setIsEditColumnsOpen((v) => !v)}
-            className={cn(
-              iconButtonClass,
-              "w-auto px-3 body-md-medium text-text-500",
-              isEditColumnsOpen && "bg-background-300",
-            )}
+            className={cn(isEditColumnsOpen && "bg-background-300")}
           >
             Editar Tabla
-          </button>
+          </Button>
 
           {isEditColumnsOpen && (
             <EditColumnsPopover

@@ -9,7 +9,7 @@ interface TagProps {
 }
 
 const variantStyles: Record<TagVariant, string> = {
-  neutral: "bg-background-200 text-text-400",
+  neutral: "bg-background-600 text-text-400",
   success: "bg-success-100 text-success-400",
   warning: "bg-warning-100 text-warning-400",
   danger: "bg-danger-100 text-danger-300",

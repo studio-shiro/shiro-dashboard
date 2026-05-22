@@ -32,7 +32,17 @@
       "PowerShell(Get-Content D:\\\\Usuario\\\\SSI\\\\Escritorio\\\\shiro-dashboard\\\\.env.local | Select-String \"SUPABASE\" | ForEach-Object { \\($_ -split \"=\"\\)[0] })",
       "Bash(Select-Object Name)",
       "mcp__claude_ai_Figma__get_metadata",
-      "mcp__claude_ai_Figma__get_variable_defs"
+      "mcp__claude_ai_Figma__get_variable_defs",
+      "Bash(Get-Content \"C:\\\\Users\\\\SSI\\\\.claude\\\\projects\\\\D--Usuario-SSI-Escritorio-shiro-dashboard\\\\b7d6f771-67e0-46c0-8ff4-56f2cfd6daf9\\\\tool-results\\\\toolu_01NYyNP5zwCEeH6HaK2nzc9y.json\" -Head 100)",
+      "Bash(ConvertFrom-Json)",
+      "Bash(Select-Object -First 2)",
+      "Bash(ConvertTo-Json -Depth 3)",
+      "PowerShell($content = Get-Content \"C:\\\\Users\\\\SSI\\\\.claude\\\\projects\\\\D--Usuario-SSI-Escritorio-shiro-dashboard\\\\b7d6f771-67e0-46c0-8ff4-56f2cfd6daf9\\\\tool-results\\\\toolu_01NYyNP5zwCEeH6HaK2nzc9y.json\" -Raw; [regex]::Matches\\($content, 'data-name=\"\\(Size=\\\\w+, Type=[^\"]+\\)\"'\\) | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)",
+      "PowerShell(head *)",
+      "PowerShell($json = Get-Content \"C:\\\\Users\\\\SSI\\\\.claude\\\\projects\\\\D--Usuario-SSI-Escritorio-shiro-dashboard\\\\b7d6f771-67e0-46c0-8ff4-56f2cfd6daf9\\\\tool-results\\\\toolu_01NYyNP5zwCEeH6HaK2nzc9y.json\" -Raw | ConvertFrom-Json; \\($json[0].text | Select-String -Pattern 'data-name=\"Size=[^\"]+\"' -AllMatches\\).Matches.Value | ForEach-Object { $_ -replace 'data-name=\"|\"', '' } | Sort-Object -Unique | Measure-Object -Line | Select-Object -ExpandProperty Lines)",
+      "PowerShell($content = Get-Content \"C:\\\\Users\\\\SSI\\\\.claude\\\\projects\\\\D--Usuario-SSI-Escritorio-shiro-dashboard\\\\b7d6f771-67e0-46c0-8ff4-56f2cfd6daf9\\\\tool-results\\\\toolu_01NYyNP5zwCEeH6HaK2nzc9y.json\" -Raw | ConvertFrom-Json; $text = $json[0].text; $matches = [regex]::Matches\\($text, 'className=\"\\\\[\\([^\"]+\\)\\\\]\"[^>]+data-name=\"\\(Size=[^\"]+\\)\"'\\); $matches | Select-Object -First 20 | ForEach-Object { @{ styles = $_.Groups[1].Value; variant = $_.Groups[2].Value } | ConvertTo-Json -Compress })",
+      "PowerShell($json = Get-Content \"C:\\\\Users\\\\SSI\\\\.claude\\\\projects\\\\D--Usuario-SSI-Escritorio-shiro-dashboard\\\\b7d6f771-67e0-46c0-8ff4-56f2cfd6daf9\\\\tool-results\\\\toolu_01NYyNP5zwCEeH6HaK2nzc9y.json\" -Raw | ConvertFrom-Json; $text = $json[0].text; $matches = [regex]::Matches\\($text, 'className=\"\\\\[\\([^\"]+\\)\\\\]\"[^>]+data-name=\"\\(Size=[^\"]+\\)\"'\\); $matches | Select-Object -First 10 | ForEach-Object { @{ styles = $_.Groups[1].Value; variant = $_.Groups[2].Value } })",
+      "PowerShell($json = Get-Content \"C:\\\\Users\\\\SSI\\\\.claude\\\\projects\\\\D--Usuario-SSI-Escritorio-shiro-dashboard\\\\b7d6f771-67e0-46c0-8ff4-56f2cfd6daf9\\\\tool-results\\\\toolu_01NYyNP5zwCEeH6HaK2nzc9y.json\" -Raw | ConvertFrom-Json; $text = $json[0].text; @\\($text | Select-String -Pattern 'data-name=\"Size=\\\\w+, Type=[^\"]+\"' -AllMatches\\).Matches | Select-Object -First 5 | ForEach-Object { [regex]::Unescape\\($_.Value\\) })"
     ]
   }
 }
