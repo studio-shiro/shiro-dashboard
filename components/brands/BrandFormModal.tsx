@@ -3,6 +3,7 @@
 import { useState, useRef, useTransition } from "react";
 import { XMarkIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
+import { uploadFile, buildStoragePath } from "@/lib/supabase/storage";
 import { createBrandAction, updateBrandAction } from "@/actions/brands";
 import Button from "@/components/shared/Button";
 import type { BrandTableRow } from "@/types/database";
@@ -12,22 +13,6 @@ interface BrandFormModalProps {
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
-}
-
-async function uploadLogo(
-  file: File,
-  businessId: string,
-  uniqueId: string,
-): Promise<string | null> {
-  const supabase = createClient();
-  const ext = file.name.split(".").pop();
-  const path = `brands/${businessId}/${uniqueId}-${Date.now()}.${ext}`;
-  const { error } = await supabase.storage
-    .from("logos")
-    .upload(path, file, { upsert: true });
-  if (error) return null;
-  const { data } = supabase.storage.from("logos").getPublicUrl(path);
-  return data.publicUrl;
 }
 
 export function BrandFormModal({
@@ -81,7 +66,8 @@ export function BrandFormModal({
         }
         const businessId = user.user_metadata.business_id as string;
         const uniqueId = brand?.id ?? crypto.randomUUID();
-        const uploaded = await uploadLogo(logoFile, businessId, uniqueId);
+        const path = buildStoragePath("brands", businessId, uniqueId, logoFile);
+        const uploaded = await uploadFile(logoFile, "logos", path);
         if (!uploaded) {
           onError("No se pudo subir el logo. Intentá nuevamente.");
           return;
@@ -199,7 +185,10 @@ export function BrandFormModal({
 
           {/* Name */}
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="brand-name" className="body-sm-medium text-text-500">
+            <label
+              htmlFor="brand-name"
+              className="body-sm-medium text-text-500"
+            >
               Nombre <span className="text-red-500">*</span>
             </label>
             <input
