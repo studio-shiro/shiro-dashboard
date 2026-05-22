@@ -203,9 +203,7 @@ export default async function DashboardPage({
           </p>
         </div>
         <Suspense
-          fallback={
-            <div className="h-9 w-72 animate-pulse rounded-md bg-background-300" />
-          }
+          fallback={<div className="h-9 w-72 animate-pulse rounded-lg" />}
         >
           <PeriodFilter />
         </Suspense>
