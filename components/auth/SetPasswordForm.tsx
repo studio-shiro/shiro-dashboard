@@ -2,6 +2,7 @@
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { setInitialPasswordAction } from "@/actions/auth";
+import Button from "@/components/shared/Button";
 
 export default function SetPasswordForm() {
   const [pending, startTransition] = useTransition();
@@ -81,13 +82,9 @@ export default function SetPasswordForm() {
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-        >
+        <Button type="submit" size="md" disabled={pending} className="w-full">
           {pending ? "Guardando…" : "Activar cuenta"}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { UserPlus, X } from "lucide-react";
+import Button from "@/components/shared/Button";
 import type { BusinessMember, MemberRole } from "@/types/team";
 import {
   inviteTeamMemberAction,
@@ -108,22 +109,18 @@ export default function TeamSection({ members, currentUserId }: Props) {
             {activeMembers.length === 1 ? "miembro activo" : "miembros activos"}
           </p>
         </div>
-        <button
+        <Button
           type="button"
+          size="xs"
+          icon={showForm ? X : UserPlus}
           onClick={() => {
             setShowForm((v) => !v);
             setFormError(null);
           }}
-          className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 body-sm-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
           disabled={isPending}
         >
-          {showForm ? (
-            <X className="size-3.5" />
-          ) : (
-            <UserPlus className="size-3.5" />
-          )}
           {showForm ? "Cancelar" : "Invitar miembro"}
-        </button>
+        </Button>
       </div>
 
       {/* Invite form */}
@@ -176,13 +173,9 @@ export default function TeamSection({ members, currentUserId }: Props) {
             </p>
           )}
           <div className="mt-3 flex justify-end">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-lg bg-accent px-4 py-2 body-sm-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-            >
+            <Button type="submit" size="xs" disabled={isPending}>
               {isPending ? "Enviando..." : "Enviar invitación"}
-            </button>
+            </Button>
           </div>
         </form>
       )}

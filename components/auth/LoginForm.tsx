@@ -2,6 +2,7 @@
 import { useEffect, useTransition } from "react";
 import { loginAction } from "@/actions/auth";
 import { createClient } from "@/lib/supabase/client";
+import Button from "@/components/shared/Button";
 
 export default function LoginForm() {
   const [pending, startTransition] = useTransition();
@@ -86,13 +87,9 @@ export default function LoginForm() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-        >
+        <Button type="submit" size="md" disabled={pending} className="w-full">
           {pending ? "Signing in…" : "Sign in"}
-        </button>
+        </Button>
       </form>
     </div>
   );

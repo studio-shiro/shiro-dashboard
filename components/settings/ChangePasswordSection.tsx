@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { changePasswordAction } from "@/actions/auth";
+import Button from "@/components/shared/Button";
 
 type FieldErrors = {
   current_password?: string[];
@@ -114,13 +115,9 @@ export default function ChangePasswordSection() {
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-lg bg-accent px-4 py-2 body-md-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-          >
+          <Button type="submit" size="md" disabled={isPending}>
             {isPending ? "Guardando..." : "Cambiar contraseña"}
-          </button>
+          </Button>
         </div>
       </form>
     </section>
