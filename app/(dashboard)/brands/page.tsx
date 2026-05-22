@@ -1,8 +1,16 @@
-export default function BrandsPage() {
-  return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-zinc-900">Brands</h1>
-      <p className="text-sm text-zinc-500">Brand management coming soon.</p>
-    </div>
-  );
+import { getBrandsAction } from "@/actions/brands";
+import { BrandsView } from "@/components/brands/BrandsView";
+
+export default async function BrandsPage() {
+  const result = await getBrandsAction();
+
+  if ("error" in result) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <p className="body-md-regular text-red-500">{result.error}</p>
+      </div>
+    );
+  }
+
+  return <BrandsView brands={result.data} />;
 }

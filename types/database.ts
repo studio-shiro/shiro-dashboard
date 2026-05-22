@@ -109,6 +109,8 @@ export type ProductTableRow = ProductWithRelations & {
   batches: BatchForTable[];
 };
 
+export type BrandTableRow = Brand & { product_count: number };
+
 export type SaleWithRelations = Sale & {
   product: Pick<Product, "id" | "name"> | null;
   customer: Pick<Customer, "id" | "name"> | null;

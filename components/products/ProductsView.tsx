@@ -4,17 +4,15 @@ import { useState, useMemo, useEffect } from "react";
 import type { ProductTableRow } from "@/types/database";
 import { exportProductsToExcel } from "@/lib/exportProducts";
 import { ProductsPageHeader } from "./ProductsPageHeader";
-import { FeedbackBanner } from "./FeedbackBanner";
+import {
+  FeedbackBanner,
+  type FeedbackBannerState,
+} from "@/components/shared/FeedbackBanner";
 import {
   ProductsTable,
   DEFAULT_COLUMN_VISIBILITY,
   FIXED_COLUMN_IDS,
 } from "./ProductsTable";
-
-export type FeedbackBannerState = {
-  type: "success" | "error";
-  message: string;
-} | null;
 
 const LOCALSTORAGE_KEY = "shiro-products-col-visibility";
 
