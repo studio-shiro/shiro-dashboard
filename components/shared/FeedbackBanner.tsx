@@ -2,7 +2,11 @@
 
 import { CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
-import type { FeedbackBannerState } from "./ProductsView";
+
+export type FeedbackBannerState = {
+  type: "success" | "error";
+  message: string;
+} | null;
 
 interface FeedbackBannerProps {
   banner: NonNullable<FeedbackBannerState>;
