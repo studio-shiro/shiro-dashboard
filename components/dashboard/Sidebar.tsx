@@ -128,7 +128,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex shrink-0 flex-col rounded-sm border border-border-100 bg-background-400 shadow-[0px_12px_16px_-4px_rgba(112,113,116,0.1),0px_4px_6px_-2px_rgba(112,113,116,0.05)] transition-[width] duration-200 ease-in-out",
+        "relative flex shrink-0 flex-col rounded-lg border border-border-100 bg-background-400 shadow-[0px_12px_16px_-4px_rgba(112,113,116,0.1),0px_4px_6px_-2px_rgba(112,113,116,0.05)] transition-[width] duration-200 ease-in-out",
         collapsed ? "w-24" : "w-56",
       )}
     >
@@ -222,11 +222,11 @@ export default function Sidebar() {
               height={collapsed ? 24 : 25}
             />
           </Link>
-          {!collapsed && (
+          {/* {!collapsed && (
             <p className="text-center font-body text-[10px] leading-3 text-text-400">
               By Shiro Studio © All rights reserved
             </p>
-          )}
+          )} */}
         </div>
       ) : (
         <div className="flex justify-center items-center gap-1.5 px-4 pb-3">

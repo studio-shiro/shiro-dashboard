@@ -13,25 +13,22 @@ import type { TopProduct } from "@/types/dashboard";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
-  const { units, color } = payload[0].payload as {
-    units: number;
-    color: string;
-  };
+  const { units, color } = payload[0].payload as TopProduct;
   return (
     <div
       style={{
-        backgroundColor: "#fffffd",
-        border: "1px solid #e8e8ea",
-        borderRadius: 10,
+        backgroundColor: color,
+        borderRadius: 8,
         padding: "6px 12px",
-        fontFamily: "Montserrat, sans-serif",
         fontSize: 12,
-        color: "#212121",
-        boxShadow: `0px 6px 16px -2px ${color}50, 0px 2px 4px -1px rgba(112,113,116,0.08)`,
+        fontWeight: 600,
+        fontFamily: "Montserrat, sans-serif",
+        color: "#ffffff",
         whiteSpace: "nowrap" as const,
+        pointerEvents: "none",
       }}
     >
-      <span style={{ fontWeight: 700 }}>{units}</span> unidades vendidas
+      {units} unidades vendidas
     </div>
   );
 }
@@ -66,10 +63,10 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
             <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
               <feDropShadow
                 dx="0"
-                dy="0"
-                stdDeviation="6"
+                dy="5"
+                stdDeviation="3"
                 floodColor={fill}
-                floodOpacity="0.4"
+                floodOpacity="0.65"
               />
             </filter>
           </defs>
@@ -110,7 +107,12 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
         <div className="relative h-[180px] w-[180px] shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Tooltip content={<CustomTooltip />} cursor={false} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={false}
+                isAnimationActive={false}
+                wrapperStyle={{ zIndex: 10 }}
+              />
               <Pie
                 data={data}
                 cx="50%"
@@ -150,9 +152,7 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                 className="size-3 shrink-0 rounded-full"
                 style={{ backgroundColor: product.color }}
               />
-              <span className="heading-sm text-text-500">
-                {product.value}%
-              </span>
+              <span className="heading-sm text-text-500">{product.value}%</span>
               <span className="body-md-regular text-text-400">
                 {product.name}
               </span>
