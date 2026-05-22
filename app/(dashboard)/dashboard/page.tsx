@@ -226,7 +226,7 @@ export default async function DashboardPage({
 
       <SellSection metrics={salesMetrics} />
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="flex flex-1 gap-6">
         <StockAlertChart data={stockAlerts} />
         <TopProductsChart data={topProducts} />
       </div>

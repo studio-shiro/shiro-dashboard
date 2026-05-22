@@ -32,15 +32,13 @@ export function InsightCard({
   return (
     <div
       className={cn(
-        "flex h-[100px] min-w-[180px] flex-1 flex-col justify-between overflow-hidden rounded-2xl border border-border-200 bg-background-400 px-4 py-3.5 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]",
+        "flex h-[100px] min-w-[180px] flex-1 flex-col justify-between overflow-hidden rounded-2xl border border-border-100 bg-background-400 px-3 py-4 shadow-md",
         className,
       )}
     >
       {/* Header row */}
       <div className="flex items-center justify-between gap-2">
-        <span className="truncate body-md-semibold text-text-400">
-          {label}
-        </span>
+        <span className="truncate body-md-semibold text-text-400">{label}</span>
 
         {showTrend ? (
           <div className="flex shrink-0 items-center gap-0.5">

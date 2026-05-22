@@ -18,7 +18,8 @@ export function PeriodFilter() {
   const router = useRouter();
   const defaultPeriod = getDefaultPeriod();
 
-  const currentType = (searchParams.get("type") ?? defaultPeriod.type) as PeriodType;
+  const currentType = (searchParams.get("type") ??
+    defaultPeriod.type) as PeriodType;
   const currentValue = searchParams.get("value") ?? defaultPeriod.value;
   const options = getPeriodOptions(currentType);
 
@@ -40,9 +41,7 @@ export function PeriodFilter() {
     <div className="flex shrink-0 items-center gap-3">
       <div className="flex items-center gap-1.5">
         <FunnelIcon className="size-4 text-text-400" />
-        <span className="body-md-regular text-text-400">
-          Filtrar por:
-        </span>
+        <span className="body-md-regular text-text-400">Filtrar por:</span>
       </div>
 
       {/* Period type — segmented control */}

@@ -148,119 +148,120 @@ export function ProductsTable({
   const visibleColCount = table.getVisibleLeafColumns().length;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border-100 bg-background-400">
-      <table className="w-full border-collapse">
-        {/* Header */}
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr
-              key={headerGroup.id}
-              className="border-b border-border-100 bg-background-300"
-            >
-              {headerGroup.headers.map((header) => {
-                const canSort = header.column.getCanSort();
-                const sorted = header.column.getIsSorted();
-                return (
-                  <th
-                    key={header.id}
-                    className={cn(
-                      "px-4 py-3 text-left body-sm-medium text-text-400",
-                      canSort &&
-                        "cursor-pointer select-none hover:text-text-500",
-                    )}
-                    onClick={
-                      canSort
-                        ? header.column.getToggleSortingHandler()
-                        : undefined
-                    }
-                  >
-                    <div className="flex items-center gap-1">
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
+    <Fragment>
+      <div className="overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-xl">
+        <table className="w-full border-collapse shadow-lg">
+          {/* Header */}
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr
+                key={headerGroup.id}
+                className="border-b border-border-100 bg-background-300"
+              >
+                {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const sorted = header.column.getIsSorted();
+                  return (
+                    <th
+                      key={header.id}
+                      className={cn(
+                        "px-4 py-3 text-left body-sm-medium text-text-400",
+                        canSort &&
+                          "cursor-pointer select-none hover:text-text-500",
                       )}
-                      {canSort && (
-                        <span className="shrink-0 text-text-300">
-                          {sorted === "asc" ? (
-                            <ChevronUpIcon className="size-3.5" />
-                          ) : sorted === "desc" ? (
-                            <ChevronDownIcon className="size-3.5" />
-                          ) : (
-                            <ChevronDownIcon className="size-3.5 opacity-40" />
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          ))}
-        </thead>
+                      onClick={
+                        canSort
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-1">
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                        {canSort && (
+                          <span className="shrink-0 text-text-300">
+                            {sorted === "asc" ? (
+                              <ChevronUpIcon className="size-3.5" />
+                            ) : sorted === "desc" ? (
+                              <ChevronDownIcon className="size-3.5" />
+                            ) : (
+                              <ChevronDownIcon className="size-3.5 opacity-40" />
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  );
+                })}
+              </tr>
+            ))}
+          </thead>
 
-        {/* Body */}
-        <tbody>
-          {isEmpty ? (
-            <tr>
-              <td colSpan={visibleColCount} className="py-16 text-center">
-                <div className="mx-auto flex max-w-xs flex-col items-center gap-4">
-                  <p className="body-lg-medium text-text-500">
-                    Comenzá a cargar tus Productos
+          {/* Body */}
+          <tbody>
+            {isEmpty ? (
+              <tr>
+                <td colSpan={visibleColCount} className="py-16 text-center">
+                  <div className="mx-auto flex max-w-xs flex-col items-center gap-4">
+                    <p className="body-lg-medium text-text-500">
+                      Comenzá a cargar tus Productos
+                    </p>
+                    <Link
+                      href="/products/new"
+                      className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 body-md-semibold text-white transition-colors hover:bg-accent-hover"
+                    >
+                      <PlusIcon className="size-4" />
+                      Agregar Producto
+                    </Link>
+                    <button
+                      type="button"
+                      className="w-full rounded-lg border border-border-100 px-4 py-2.5 body-md-regular text-text-500 transition-colors hover:bg-background-300"
+                    >
+                      Importá tus Productos
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : isSearchEmpty ? (
+              <tr>
+                <td colSpan={visibleColCount} className="py-16 text-center">
+                  <p className="body-md-regular text-text-400">
+                    Sin Resultados
                   </p>
-                  <Link
-                    href="/products/new"
-                    className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 body-md-semibold text-white transition-colors hover:bg-accent-hover"
-                  >
-                    <PlusIcon className="size-4" />
-                    Agregar Producto
-                  </Link>
-                  <button
-                    type="button"
-                    className="w-full rounded-lg border border-border-100 px-4 py-2.5 body-md-regular text-text-500 transition-colors hover:bg-background-300"
-                  >
-                    Importá tus Productos
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ) : isSearchEmpty ? (
-            <tr>
-              <td colSpan={visibleColCount} className="py-16 text-center">
-                <p className="body-md-regular text-text-400">
-                  Sin Resultados
-                </p>
-              </td>
-            </tr>
-          ) : (
-            table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <tr className="border-b border-border-100 last:border-0 hover:bg-background-300/40">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-4">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </td>
-                  ))}
-                </tr>
-                {expandedRows.has(row.original.id) &&
-                  row.original.batch_count > 0 && (
-                    <tr>
-                      <td colSpan={visibleColCount} className="p-0">
-                        <BatchesSubTable batches={row.original.batches} />
+                </td>
+              </tr>
+            ) : (
+              table.getRowModel().rows.map((row) => (
+                <Fragment key={row.id}>
+                  <tr className="border-b border-border-100 last:border-0 hover:bg-background-300/40">
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-4 py-4">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </td>
-                    </tr>
-                  )}
-              </Fragment>
-            ))
-          )}
-        </tbody>
-      </table>
-
+                    ))}
+                  </tr>
+                  {expandedRows.has(row.original.id) &&
+                    row.original.batch_count > 0 && (
+                      <tr>
+                        <td colSpan={visibleColCount} className="p-0">
+                          <BatchesSubTable batches={row.original.batches} />
+                        </td>
+                      </tr>
+                    )}
+                </Fragment>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
       {/* Pagination — always visible when there are products */}
       {originalCount > 0 && (
-        <div className="border-t border-border-100">
+        <div className="">
           <Pagination
             pageIndex={table.getState().pagination.pageIndex}
             pageCount={Math.max(1, table.getPageCount())}
@@ -272,6 +273,6 @@ export function ProductsTable({
           />
         </div>
       )}
-    </div>
+    </Fragment>
   );
 }

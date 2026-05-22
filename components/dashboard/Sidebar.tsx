@@ -165,7 +165,9 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <Divider />
+      <div className="px-3">
+        <Divider />
+      </div>
 
       {/* CTA Button */}
       <div className="px-3 py-4">
@@ -196,7 +198,9 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <Divider />
+      <div className="px-3">
+        <Divider />
+      </div>
 
       {/* Settings */}
       <div className="py-3">

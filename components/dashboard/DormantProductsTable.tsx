@@ -10,10 +10,7 @@ import {
   createColumnHelper,
   type SortingState,
 } from "@tanstack/react-table";
-import {
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from "@heroicons/react/24/outline";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import type { DormantProduct } from "@/lib/dashboard/dormantProducts";
 import { Pagination } from "@/components/shared/Pagination";
 
@@ -50,9 +47,7 @@ const COLUMNS = [
   columnHelper.accessor("reference", {
     header: "N° Referencia",
     cell: (info) => (
-      <span className="heading-sm text-text-500">
-        {info.getValue()}
-      </span>
+      <span className="heading-sm text-text-500">{info.getValue()}</span>
     ),
     size: 150,
   }),
@@ -148,8 +143,8 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
       </div>
 
       {/* Table card */}
-      <div className="overflow-hidden rounded-2xl border border-border-200 bg-background-400 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
-        <div className="overflow-x-auto">
+      <div className="overflow-hidden space-y-3.5">
+        <div className="overflow-x-auto rounded-2xl border border-border-200 bg-background-400 shadow-lg">
           <table className="w-full min-w-[760px] border-collapse">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -213,7 +208,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
         </div>
 
         {/* Pagination */}
-        <div className="border-t border-border-200">
+        <div className="">
           <Pagination
             pageIndex={table.getState().pagination.pageIndex}
             pageCount={Math.max(1, table.getPageCount())}

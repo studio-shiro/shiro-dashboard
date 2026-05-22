@@ -104,13 +104,11 @@ export default function CreateBusinessForm() {
 
               {/* Currency */}
               <div className="flex flex-col gap-1">
-                <label className="body-sm-medium text-text-400">
-                  Moneda
-                </label>
+                <label className="body-sm-medium text-text-400">Moneda</label>
                 <select
                   name="currency"
                   defaultValue="ARS"
-                  className="rounded-lg border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                  className="rounded-md border border-border-200 bg-background-300 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
                 >
                   <option value="ARS">ARS — Peso argentino</option>
                   <option value="USD">USD — Dólar</option>

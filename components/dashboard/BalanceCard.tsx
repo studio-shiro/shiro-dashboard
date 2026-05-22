@@ -33,9 +33,7 @@ export function BalanceCard({
         </h2>
         <div className="flex flex-col">
           {subtitle && (
-            <p className="body-md-regular text-text-400">
-              {subtitle}
-            </p>
+            <p className="body-md-regular text-text-400">{subtitle}</p>
           )}
           {lastUpdated && (
             <p className="font-body text-[10px] leading-3 text-text-400">
@@ -45,12 +43,12 @@ export function BalanceCard({
         </div>
       </div>
 
-      <div className="flex h-[100px] w-full items-center justify-between overflow-hidden rounded-2xl border border-border-200 bg-background-400 py-4 pl-5 pr-6 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
+      <div className="flex h-[100px] w-full items-center justify-between overflow-hidden rounded-2xl border border-border-100 bg-background-400 py-4 pl-5 pr-6 shadow-md">
         <span className="font-body text-[40px] font-bold leading-none tracking-tight text-text-500">
           {value}
         </span>
         {showTrend && (
-          <div className="flex items-center gap-1 self-end pb-1">
+          <div className="flex items-center gap-1 pb-1">
             <div
               className={cn(
                 "flex size-[22px] items-center justify-center rounded-full",
