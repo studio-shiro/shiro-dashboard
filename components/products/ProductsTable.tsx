@@ -149,8 +149,8 @@ export function ProductsTable({
 
   return (
     <Fragment>
-      <div className="overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-xl">
-        <table className="w-full border-collapse shadow-lg">
+      <div className="overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg">
+        <table className="w-full border-collapse">
           {/* Header */}
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
