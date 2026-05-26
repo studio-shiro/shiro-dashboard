@@ -40,7 +40,8 @@ function CustomTooltip({ active, payload }: any) {
         whiteSpace: "nowrap" as const,
       }}
     >
-      <span style={{ fontWeight: 700 }}>{formatCurrency(value)}</span> en ventas
+      <span style={{ fontWeight: 700 }}>{value}</span>{" "}
+      {value === 1 ? "venta" : "ventas"}
     </div>
   );
 }
@@ -65,10 +66,9 @@ export function PerformanceSection({
         : "negative"
       : undefined;
 
-
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-1">
         <h2 className="font-body text-2xl font-bold leading-none text-text-500">
           Rendimiento Comercial
         </h2>
@@ -116,7 +116,7 @@ export function PerformanceSection({
         <InsightCard label="Tasa de Reembolso" value="--" />
       </div>
 
-      <div className="rounded-2xl border border-border-200 bg-background-400 pb-4 pt-5 px-4 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
+      <div className="rounded-2xl border border-border-100 bg-background-400 pb-4 pt-5 px-4 shadow-md">
         <p className="mb-4 text-center heading-sm text-text-500">
           {config.chartTitle}
         </p>
@@ -133,9 +133,9 @@ export function PerformanceSection({
             </defs>
 
             <CartesianGrid
-              vertical={false}
+              vertical={true}
               stroke="#e8e8ea"
-              strokeDasharray="4 4"
+              // strokeDasharray="4 4"
             />
 
             {config.referenceLineXValues.map((x) => (
@@ -154,7 +154,7 @@ export function PerformanceSection({
               tickFormatter={(v) => tickMap[v] ?? ""}
               axisLine={false}
               tickLine={false}
-              tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
+              tick={{ fontFamily: "Montserrat", fontSize: 12, fill: "#616161" }}
             />
 
             <YAxis
@@ -162,8 +162,8 @@ export function PerformanceSection({
               ticks={config.yTicks}
               axisLine={false}
               tickLine={false}
-              tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
-              tickFormatter={(v) => `$${(v as number).toLocaleString("es-AR")}`}
+              tick={{ fontFamily: "Montserrat", fontSize: 12, fill: "#616161" }}
+              tickFormatter={(v) => String(Math.round(v as number))}
               label={{
                 value: config.yAxisLabel,
                 angle: -90,

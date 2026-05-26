@@ -102,9 +102,9 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
         </div>
       </div>
 
-      <div className="flex h-[282px] items-center rounded-2xl border border-border-200 bg-background-400 px-5 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
+      <div className="flex h-full items-center rounded-2xl border border-border-200 bg-background-400 px-5 shadow-md">
         {/* Donut chart */}
-        <div className="relative h-[180px] w-[180px] shrink-0">
+        <div className="relative h-55 w-55 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Tooltip
@@ -152,8 +152,8 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                 className="size-3 shrink-0 rounded-full"
                 style={{ backgroundColor: product.color }}
               />
-              <span className="heading-sm text-text-500">{product.value}%</span>
-              <span className="body-md-regular text-text-400">
+              <span className="heading-xl text-text-500">{product.value}%</span>
+              <span className="body-lg-regular text-text-500">
                 {product.name}
               </span>
             </div>

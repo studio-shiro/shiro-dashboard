@@ -35,7 +35,7 @@ export function RowActionsMenu({ productId, onDelete }: RowActionsMenuProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-9 z-30 min-w-[128px] overflow-hidden rounded-lg border border-border-200 bg-background-400 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.1),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
+        <div className="absolute right-0 top-9 z-30 min-w-[128px] overflow-hidden rounded-lg border border-border-200 bg-background-400 shadow-md">
           <Link
             href={`/products/${productId}/edit`}
             onClick={() => setOpen(false)}

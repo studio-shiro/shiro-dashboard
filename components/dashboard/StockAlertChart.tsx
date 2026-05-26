@@ -29,7 +29,7 @@ export function StockAlertChart({ data }: StockAlertChartProps) {
   const uniqueThresholds = [...new Set(data.map((d) => d.threshold))];
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col flex-1 gap-3">
       <div className="flex flex-col gap-0.5">
         <h2 className="font-body text-2xl font-bold leading-none text-text-500">
           Alerta de stock
@@ -44,7 +44,7 @@ export function StockAlertChart({ data }: StockAlertChartProps) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border-200 bg-background-400 px-4 pb-4 pt-5 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
+      <div className="rounded-2xl border border-border-200 bg-background-400 px-4 pb-4 pt-5 shadow-md">
         <ResponsiveContainer width="100%" height={250}>
           <BarChart
             data={data}

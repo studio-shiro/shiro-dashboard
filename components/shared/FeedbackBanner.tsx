@@ -1,6 +1,10 @@
 "use client";
 
-import { CheckCircleIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 
 export type FeedbackBannerState = {
@@ -20,7 +24,7 @@ export function FeedbackBanner({ banner, onClose }: FeedbackBannerProps) {
     <div
       role="alert"
       className={cn(
-        "fixed right-6 top-4 z-50 flex w-full max-w-[360px] items-start gap-3 rounded-lg border px-4 py-3 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.1),0px_2px_4px_-2px_rgba(112,113,116,0.06)]",
+        "fixed right-6 top-4 z-50 flex w-full max-w-[360px] items-start gap-3 rounded-lg border px-4 py-3",
         isSuccess
           ? "border-green-200 bg-green-50 text-green-800"
           : "border-red-200 bg-red-50 text-red-800",

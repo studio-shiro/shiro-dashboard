@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Divider } from "@/components/shared/Divider";
+import Button from "@/components/shared/Button";
 import logoShiroStudio from "@/public/logo-shiro-studio.svg";
 import logoShiroI from "@/public/logo-shiro-i.svg";
 
@@ -97,10 +98,11 @@ const NavItem = ({
   const Icon = active ? IconSolid : IconOutline;
 
   return (
-    <Link
+    <Button
       href={href}
+      variant="link"
       className={cn(
-        "relative flex h-10 w-full items-center gap-2 body-lg-regular transition-colors",
+        "relative h-10 w-full justify-start gap-2 rounded-none body-lg-regular transition-colors",
         collapsed ? "justify-center px-2" : "pl-4 pr-2.5",
         active
           ? "bg-[rgba(232,73,17,0.15)] font-semibold text-accent"
@@ -112,7 +114,7 @@ const NavItem = ({
       {active && (
         <span className="absolute right-0 top-1/2 h-[22px] w-1 -translate-y-1/2 rounded-l-sm bg-accent" />
       )}
-    </Link>
+    </Button>
   );
 };
 
@@ -128,7 +130,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex shrink-0 flex-col rounded-lg border border-border-100 bg-background-400 shadow-[0px_12px_16px_-4px_rgba(112,113,116,0.1),0px_4px_6px_-2px_rgba(112,113,116,0.05)] transition-[width] duration-200 ease-in-out",
+        "relative flex shrink-0 flex-col rounded-lg border border-border-100 bg-background-400 shadow-lg transition-[width] duration-200 ease-in-out",
         collapsed ? "w-24" : "w-56",
       )}
     >
@@ -165,20 +167,24 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <Divider />
+      <div className="px-3">
+        <Divider />
+      </div>
 
       {/* CTA Button */}
       <div className="px-3 py-4">
-        <Link
+        <Button
           href="/products/new"
+          variant="primary"
+          size="xs"
           className={cn(
-            "flex h-9 w-full items-center justify-center rounded-md bg-accent body-sm-semibold text-text-100 shadow-[0px_1px_3px_0px_rgba(112,113,116,0.1),0px_1px_2px_0px_rgba(112,113,116,0.06)] transition-colors hover:bg-accent-hover active:bg-accent-selected",
-            collapsed ? "" : "gap-1.5 px-3",
+            "h-9 w-full shadow-sm",
+            collapsed ? "px-2" : "gap-1.5 px-3",
           )}
         >
           <Plus className={cn("shrink-0", collapsed ? "size-4" : "size-3.5")} />
           {!collapsed && "Agregar Producto"}
-        </Link>
+        </Button>
       </div>
 
       {/* Nav */}
@@ -196,7 +202,9 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <Divider />
+      <div className="px-3">
+        <Divider />
+      </div>
 
       {/* Settings */}
       <div className="py-3">

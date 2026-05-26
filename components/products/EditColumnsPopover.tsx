@@ -71,7 +71,7 @@ export function EditColumnsPopover({
       ref={popoverRef}
       role="dialog"
       aria-label="Editar columnas"
-      className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[220px] overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.1),0px_2px_4px_-2px_rgba(112,113,116,0.06)]"
+      className="absolute right-0 top-[calc(100%+8px)] z-40 min-w-[220px] overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-md"
     >
       <div className="border-b border-border-100 px-4 py-3">
         <p className="body-sm-semibold uppercase tracking-wide text-text-400">

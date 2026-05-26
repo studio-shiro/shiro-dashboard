@@ -29,30 +29,30 @@ export function Pagination({
   onNext,
   onGoTo,
 }: PaginationProps) {
-  const btnBase =
-    "flex size-8 items-center justify-center rounded-md body-md-regular transition-colors";
-  const btnInactive = "text-text-400 hover:bg-background-300";
-  const btnDisabled = "text-text-300 cursor-not-allowed opacity-40";
-
   const pages = buildPageRange(pageIndex, pageCount);
 
   return (
-    <div className="flex items-center justify-center gap-1 py-3">
+    <div className="flex items-center justify-center gap-1 p-2">
       <button
         type="button"
         onClick={onPrevious}
         disabled={!canPrevious}
-        className={cn(btnBase, canPrevious ? btnInactive : btnDisabled)}
+        className={cn(
+          "flex size-[22px] shrink-0 items-center justify-center transition-colors",
+          canPrevious
+            ? "text-text-400 hover:text-text-500"
+            : "cursor-not-allowed text-text-300 opacity-40",
+        )}
         aria-label="Página anterior"
       >
-        <ChevronLeftIcon className="size-4" />
+        <ChevronLeftIcon className="size-[22px]" />
       </button>
 
       {pages.map((page, i) =>
         page === "..." ? (
           <span
             key={`ellipsis-${i}`}
-            className="flex size-8 items-center justify-center body-md-regular text-text-400"
+            className="flex w-8 items-center justify-center rounded-[4px] py-[9px] body-md-medium text-text-400"
           >
             …
           </span>
@@ -62,10 +62,10 @@ export function Pagination({
             type="button"
             onClick={() => onGoTo(page as number)}
             className={cn(
-              btnBase,
+              "flex items-center justify-center rounded-[4px] py-[9px] transition-colors",
               page === pageIndex
-                ? "bg-accent font-semibold text-white"
-                : btnInactive,
+                ? "w-[38px] bg-accent/15 body-md-semibold text-accent"
+                : "w-8 body-md-medium text-text-400 hover:bg-background-300",
             )}
           >
             {(page as number) + 1}
@@ -77,10 +77,15 @@ export function Pagination({
         type="button"
         onClick={onNext}
         disabled={!canNext}
-        className={cn(btnBase, canNext ? btnInactive : btnDisabled)}
+        className={cn(
+          "flex size-[22px] shrink-0 items-center justify-center transition-colors",
+          canNext
+            ? "text-text-400 hover:text-text-500"
+            : "cursor-not-allowed text-text-300 opacity-40",
+        )}
         aria-label="Página siguiente"
       >
-        <ChevronRightIcon className="size-4" />
+        <ChevronRightIcon className="size-[22px]" />
       </button>
     </div>
   );

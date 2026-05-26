@@ -101,9 +101,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-200 px-6 py-4">
         <div>
-          <h2 className="body-md-semibold text-text-500">
-            Equipo
-          </h2>
+          <h2 className="body-md-semibold text-text-500">Equipo</h2>
           <p className="mt-0.5 body-sm-regular text-text-400">
             {activeMembers.length}{" "}
             {activeMembers.length === 1 ? "miembro activo" : "miembros activos"}
@@ -152,7 +150,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
                 type="email"
                 required
                 placeholder="ana@empresa.com"
-                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                className="rounded-md border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 placeholder:text-text-300 focus:outline-none focus:ring-2 focus:ring-accent/30"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -160,7 +158,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
               <select
                 name="role"
                 defaultValue="operator"
-                className="rounded-lg border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
+                className="rounded-md border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
               >
                 <option value="operator">Operador</option>
                 <option value="owner">Dueño</option>
@@ -168,9 +166,7 @@ export default function TeamSection({ members, currentUserId }: Props) {
             </div>
           </div>
           {formError && (
-            <p className="mt-2 body-sm-regular text-danger-300">
-              {formError}
-            </p>
+            <p className="mt-2 body-sm-regular text-danger-300">{formError}</p>
           )}
           <div className="mt-3 flex justify-end">
             <Button type="submit" size="xs" disabled={isPending}>

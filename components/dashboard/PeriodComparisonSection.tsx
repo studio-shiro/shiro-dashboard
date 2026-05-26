@@ -12,7 +12,10 @@ import {
   Tooltip,
 } from "recharts";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { getPeriodOptions, type PeriodOption } from "@/lib/dashboard/periodComparison";
+import {
+  getPeriodOptions,
+  type PeriodOption,
+} from "@/lib/dashboard/periodComparison";
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import type {
   PeriodType,
@@ -49,7 +52,8 @@ function ComparisonTooltip({ active, payload, color }: any) {
         whiteSpace: "nowrap" as const,
       }}
     >
-      <span style={{ fontWeight: 700 }}>{formatCurrency(value)}</span> en ventas
+      <span style={{ fontWeight: 700 }}>{value}</span>{" "}
+      {value === 1 ? "venta" : "ventas"}
     </div>
   );
 }
@@ -63,15 +67,19 @@ interface PeriodSelectorProps {
   disabled?: boolean;
 }
 
-function PeriodSelector({ options, value, onChange, disabled }: PeriodSelectorProps) {
-  const selected = options.find((o) => o.value === value);
+function PeriodSelector({
+  options,
+  value,
+  onChange,
+  disabled,
+}: PeriodSelectorProps) {
   return (
-    <div className="relative w-full">
+    <div className="relative min-w-[300px] shadow-sm">
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="w-full cursor-pointer appearance-none rounded-xl border border-border-200 bg-background-400 px-4 py-2.5 heading-sm text-text-500 focus:outline-none disabled:opacity-50"
+        className="w-full cursor-pointer appearance-none rounded-md border border-border-400 bg-background-400 pl-4 pr-9 py-2.5 heading-sm text-text-500 focus:outline-none disabled:opacity-50"
         aria-label="Seleccionar período"
       >
         {options.map((opt) => (
@@ -80,12 +88,7 @@ function PeriodSelector({ options, value, onChange, disabled }: PeriodSelectorPr
           </option>
         ))}
       </select>
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-4">
-        <span className="heading-sm text-text-500">
-          {selected?.label ?? value}
-        </span>
-        <ChevronDownIcon className="size-4 text-text-400" />
-      </div>
+      <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-text-400" />
     </div>
   );
 }
@@ -104,7 +107,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
   );
 
   return (
-    <div className="rounded-2xl border border-border-200 bg-background-400 pb-4 pt-5 px-4 shadow-[0px_4px_8px_-2px_rgba(112,113,116,0.08),0px_2px_4px_-2px_rgba(112,113,116,0.06)]">
+    <div className="rounded-2xl border border-border-200 bg-background-400 pb-4 pt-5 px-4 shadow-md">
       <p className="mb-4 text-center heading-sm text-text-500">
         {config.chartTitle}
       </p>
@@ -120,7 +123,11 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             </linearGradient>
           </defs>
 
-          <CartesianGrid vertical={false} stroke="#e8e8ea" strokeDasharray="4 4" />
+          <CartesianGrid
+            vertical={true}
+            stroke="#e8e8ea"
+            // strokeDasharray="4 4"
+          />
 
           {config.referenceLineXValues.map((x) => (
             <ReferenceLine
@@ -147,7 +154,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             axisLine={false}
             tickLine={false}
             tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
-            tickFormatter={(v) => `$${(v as number).toLocaleString("es-AR")}`}
+            tickFormatter={(v) => String(Math.round(v as number))}
             label={{
               value: config.yAxisLabel,
               angle: -90,
@@ -165,7 +172,11 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
 
           <Tooltip
             content={(props) => <ComparisonTooltip {...props} color={color} />}
-            cursor={{ stroke: "#d1d0c9", strokeWidth: 1, strokeDasharray: "4 4" }}
+            cursor={{
+              stroke: "#d1d0c9",
+              strokeWidth: 1,
+              strokeDasharray: "4 4",
+            }}
           />
 
           <Area
@@ -206,13 +217,17 @@ function ComparisonColumn({
     d.growth !== null ? (d.growth >= 0 ? "positive" : "negative") : undefined;
 
   return (
-    <div className={`flex flex-col gap-3 transition-opacity ${isPending ? "opacity-60" : ""}`}>
-      <PeriodSelector
-        options={options}
-        value={selectedValue}
-        onChange={onValueChange}
-        disabled={isPending}
-      />
+    <div
+      className={`flex flex-col justify-center gap-3 transition-opacity ${isPending ? "opacity-60" : ""}`}
+    >
+      <div className="flex justify-center">
+        <PeriodSelector
+          options={options}
+          value={selectedValue}
+          onChange={onValueChange}
+          disabled={isPending}
+        />
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <InsightCard
@@ -226,7 +241,9 @@ function ComparisonColumn({
         />
         <InsightCard
           label="Frecuencia de Compra"
-          value={d.purchaseFrequency !== null ? formatPct(d.purchaseFrequency) : "--"}
+          value={
+            d.purchaseFrequency !== null ? formatPct(d.purchaseFrequency) : "--"
+          }
           valueTrend={
             d.purchaseFrequency !== null
               ? d.purchaseFrequency >= 0
@@ -285,7 +302,6 @@ export function PeriodComparisonSection({
       if (!("error" in result)) setData(result);
     });
   }
-
 
   return (
     <div className="flex flex-col gap-3">

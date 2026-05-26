@@ -1,16 +1,32 @@
+import Link from "next/link";
 import React, { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 type HeroIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
-interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
+type SharedProps = {
   children: React.ReactNode;
   variant?: "primary" | "secondary" | "tertiary" | "link";
   size?: "xs" | "md" | "lg";
   icon?: HeroIcon;
-}
+  className?: string;
+};
 
-const variantStyles: Record<NonNullable<Props["variant"]>, string> = {
+type AsButton = SharedProps &
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, keyof SharedProps> & {
+    href?: never;
+    ref?: React.Ref<HTMLButtonElement>;
+  };
+
+type AsLink = SharedProps & {
+  href: string;
+  target?: string;
+  rel?: string;
+};
+
+export type ButtonProps = AsButton | AsLink;
+
+const variantStyles: Record<NonNullable<SharedProps["variant"]>, string> = {
   primary:
     "bg-accent text-text-100 shadow-sm " +
     "hover:bg-accent-hover " +
@@ -37,43 +53,51 @@ const variantStyles: Record<NonNullable<Props["variant"]>, string> = {
 };
 
 // xs = Figma SM (36px / 12px), md = Figma MD (40px / 14px), lg = Figma LG (48px / 16px)
-const sizeStyles: Record<NonNullable<Props["size"]>, string> = {
+const sizeStyles: Record<NonNullable<SharedProps["size"]>, string> = {
   xs: "gap-2 rounded-md px-4 py-2.5 body-sm-semibold",
   md: "gap-2 rounded-md px-[18px] py-2.5 body-md-semibold",
   lg: "gap-2 rounded-md px-5 py-3 body-lg-semibold",
 };
 
-const Button = React.forwardRef<HTMLButtonElement, Props>(
-  (
-    {
-      children,
-      icon: Icon,
-      variant = "primary",
-      size = "md",
-      className,
-      ...props
-    },
-    ref,
-  ) => {
+export default function Button(props: ButtonProps) {
+  const { children, variant = "primary", size = "md", icon: Icon, className } =
+    props;
+
+  const classes = cn(
+    "inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed",
+    variantStyles[variant],
+    sizeStyles[size],
+    className,
+  );
+
+  if ("href" in props && props.href !== undefined) {
+    const { href, target, rel } = props as AsLink;
     return (
-      <button
-        ref={ref}
-        type={props.type || "button"}
-        {...props}
-        className={cn(
-          "inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed",
-          variantStyles[variant],
-          sizeStyles[size],
-          className,
-        )}
-      >
+      <Link href={href} target={target} rel={rel} className={classes}>
         {Icon && <Icon className="size-5 shrink-0" />}
         {children}
-      </button>
+      </Link>
     );
-  },
-);
+  }
 
-Button.displayName = "Button";
-
-export default Button;
+  const {
+    variant: _v,
+    size: _s,
+    icon: _i,
+    className: _c,
+    children: _ch,
+    ref,
+    ...buttonRest
+  } = props as AsButton;
+  return (
+    <button
+      ref={ref}
+      type={buttonRest.type ?? "button"}
+      {...buttonRest}
+      className={classes}
+    >
+      {Icon && <Icon className="size-5 shrink-0" />}
+      {children}
+    </button>
+  );
+}
