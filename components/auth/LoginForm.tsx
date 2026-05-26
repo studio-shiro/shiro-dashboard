@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useTransition } from "react";
+import Link from "next/link";
 import { loginAction } from "@/actions/auth";
 import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/shared/Button";
@@ -73,9 +74,17 @@ export default function LoginForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-zinc-700 mb-1">
-            Password
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-zinc-700">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-zinc-500 hover:text-zinc-700 transition-colors"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
           <input
             id="password"
             name="password"
