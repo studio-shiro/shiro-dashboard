@@ -153,7 +153,7 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
                 style={{ backgroundColor: product.color }}
               />
               <span className="heading-xl text-text-500">{product.value}%</span>
-              <span className="body-lg-regular text-text-400">
+              <span className="body-lg-regular text-text-500">
                 {product.name}
               </span>
             </div>

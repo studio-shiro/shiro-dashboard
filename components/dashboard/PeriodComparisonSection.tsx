@@ -52,7 +52,8 @@ function ComparisonTooltip({ active, payload, color }: any) {
         whiteSpace: "nowrap" as const,
       }}
     >
-      <span style={{ fontWeight: 700 }}>{formatCurrency(value)}</span> en ventas
+      <span style={{ fontWeight: 700 }}>{value}</span>{" "}
+      {value === 1 ? "venta" : "ventas"}
     </div>
   );
 }
@@ -123,9 +124,9 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
           </defs>
 
           <CartesianGrid
-            vertical={false}
+            vertical={true}
             stroke="#e8e8ea"
-            strokeDasharray="4 4"
+            // strokeDasharray="4 4"
           />
 
           {config.referenceLineXValues.map((x) => (
@@ -153,7 +154,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             axisLine={false}
             tickLine={false}
             tick={{ fontFamily: "Montserrat", fontSize: 11, fill: "#616161" }}
-            tickFormatter={(v) => `$${(v as number).toLocaleString("es-AR")}`}
+            tickFormatter={(v) => String(Math.round(v as number))}
             label={{
               value: config.yAxisLabel,
               angle: -90,

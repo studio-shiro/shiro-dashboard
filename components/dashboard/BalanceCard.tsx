@@ -36,7 +36,7 @@ export function BalanceCard({
             <p className="body-md-regular text-text-400">{subtitle}</p>
           )}
           {lastUpdated && (
-            <p className="font-body text-[10px] leading-3 text-text-400">
+            <p className="font-body text-body-xs leading-3 text-text-400">
               {lastUpdated}
             </p>
           )}

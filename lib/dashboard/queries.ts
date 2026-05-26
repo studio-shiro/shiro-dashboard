@@ -282,7 +282,7 @@ export async function fetchChartData(
 ): Promise<ChartDataPoint[]> {
   const { data } = await supabase
     .from("sales")
-    .select("date, total")
+    .select("date")
     .eq("business_id", businessId)
     .gte("date", startDate)
     .lt("date", endDate);
@@ -309,7 +309,7 @@ export async function fetchChartData(
         break;
     }
 
-    buckets.set(bucket, (buckets.get(bucket) ?? 0) + (sale.total as number));
+    buckets.set(bucket, (buckets.get(bucket) ?? 0) + 1);
   }
 
   return Array.from(buckets.entries()).map(([x, sales]) => ({ x, sales }));

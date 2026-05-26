@@ -51,7 +51,7 @@ function buildDailyConfig(periodValue: string, raw: ChartDataPoint[]): ChartConf
   return {
     granularity: "hourly",
     chartTitle: label.charAt(0).toUpperCase() + label.slice(1),
-    yAxisLabel: "Ventas",
+    yAxisLabel: "Ventas netas",
     ...buildYAxis(data),
     data,
     xAxisTicks,
@@ -82,7 +82,7 @@ function buildWeeklyConfig(periodValue: string, raw: ChartDataPoint[]): ChartCon
   return {
     granularity: "daily",
     chartTitle: `${fmt(start)} — ${fmt(end)}`,
-    yAxisLabel: "Ventas",
+    yAxisLabel: "Ventas netas",
     ...buildYAxis(data),
     data,
     xAxisTicks,
@@ -115,7 +115,7 @@ function buildMonthlyConfig(periodValue: string, raw: ChartDataPoint[]): ChartCo
   return {
     granularity: "weekly",
     chartTitle: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-    yAxisLabel: "Ventas",
+    yAxisLabel: "Ventas netas",
     ...buildYAxis(data),
     data,
     xAxisTicks,
@@ -143,7 +143,7 @@ function buildYearlyConfig(periodValue: string, raw: ChartDataPoint[]): ChartCon
   return {
     granularity: "monthly",
     chartTitle: `Año ${periodValue}`,
-    yAxisLabel: "Ventas",
+    yAxisLabel: "Ventas netas",
     ...buildYAxis(data),
     data,
     xAxisTicks,

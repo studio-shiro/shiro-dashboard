@@ -68,7 +68,7 @@ export function InsightCard({
         <div className="flex items-center gap-1">
           <span
             className={cn(
-              "font-body text-[28px] font-bold leading-none tracking-tight",
+              "heading-2xl leading-none",
               valueTrend === "positive"
                 ? "text-success-300"
                 : valueTrend === "negative"

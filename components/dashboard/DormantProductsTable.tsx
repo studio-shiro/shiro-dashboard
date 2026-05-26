@@ -80,11 +80,16 @@ const COLUMNS = [
       const month = d
         .toLocaleDateString("es-AR", { month: "long" })
         .replace(/^\w/, (c) => c.toUpperCase());
-      return (
-        <span className="body-md-regular text-text-400">
-          {day} de {month} {d.getFullYear()}
-        </span>
-      );
+
+      if (day && month) {
+        return (
+          <span className="body-md-regular text-text-400">
+            {day} de {month} {d.getFullYear()}
+          </span>
+        );
+      } else {
+        return <span className="body-md-regular text-text-400">-</span>;
+      }
     },
     size: 160,
   }),

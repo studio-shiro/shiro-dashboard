@@ -197,7 +197,7 @@ export default async function DashboardPage({
           <h1 className="font-body text-[28px] font-bold leading-none text-text-500">
             Dashboard
           </h1>
-          <p className="body-md-regular text-text-400">
+          <p className="body-lg-regular text-text-400">
             Podés hacer seguimiento de tus ventas, saldo en cuenta y otras
             métricas clave.
           </p>
