@@ -85,7 +85,7 @@ export function ProductsView({ products }: ProductsViewProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex h-full flex-col gap-6">
       <ProductsPageHeader
         productCount={products.length}
         isEmpty={isEmpty}

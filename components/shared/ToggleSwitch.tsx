@@ -8,7 +8,11 @@ interface ToggleSwitchProps {
   disabled?: boolean;
 }
 
-export function ToggleSwitch({ checked, onChange, disabled }: ToggleSwitchProps) {
+export function ToggleSwitch({
+  checked,
+  onChange,
+  disabled,
+}: ToggleSwitchProps) {
   return (
     <button
       type="button"
@@ -17,8 +21,8 @@ export function ToggleSwitch({ checked, onChange, disabled }: ToggleSwitchProps)
       onClick={onChange}
       disabled={disabled}
       className={cn(
-        "relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-        checked ? "bg-accent" : "bg-zinc-200",
+        "relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer",
+        checked ? "bg-accent" : "bg-accent-disabled",
         disabled && "cursor-not-allowed opacity-50",
       )}
     >
