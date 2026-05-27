@@ -21,6 +21,7 @@ import {
   CubeIcon as CubeIconOutline,
   ChevronLeftIcon,
   ChevronRightIcon,
+  BanknotesIcon as BankNotesIconOutline,
 } from "@heroicons/react/24/outline";
 import {
   UsersIcon as UsersIconSolid,
@@ -31,9 +32,24 @@ import {
   Squares2X2Icon as Squares2X2IconSolid,
   Cog6ToothIcon as Cog6ToothIconSolid,
   CubeIcon as CubeIconSolid,
+  BanknotesIcon as BankNotesIconSolid,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
+  // {
+  //   href: "/stock",
+  //   label: "Stock",
+  //   iconOutline: ArchiveBoxIconOutline,
+  //   iconSolid: ArchiveBoxIconSolid,
+  // },
+  {
+    href: "/sales",
+    label: "Operaciones",
+    iconOutline: BankNotesIconOutline,
+    // iconOutline: ShoppingCartIconOutline
+    iconSolid: BankNotesIconSolid,
+    // iconSolid: ShoppingCartIconSolid,
+  },
   {
     href: "/dashboard",
     label: "Dashboard",
@@ -43,39 +59,37 @@ const navItems = [
   {
     href: "/products",
     label: "Productos",
-    iconOutline: CubeIconOutline,
-    iconSolid: CubeIconSolid,
-  },
-  {
-    href: "/stock",
-    label: "Stock",
-    iconOutline: ArchiveBoxIconOutline,
-    iconSolid: ArchiveBoxIconSolid,
-  },
-  {
-    href: "/sales",
-    label: "Ventas",
     iconOutline: ShoppingCartIconOutline,
     iconSolid: ShoppingCartIconSolid,
+    // iconOutline: CubeIconOutline,
+    // iconSolid: CubeIconSolid,
   },
   {
     href: "/customers",
-    label: "Clientes",
+    label: "Proveedores",
     iconOutline: UsersIconOutline,
     iconSolid: UsersIconSolid,
   },
   {
     href: "/brands",
     label: "Marcas",
-    iconOutline: TagIconOutline,
-    iconSolid: TagIconSolid,
+    iconOutline: ArchiveBoxIconOutline,
+    iconSolid: ArchiveBoxIconSolid,
+    // iconOutline: TagIconOutline,
+    // iconSolid: TagIconSolid,
   },
-  {
-    href: "/categories",
-    label: "Categorías",
-    iconOutline: Squares2X2IconOutline,
-    iconSolid: Squares2X2IconSolid,
-  },
+  // {
+  //   href: "/customers",
+  //   label: "Clientes",
+  //   iconOutline: UsersIconOutline,
+  //   iconSolid: UsersIconSolid,
+  // },
+  // {
+  //   href: "/categories",
+  //   label: "Categorías",
+  //   iconOutline: Squares2X2IconOutline,
+  //   iconSolid: Squares2X2IconSolid,
+  // },
 ];
 
 // TODO: Actualizar imagen de negocio (deberia ser una img que este subida a la DB asociada al cliente para que tome esa como referencia segun cada instancia de cliente)
@@ -102,7 +116,7 @@ const NavItem = ({
       href={href}
       variant="link"
       className={cn(
-        "relative h-10 w-full justify-start gap-2 rounded-none body-lg-regular transition-colors",
+        "relative h-11 w-full justify-start gap-2 rounded-none body-lg-regular transition-colors",
         collapsed ? "justify-center px-2" : "pl-4 pr-2.5",
         active
           ? "bg-[rgba(232,73,17,0.15)] font-semibold text-accent"
@@ -130,7 +144,7 @@ export default function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex shrink-0 flex-col rounded-lg border border-border-100 bg-background-400 shadow-lg transition-[width] duration-200 ease-in-out",
+        "relative flex shrink-0 flex-col rounded-[10px] border border-border-100 bg-background-400 shadow-lg transition-[width] duration-200 ease-in-out",
         collapsed ? "w-24" : "w-56",
       )}
     >
@@ -139,7 +153,7 @@ export default function Sidebar() {
         type="button"
         onClick={() => setCollapsed((v) => !v)}
         aria-label={collapsed ? "Expandir sidebar" : "Contraer sidebar"}
-        className="absolute -right-2.5 top-[69px] z-10 flex size-6 items-center justify-center rounded-full bg-warning-300 text-white shadow-sm transition-colors hover:bg-warning-400"
+        className="absolute -right-2.5 top-[69px] z-10 flex size-[26px] items-center justify-center rounded-full bg-warning-300 text-white shadow-sm transition-colors hover:bg-warning-400"
       >
         {collapsed ? (
           <ChevronRightIcon className="size-4" />
@@ -172,7 +186,7 @@ export default function Sidebar() {
       </div>
 
       {/* CTA Button */}
-      <div className="px-3 py-4">
+      <div className="px-3 py-4.5">
         <Button
           href="/products/new"
           variant="primary"
@@ -188,7 +202,7 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex flex-1 flex-col gap-1 py-3">
+      <nav className="flex flex-1 flex-col gap-1 pt-1 pb-3">
         {navItems.map(({ href, label, iconOutline, iconSolid }) => (
           <NavItem
             key={href}
@@ -207,7 +221,7 @@ export default function Sidebar() {
       </div>
 
       {/* Settings */}
-      <div className="py-3">
+      {/* <div className="py-3">
         <NavItem
           href="/settings"
           label="Configuración"
@@ -216,12 +230,11 @@ export default function Sidebar() {
           active={pathname === "/settings"}
           collapsed={collapsed}
         />
-      </div>
+      </div> */}
 
       {/* Footer branding */}
-
       {!collapsed ? (
-        <div className="flex flex-col items-center gap-1.5 px-4 pb-3 pt-1">
+        <div className="flex flex-col items-center gap-1.5 px-4 pb-3 pt-4">
           <Link href="https://www.shirostudio.co/" target="_blank">
             <Image
               src={logoShiroStudio}

@@ -6,10 +6,12 @@ import {
   ChevronDownIcon,
   UserIcon,
   ArrowLeftStartOnRectangleIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/actions/auth";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import Link from "next/link";
 
 const PAGE_LABELS: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -82,7 +84,7 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
               <span className="w-full truncate body-md-semibold text-text-500">
                 {displayName}
               </span>
-              <span className="w-full truncate body-sm-regular text-text-400">
+              <span className="w-full text-left truncate body-sm-regular text-text-400">
                 {role}
               </span>
             </div>
@@ -96,6 +98,16 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
                 onClick={() => setOpen(false)}
               />
               <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-lg border border-border-200 bg-background-400 shadow-md">
+                <Link href="/settings">
+                  <button
+                    disabled={pending}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 body-md-regular text-text-400 transition-colors hover:bg-background-300 hover:text-text-500 disabled:opacity-50"
+                  >
+                    <Cog6ToothIcon className="size-4" />
+                    Configuración
+                  </button>
+                </Link>
+
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -105,6 +117,16 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
                   <ArrowLeftStartOnRectangleIcon className="size-4" />
                   Cerrar sesión
                 </button>
+                {/* <div className="py-3"> */}
+                {/* <NavItem
+          href="/settings"
+          label="Configuración"
+          iconOutline={Cog6ToothIconOutline}
+          iconSolid={Cog6ToothIconSolid}
+          active={pathname === "/settings"}
+          collapsed={collapsed}
+        /> */}
+                {/* </div> */}
               </div>
             </>
           )}

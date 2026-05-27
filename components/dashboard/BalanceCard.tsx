@@ -27,7 +27,7 @@ export function BalanceCard({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-1">
         <h2 className="font-body text-2xl font-bold leading-none text-text-500">
           {title}
         </h2>

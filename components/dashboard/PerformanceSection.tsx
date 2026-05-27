@@ -1,5 +1,6 @@
 "use client";
 import { LastUpdated } from "@/components/shared/LastUpdated";
+import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import {
   AreaChart,
   Area,
@@ -68,19 +69,15 @@ export function PerformanceSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h2 className="font-body text-2xl font-bold leading-none text-text-500">
-          Rendimiento Comercial
-        </h2>
-        <div className="flex flex-col">
-          <p className="body-md-regular text-text-400">
-            Cómo está performando el negocio en el periodo seleccionado.
-          </p>
-          <p className="body-sm-regular text-text-400">
+      <SectionHeader
+        title="Rendimiento Comercial"
+        description="Cómo está performando el negocio en el periodo seleccionado."
+        lastUpdated={
+          <>
             Última actualización el <LastUpdated />
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="flex gap-3">
         <InsightCard
@@ -142,7 +139,7 @@ export function PerformanceSection({
               <ReferenceLine
                 key={x}
                 x={x}
-                stroke="#d1d0c9"
+                stroke="#e8e8ea"
                 strokeDasharray="4 4"
                 strokeWidth={1}
               />
@@ -182,7 +179,7 @@ export function PerformanceSection({
             <Tooltip
               content={<CustomTooltip />}
               cursor={{
-                stroke: "#d1d0c9",
+                stroke: "#e8e8ea",
                 strokeWidth: 1,
                 strokeDasharray: "4 4",
               }}

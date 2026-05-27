@@ -70,6 +70,14 @@ export interface DormantProduct {
   dormantDays: number;
 }
 
+export interface PeriodSaleRow {
+  productId: string;
+  productName: string;
+  quantity: number;
+  lastSaleDate: string;
+  lastSaleTime: string;
+}
+
 export interface ComparisonSideData {
   chartConfig: ChartConfig;
   grossSales: number;

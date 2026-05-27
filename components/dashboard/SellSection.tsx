@@ -2,6 +2,7 @@
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import type { SellMetrics } from "@/types/dashboard";
 import { LastUpdated } from "@/components/shared/LastUpdated";
+import { SectionHeader } from "@/components/dashboard/SectionHeader";
 
 function formatCurrency(n: number): string {
   return `$${Math.round(n).toLocaleString("es-AR")}`;
@@ -17,17 +18,12 @@ interface SellSectionProps {
 }
 
 export function SellSection({ metrics: m }: SellSectionProps) {
-
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="font-body text-2xl font-bold leading-none text-text-500">
-          Ventas
-        </h2>
-        <p className="body-sm-regular text-text-400">
-          Última actualización el <LastUpdated />
-        </p>
-      </div>
+      <SectionHeader
+        title="Ventas"
+        lastUpdated={<>Última actualización el <LastUpdated /></>}
+      />
       <div className="flex gap-3">
         <InsightCard
           label="Ventas Brutas"
