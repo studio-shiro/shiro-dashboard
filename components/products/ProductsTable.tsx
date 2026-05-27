@@ -27,6 +27,7 @@ import { Pagination } from "@/components/shared/Pagination";
 
 import { BatchesSubTable } from "./BatchesSubTable";
 import { buildColumns } from "./ProductsColumns";
+import Button from "../shared/Button";
 
 export {
   FIXED_COLUMN_IDS,
@@ -211,7 +212,7 @@ export function ProductsTable({
             <tbody>
               {table.getRowModel().rows.map((row) => (
                 <Fragment key={row.id}>
-                  <tr className="border-b border-border-100 last:border-0 hover:bg-background-300/40">
+                  <tr className="border-b border-border-100 last:border-0 hover:bg-background-600">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-4 py-4">
                         {flexRender(
@@ -242,19 +243,13 @@ export function ProductsTable({
               <p className="body-lg-medium text-text-500">
                 Comenzá a cargar tus Productos
               </p>
-              <Link
-                href="/products/new"
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 body-md-semibold text-white transition-colors hover:bg-accent-hover"
-              >
-                <PlusIcon className="size-4" />
+              <Button href="/products/new" variant="primary" className="w-full">
+                <PlusIcon className="size-5" />
                 Agregar Producto
-              </Link>
-              <button
-                type="button"
-                className="w-full rounded-lg border border-border-100 px-4 py-2.5 body-md-regular text-text-500 transition-colors hover:bg-background-300"
-              >
+              </Button>
+              <Button type="button" variant="tertiary" className="w-full">
                 Importá tus Productos
-              </button>
+              </Button>
             </div>
           </div>
         )}
