@@ -76,7 +76,7 @@ export function ProductsPageHeader({
       <div className="flex shrink-0 items-center gap-2">
         {/* Search — collapses to icon, expands to input */}
         {isSearchOpen ? (
-          <div className="group flex items-center gap-2 rounded-lg border border-border-100 bg-background-400 px-3 py-2 transition-colors focus-within:border-accent-hover">
+          <div className="group flex items-center gap-2 rounded-lg border border-border-400 bg-background-400 px-3 py-2 transition-colors focus-within:border-accent-hover">
             <MagnifyingGlassIcon className="size-4 shrink-0 text-text-400 transition-colors group-focus-within:text-accent-hover" />
             <input
               ref={inputRef}
@@ -84,12 +84,12 @@ export function ProductsPageHeader({
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Buscar por nombre, SKU o precio…"
-              className="w-52 bg-transparent body-md-regular text-text-500 outline-none placeholder:text-text-400"
+              className="w-2xl bg-transparent body-md-regular text-text-500 outline-none placeholder:text-text-400"
             />
             <button
               type="button"
               onClick={closeSearch}
-              className="ml-1 text-text-400 transition-colors hover:text-text-500 group-focus-within:text-accent-hover"
+              className="ml-1 text-text-400 transition-colors hover:text-accent-hover group-focus-within:text-accent-hover cursor-pointer"
               aria-label="Cerrar búsqueda"
             >
               <XMarkIcon className="size-5" />
@@ -101,7 +101,7 @@ export function ProductsPageHeader({
             variant="tertiary"
             aria-label="Buscar"
           >
-            <MagnifyingGlassIcon className="size-5" />
+            <MagnifyingGlassIcon className="size-4" />
           </Button>
         )}
 

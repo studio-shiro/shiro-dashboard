@@ -13,9 +13,9 @@ import {
 } from "@tanstack/react-table";
 import Link from "next/link";
 import {
-  ChevronUpIcon,
-  ChevronDownIcon,
   PlusIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
 } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import {
@@ -145,18 +145,25 @@ export function ProductsTable({
 
   const isEmpty = originalCount === 0;
   const isSearchEmpty = !isEmpty && products.length === 0;
+  const isGrowable = isEmpty || isSearchEmpty;
   const visibleColCount = table.getVisibleLeafColumns().length;
 
   return (
-    <Fragment>
-      <div className="overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg">
+    <div className={cn("flex flex-col", isGrowable ? "flex-1" : "gap-4")}>
+      {/* Table card */}
+      <div
+        className={cn(
+          "overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg",
+          isGrowable && "flex flex-1 flex-col",
+        )}
+      >
+        {/* Header — always rendered inside a real <table> for consistent column alignment */}
         <table className="w-full border-collapse">
-          {/* Header */}
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
                 key={headerGroup.id}
-                className="border-b border-border-100 bg-background-300"
+                className="border-b border-border-200 bg-background-300"
               >
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
@@ -165,7 +172,7 @@ export function ProductsTable({
                     <th
                       key={header.id}
                       className={cn(
-                        "px-4 py-3 text-left body-sm-medium text-text-400",
+                        "px-4 py-3 text-left body-md-semibold text-text-400 border-r border-border-200 last:border-r-0",
                         canSort &&
                           "cursor-pointer select-none hover:text-text-500",
                       )}
@@ -175,19 +182,19 @@ export function ProductsTable({
                           : undefined
                       }
                     >
-                      <div className="flex items-center gap-1">
+                      <div className="flex justify-between items-center gap-1">
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
                         )}
                         {canSort && (
-                          <span className="shrink-0 text-text-300">
+                          <span className="shrink-0 text-text-400">
                             {sorted === "asc" ? (
-                              <ChevronUpIcon className="size-3.5" />
+                              <ArrowUpIcon className="size-3.5" />
                             ) : sorted === "desc" ? (
-                              <ChevronDownIcon className="size-3.5" />
+                              <ArrowDownIcon className="size-3.5" />
                             ) : (
-                              <ChevronDownIcon className="size-3.5 opacity-40" />
+                              <ArrowDownIcon className="size-3.5" />
                             )}
                           </span>
                         )}
@@ -199,41 +206,10 @@ export function ProductsTable({
             ))}
           </thead>
 
-          {/* Body */}
-          <tbody>
-            {isEmpty ? (
-              <tr>
-                <td colSpan={visibleColCount} className="py-16 text-center">
-                  <div className="mx-auto flex max-w-xs flex-col items-center gap-4">
-                    <p className="body-lg-medium text-text-500">
-                      Comenzá a cargar tus Productos
-                    </p>
-                    <Link
-                      href="/products/new"
-                      className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 body-md-semibold text-white transition-colors hover:bg-accent-hover"
-                    >
-                      <PlusIcon className="size-4" />
-                      Agregar Producto
-                    </Link>
-                    <button
-                      type="button"
-                      className="w-full rounded-lg border border-border-100 px-4 py-2.5 body-md-regular text-text-500 transition-colors hover:bg-background-300"
-                    >
-                      Importá tus Productos
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : isSearchEmpty ? (
-              <tr>
-                <td colSpan={visibleColCount} className="py-16 text-center">
-                  <p className="body-md-regular text-text-400">
-                    Sin Resultados
-                  </p>
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => (
+          {/* Body — only rendered when there are results */}
+          {!isGrowable && (
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
                 <Fragment key={row.id}>
                   <tr className="border-b border-border-100 last:border-0 hover:bg-background-300/40">
                     {row.getVisibleCells().map((cell) => (
@@ -254,25 +230,54 @@ export function ProductsTable({
                       </tr>
                     )}
                 </Fragment>
-              ))
-            )}
-          </tbody>
+              ))}
+            </tbody>
+          )}
         </table>
+
+        {/* Empty states — flex divs outside <table> so they can grow to fill remaining height */}
+        {isEmpty && (
+          <div className="flex flex-1 items-center justify-center px-4">
+            <div className="mx-auto flex max-w-xs flex-col items-center gap-4">
+              <p className="body-lg-medium text-text-500">
+                Comenzá a cargar tus Productos
+              </p>
+              <Link
+                href="/products/new"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2.5 body-md-semibold text-white transition-colors hover:bg-accent-hover"
+              >
+                <PlusIcon className="size-4" />
+                Agregar Producto
+              </Link>
+              <button
+                type="button"
+                className="w-full rounded-lg border border-border-100 px-4 py-2.5 body-md-regular text-text-500 transition-colors hover:bg-background-300"
+              >
+                Importá tus Productos
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isSearchEmpty && (
+          <div className="flex flex-1 justify-center py-8">
+            <p className="body-md-semibold text-text-400">Sin Resultados</p>
+          </div>
+        )}
       </div>
-      {/* Pagination — always visible when there are products */}
-      {originalCount > 0 && (
-        <div className="">
-          <Pagination
-            pageIndex={table.getState().pagination.pageIndex}
-            pageCount={Math.max(1, table.getPageCount())}
-            canPrevious={table.getCanPreviousPage()}
-            canNext={table.getCanNextPage()}
-            onPrevious={() => table.previousPage()}
-            onNext={() => table.nextPage()}
-            onGoTo={(p) => table.setPageIndex(p)}
-          />
-        </div>
+
+      {/* Pagination */}
+      {!isGrowable && (
+        <Pagination
+          pageIndex={table.getState().pagination.pageIndex}
+          pageCount={Math.max(1, table.getPageCount())}
+          canPrevious={table.getCanPreviousPage()}
+          canNext={table.getCanNextPage()}
+          onPrevious={() => table.previousPage()}
+          onNext={() => table.nextPage()}
+          onGoTo={(p) => table.setPageIndex(p)}
+        />
       )}
-    </Fragment>
+    </div>
   );
 }

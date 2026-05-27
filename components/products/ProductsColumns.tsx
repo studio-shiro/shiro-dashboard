@@ -64,8 +64,7 @@ export function buildColumns(
         const hasExpiry = row.original.batch_count > 0;
         const isExpanded = expandedRows.has(row.original.id);
         return (
-          // justify-between
-          <div className="flex items-center gap-1.5">
+          <div className="flex w-full items-center justify-between gap-1.5">
             <Link
               href={`/products/${row.original.id}`}
               className="body-md-medium text-text-500 underline underline-offset-2 transition-opacity hover:opacity-70"
@@ -95,9 +94,7 @@ export function buildColumns(
       header: "SKU",
       enableSorting: false,
       cell: ({ getValue }) => (
-        <span className="font-body font-semibold text-sm text-text-400">
-          {getValue()}
-        </span>
+        <span className="body-md-semibold text-text-500">{getValue()}</span>
       ),
     }),
 
@@ -108,7 +105,7 @@ export function buildColumns(
       cell: ({ getValue }) => {
         const url = getValue();
         return url ? (
-          <div className="h-[60px] w-[60px] overflow-hidden rounded-md border border-border-100">
+          <div className="h-15 w-15 overflow-hidden rounded-md border border-border-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={url}
@@ -117,7 +114,7 @@ export function buildColumns(
             />
           </div>
         ) : (
-          <div className="flex h-[60px] w-[60px] items-center justify-center rounded-md border border-border-100 bg-background-300">
+          <div className="flex h-15 w-15 items-center justify-center rounded-md border border-border-100 bg-background-300">
             <CubeIcon className="size-5 text-text-300" />
           </div>
         );
@@ -154,8 +151,7 @@ export function buildColumns(
         const count = row.original.batch_count;
         const isExpanded = expandedRows.has(row.original.id);
         return (
-          // justify-between
-          <div className="flex items-center gap-1">
+          <div className="flex w-full items-center justify-between gap-1">
             <span className="body-md-regular text-text-500">{count}</span>
             {count > 0 && (
               <button
