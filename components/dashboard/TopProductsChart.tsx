@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from "recharts";
 import type { TopProduct } from "@/types/dashboard";
+import { SectionHeader } from "@/components/dashboard/SectionHeader";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CustomTooltip({ active, payload }: any) {
@@ -88,21 +89,13 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="font-body text-2xl font-bold leading-none text-text-500">
-          Productos Destacados
-        </h2>
-        <div className="flex flex-col">
-          <p className="body-md-regular text-text-400">
-            Tu top 5 de lo más vendido.
-          </p>
-          <p className="body-sm-regular text-text-400">
-            Última actualización el 24 de mayo de 2026 a las 10:30hs
-          </p>
-        </div>
-      </div>
+      <SectionHeader
+        title="Productos Destacados"
+        description="Tu top 5 de lo más vendido."
+        lastUpdated="Última actualización el 24 de mayo de 2026 a las 10:30hs"
+      />
 
-      <div className="flex h-full items-center rounded-2xl border border-border-200 bg-background-400 px-5 shadow-md">
+      <div className="flex h-[290px] items-center rounded-2xl border border-border-200 bg-background-400 px-5 py-4 shadow-md">
         {/* Donut chart */}
         <div className="relative h-55 w-55 shrink-0">
           <ResponsiveContainer width="100%" height="100%">

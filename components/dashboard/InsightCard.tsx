@@ -41,7 +41,7 @@ export function InsightCard({
         <span className="truncate body-md-semibold text-text-400">{label}</span>
 
         {showTrend ? (
-          <div className="flex shrink-0 items-center gap-0.5">
+          <div className="flex shrink-0 items-center gap-1">
             <span
               className={cn(
                 "body-sm-medium",

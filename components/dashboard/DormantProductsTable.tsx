@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { LastUpdated } from "@/components/shared/LastUpdated";
+import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import {
   useReactTable,
   getCoreRowModel,
@@ -23,7 +24,7 @@ const AVATAR_COLORS = ["#3446a5", "#cd2b31", "#b46c00", "#4963ea", "#009530"];
 function ProductAvatar({ name }: { name: string }) {
   const color = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
   return (
-    <div className="flex size-14 shrink-0 items-center justify-center rounded-lg border border-border-200 bg-background-300">
+    <div className="flex size-[70px] shrink-0 items-center justify-center rounded-lg border border-border-200 bg-background-300">
       <span style={{ color }} className="heading-lg">
         {name.charAt(0).toUpperCase()}
       </span>
@@ -137,15 +138,10 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Section header */}
-      <div className="flex flex-col gap-0.5">
-        <h2 className="font-body text-2xl font-bold leading-none text-text-500">
-          Productos Sin Movimiento
-        </h2>
-        <p className="body-sm-regular text-text-400">
-          Última actualización el <LastUpdated />
-        </p>
-      </div>
+      <SectionHeader
+        title="Productos Sin Movimiento"
+        lastUpdated={<>Última actualización el <LastUpdated /></>}
+      />
 
       {/* Table card */}
       <div className="overflow-hidden space-y-3.5">

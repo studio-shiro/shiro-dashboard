@@ -6,6 +6,7 @@ import { TopProductsChart } from "@/components/dashboard/TopProductsChart";
 import { PerformanceSection } from "@/components/dashboard/PerformanceSection";
 import { SellSection } from "@/components/dashboard/SellSection";
 import { DormantProductsTable } from "@/components/dashboard/DormantProductsTable";
+import { SalesPeriodTable } from "@/components/dashboard/SalesPeriodTable";
 import { PeriodComparisonSection } from "@/components/dashboard/PeriodComparisonSection";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -16,6 +17,7 @@ import {
   fetchCustomersMetrics,
   fetchChartData,
   fetchPurchaseFrequency,
+  fetchPeriodSales,
 } from "@/lib/dashboard/queries";
 import { getChartConfig } from "@/lib/dashboard/period";
 import { computeDateRange, getDefaultPeriod } from "@/lib/dashboard/dateRange";
@@ -64,6 +66,7 @@ export default async function DashboardPage({
     rightMetrics,
     leftFreq,
     rightFreq,
+    periodSales,
   ] = await Promise.all([
     fetchSalesMetrics(
       supabase,
@@ -150,6 +153,7 @@ export default async function DashboardPage({
       rightRange.prevStartDate,
       rightRange.prevEndDate,
     ),
+    fetchPeriodSales(supabase, businessId, range.startDate, range.endDate),
   ]);
 
   const chartConfig = getChartConfig(periodType, periodValue, chartData);
@@ -226,10 +230,18 @@ export default async function DashboardPage({
 
       <SellSection metrics={salesMetrics} />
 
-      <div className="flex flex-1 gap-6">
-        <StockAlertChart data={stockAlerts} />
-        <TopProductsChart data={topProducts} />
+      {/* <div className=""> */}
+      <StockAlertChart data={stockAlerts} />
+
+      <div className="flex gap-9">
+        <div className="flex-1 min-w-0 flex flex-col">
+          <TopProductsChart data={topProducts} />
+        </div>
+        <div className="flex-1 min-w-0 flex flex-col">
+          <SalesPeriodTable rows={periodSales} periodType={periodType} />
+        </div>
       </div>
+      {/* </div> */}
 
       <PerformanceSection
         metrics={performanceMetrics}

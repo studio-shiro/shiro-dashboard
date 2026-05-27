@@ -2,24 +2,23 @@
 import { InsightCard } from "@/components/dashboard/InsightCard";
 import type { CustomersMetrics } from "@/types/dashboard";
 import { LastUpdated } from "@/components/shared/LastUpdated";
+import { SectionHeader } from "@/components/dashboard/SectionHeader";
 
 interface CustomersSectionProps {
   metrics: CustomersMetrics;
   lowStockCount: number;
 }
 
-export function CustomersSection({ metrics: m, lowStockCount }: CustomersSectionProps) {
-
+export function CustomersSection({
+  metrics: m,
+  lowStockCount,
+}: CustomersSectionProps) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="font-body text-2xl font-bold leading-none text-text-500">
-          Clientes
-        </h2>
-        <p className="body-sm-regular text-text-400">
-          Última actualización el <LastUpdated />
-        </p>
-      </div>
+      <SectionHeader
+        title="Clientes"
+        lastUpdated={<>Última actualización el <LastUpdated /></>}
+      />
       <div className="flex gap-3">
         <InsightCard
           label="Nuevos Clientes"

@@ -7,6 +7,7 @@ import type {
   CustomersMetrics,
   ChartDataPoint,
   PeriodType,
+  PeriodSaleRow,
 } from "@/types/dashboard";
 
 const TOP_PRODUCT_COLORS = [
@@ -153,6 +154,56 @@ export async function fetchTopProducts(
     color: TOP_PRODUCT_COLORS[i] ?? "#aaaaaa",
     units: p.units,
   }));
+}
+
+export async function fetchPeriodSales(
+  supabase: SupabaseClient,
+  businessId: string,
+  startDate: string,
+  endDate: string,
+): Promise<PeriodSaleRow[]> {
+  const { data } = await supabase
+    .from("sales")
+    .select("product_id, quantity, date, products!inner(name)")
+    .eq("business_id", businessId)
+    .gte("date", startDate)
+    .lt("date", endDate)
+    .order("date", { ascending: false });
+
+  const byProduct = new Map<
+    string,
+    { name: string; quantity: number; lastDate: string }
+  >();
+
+  for (const s of data ?? []) {
+    const pid = s.product_id as string;
+    const existing = byProduct.get(pid);
+    if (existing) {
+      existing.quantity += s.quantity as number;
+    } else {
+      byProduct.set(pid, {
+        name: (s.products as unknown as { name: string }).name,
+        quantity: s.quantity as number,
+        lastDate: s.date as string,
+      });
+    }
+  }
+
+  return Array.from(byProduct.entries()).map(([productId, p]) => {
+    const d = new Date(p.lastDate);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return {
+      productId,
+      productName: p.name,
+      quantity: p.quantity,
+      lastSaleDate: `${day}/${month}/${year}`,
+      lastSaleTime: `${hours}:${minutes}`,
+    };
+  });
 }
 
 export async function fetchSalesMetrics(

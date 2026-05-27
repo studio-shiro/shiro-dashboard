@@ -1,6 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
 import { LastUpdated } from "@/components/shared/LastUpdated";
+import { SectionHeader } from "@/components/dashboard/SectionHeader";
 import {
   AreaChart,
   Area,
@@ -133,7 +134,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
             <ReferenceLine
               key={x}
               x={x}
-              stroke="#d1d0c9"
+              stroke="#e8e8ea"
               strokeDasharray="4 4"
               strokeWidth={1}
             />
@@ -173,7 +174,7 @@ function ComparisonChart({ config, color }: ComparisonChartProps) {
           <Tooltip
             content={(props) => <ComparisonTooltip {...props} color={color} />}
             cursor={{
-              stroke: "#d1d0c9",
+              stroke: "#e8e8ea",
               strokeWidth: 1,
               strokeDasharray: "4 4",
             }}
@@ -305,19 +306,15 @@ export function PeriodComparisonSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="font-body text-2xl font-bold leading-none text-text-500">
-          Comparativa de Períodos
-        </h2>
-        <div className="flex flex-col">
-          <p className="body-md-regular text-text-400">
-            Compará dos períodos del mismo tipo.
-          </p>
-          <p className="body-sm-regular text-text-400">
+      <SectionHeader
+        title="Comparativa de Períodos"
+        description="Compará dos períodos del mismo tipo."
+        lastUpdated={
+          <>
             Última actualización el <LastUpdated />
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-6">
         <ComparisonColumn
