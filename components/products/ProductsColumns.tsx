@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   CubeIcon,
 } from "@heroicons/react/24/outline";
+import { FlagIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { RowActionsMenu } from "./RowActionsMenu";
 import formatCurrency from "@/helpers/formatCurrency";
@@ -150,9 +151,38 @@ export function buildColumns(
       cell: ({ row }) => {
         const count = row.original.batch_count;
         const isExpanded = expandedRows.has(row.original.id);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let hasExpired = false;
+        let hasExpiringSoon = false;
+
+        for (const batch of row.original.batches) {
+          if (!batch.expiration_date) continue;
+          const expiry = new Date(batch.expiration_date);
+          expiry.setHours(0, 0, 0, 0);
+          const days = Math.ceil(
+            (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+          );
+          if (days < 0) {
+            hasExpired = true;
+            break;
+          } else if (days <= 30) {
+            hasExpiringSoon = true;
+          }
+        }
+
         return (
           <div className="flex w-full items-center justify-between gap-1">
-            <span className="body-md-regular text-text-500">{count}</span>
+            <div className="flex items-center gap-1.5">
+              {hasExpired && (
+                <FlagIcon className="w-5 h-auto shrink-0 text-danger-300" />
+              )}
+              {!hasExpired && hasExpiringSoon && (
+                <ExclamationTriangleIcon className="w-5 h-auto shrink-0 text-warning-300" />
+              )}
+              <span className="body-md-regular text-text-500">{count}</span>
+            </div>
             {count > 0 && (
               <button
                 type="button"
@@ -197,12 +227,11 @@ export function buildColumns(
       id: "stock",
       header: "Stock",
       enableSorting: false,
-      cell: ({ getValue }) => {
-        const qty = getValue();
-        return (
-          <span className="body-md-regular text-text-500">{qty ?? "—"}</span>
-        );
-      },
+      cell: ({ getValue }) => (
+        <span className="body-md-regular text-text-500">
+          {getValue() ?? "—"}
+        </span>
+      ),
     }),
 
     columnHelper.display({
