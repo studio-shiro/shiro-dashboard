@@ -11,14 +11,15 @@ import {
   useXAxisTicks,
   usePlotArea,
 } from "recharts";
+import Link from "next/link";
+import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import type { StockAlertItem } from "@/types/dashboard";
 import { SectionHeader } from "@/components/dashboard/SectionHeader";
 
-function getBarColor(quantity: number, threshold: number): string {
-  const ratio = quantity / threshold;
-  if (ratio < 0.2) return "#cd2b31"; // danger-300
-  if (ratio < 0.6) return "#ff9900"; // warning-300
-  return "#b46c00"; // warning-400
+function getBarColor(quantity: number): string {
+  if (quantity <= 10) return "#cd2b31"; // danger-300 — rojo fuerte
+  if (quantity <= 14) return "#911e23"; // danger-400 — bordo
+  return "#ff9900";                     // warning-300 — amarillo
 }
 
 const Y_TICKS = [0, 10, 20, 30, 40, 50];
@@ -67,6 +68,14 @@ export function StockAlertChart({ data }: StockAlertChartProps) {
         title="Alerta de stock"
         description="Tus alertas más urgentes."
         lastUpdated="Última actualización el 24 de mayo de 2026 a las 10:30hs"
+        action={
+          <Link
+            href="/settings"
+            className="text-text-400 transition-colors hover:text-text-500"
+          >
+            <Cog6ToothIcon className="size-6" />
+          </Link>
+        }
       />
 
       <div className="rounded-2xl border border-border-200 bg-background-400 px-4 pb-4 pt-5 shadow-md">
@@ -122,7 +131,7 @@ export function StockAlertChart({ data }: StockAlertChartProps) {
               {data.map((entry, index) => (
                 <Cell
                   key={index}
-                  fill={getBarColor(entry.quantity, entry.threshold)}
+                  fill={getBarColor(entry.quantity)}
                 />
               ))}
             </Bar>
