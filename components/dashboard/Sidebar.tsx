@@ -1,6 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
+import { uploadFile, buildStoragePath } from "@/lib/supabase/storage";
+import { updateBusinessLogoAction } from "@/actions/business";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,6 +24,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   BanknotesIcon as BankNotesIconOutline,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
 import {
   UsersIcon as UsersIconSolid,
@@ -92,8 +95,6 @@ const navItems = [
   // },
 ];
 
-// TODO: Actualizar imagen de negocio (deberia ser una img que este subida a la DB asociada al cliente para que tome esa como referencia segun cada instancia de cliente)
-
 const NavItem = ({
   href,
   label,
@@ -132,9 +133,38 @@ const NavItem = ({
   );
 };
 
-export default function Sidebar() {
+export default function Sidebar({
+  logoUrl,
+  businessId,
+}: {
+  logoUrl: string | null;
+  businessId: string;
+}) {
   const [collapsed, setCollapsed] = useState(false);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(logoUrl);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 3 * 1024 * 1024) return;
+
+    setUploading(true);
+    const path = buildStoragePath("businesses", businessId, businessId, file);
+    const url = await uploadFile(file, "logos", path);
+
+    if (url) {
+      setCurrentLogoUrl(url);
+      await updateBusinessLogoAction(url);
+    }
+    setUploading(false);
+  }
+
+
 
   const isActive = (href: string) =>
     href === "/dashboard"
@@ -162,23 +192,57 @@ export default function Sidebar() {
         )}
       </button>
 
-      {/* Logo */}
+      {/* Logo / upload zone */}
       <div className="flex flex-col items-center gap-2 px-4 pb-3 pt-5">
-        <div
-          className={cn(
-            "flex items-center justify-center rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out",
-            collapsed ? "size-16" : "size-25",
-          )}
-        >
-          <span
+        {currentLogoUrl ? (
+          <div
             className={cn(
-              "font-display font-bold text-text-500 transition-[font-size] duration-200",
-              collapsed ? "text-base" : "text-2xl",
+              "relative shrink-0 overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out",
+              collapsed ? "size-16" : "size-25",
             )}
           >
-            SS
-          </span>
-        </div>
+            <Image
+              src={currentLogoUrl}
+              alt="Logo del negocio"
+              fill
+              className="object-cover"
+              sizes={collapsed ? "64px" : "100px"}
+            />
+          </div>
+        ) : (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              aria-label="Subir logo del negocio"
+              className={cn(
+                "relative flex shrink-0 flex-col items-center justify-center overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out hover:opacity-80",
+                collapsed ? "size-16" : "size-25",
+                uploading && "opacity-50",
+              )}
+            >
+              <ArrowUpTrayIcon
+                className={cn(
+                  "shrink-0 text-text-500",
+                  collapsed ? "size-5" : "size-6",
+                )}
+              />
+              {!collapsed && (
+                <span className="mt-1.5 text-center font-body text-[12px] leading-4 text-text-500">
+                  Subir logo
+                </span>
+              )}
+            </button>
+          </>
+        )}
       </div>
 
       <div className="px-3">

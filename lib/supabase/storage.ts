@@ -9,7 +9,9 @@ export async function uploadFile(
   const { error } = await supabase.storage
     .from(bucket)
     .upload(path, file, { upsert: true });
-  if (error) return null;
+  if (error) {
+    throw new Error("Error uploading file, ", error);
+  }
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
