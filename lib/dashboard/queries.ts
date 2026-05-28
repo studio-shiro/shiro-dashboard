@@ -415,14 +415,9 @@ export async function fetchChartData(
   for (const sale of data ?? []) {
     const d = new Date(sale.date as string);
     let bucket: number;
-
     switch (periodType) {
       case "today":
         bucket = d.getUTCHours();
-        break;
-      case "week":
-        // 0 = Monday … 6 = Sunday
-        bucket = (d.getUTCDay() + 6) % 7;
         break;
       case "month":
         bucket = d.getUTCDate();
@@ -430,6 +425,11 @@ export async function fetchChartData(
       case "year":
         bucket = d.getUTCMonth();
         break;
+      case "custom":
+        bucket = d.getUTCDate();
+        break;
+      default:
+        continue;
     }
 
     buckets.set(bucket, (buckets.get(bucket) ?? 0) + 1);

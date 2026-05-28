@@ -1,4 +1,4 @@
-export type PeriodType = "today" | "week" | "month" | "year";
+export type PeriodType = "today" | "month" | "year" | "custom";
 export type ChartGranularity = "hourly" | "daily" | "weekly" | "monthly";
 
 export interface ChartDataPoint {

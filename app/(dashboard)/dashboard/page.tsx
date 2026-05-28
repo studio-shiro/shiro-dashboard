@@ -32,7 +32,7 @@ function formatCurrency(n: number): string {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; value?: string }>;
+  searchParams: Promise<{ type?: PeriodType; value?: string }>;
 }) {
   const params = await searchParams;
   const defaultPeriod = getDefaultPeriod();
@@ -40,7 +40,10 @@ export default async function DashboardPage({
   const periodValue = params.value ?? defaultPeriod.value;
 
   const range = computeDateRange(periodType, periodValue);
-  const [defaultLeft, defaultRight] = getDefaultPeriodValues(periodType);
+  const [defaultLeft, defaultRight] = getDefaultPeriodValues(
+    periodType,
+    periodValue,
+  );
   const leftRange = computeDateRange(periodType, defaultLeft);
   const rightRange = computeDateRange(periodType, defaultRight);
 
