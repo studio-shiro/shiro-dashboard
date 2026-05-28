@@ -11,26 +11,18 @@ import {
   createColumnHelper,
   type SortingState,
 } from "@tanstack/react-table";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  CubeIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import type { DormantProduct } from "@/lib/dashboard/dormantProducts";
 import { Pagination } from "@/components/shared/Pagination";
 
 const PAGE_SIZE = 5;
 
-// ─── Cell sub-components ──────────────────────────────────────────────────────
-
-const AVATAR_COLORS = ["#3446a5", "#cd2b31", "#b46c00", "#4963ea", "#009530"];
-
-function ProductAvatar({ name }: { name: string }) {
-  const color = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
-  return (
-    <div className="flex size-[70px] shrink-0 items-center justify-center rounded-lg border border-border-200 bg-background-300">
-      <span style={{ color }} className="heading-lg">
-        {name.charAt(0).toUpperCase()}
-      </span>
-    </div>
-  );
-}
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SortIndicator({ sorted }: { sorted: false | "asc" | "desc" }) {
   if (sorted === "asc")
@@ -40,77 +32,141 @@ function SortIndicator({ sorted }: { sorted: false | "asc" | "desc" }) {
   return <ChevronDownIcon className="size-3.5 shrink-0 text-text-300" />;
 }
 
+function ProductImage({ url }: { url: string | null }) {
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt="Producto"
+        className="size-[70px] rounded-[10px] border border-border-100 object-cover"
+      />
+    );
+  }
+  return (
+    <div className="flex size-[70px] items-center justify-center rounded-[10px] border border-border-100 bg-background-300">
+      <CubeIcon className="size-5 text-text-300" />
+    </div>
+  );
+}
+
+function ExpiryTagBadge({ tag }: { tag: DormantProduct["expiryTag"] }) {
+  if (tag === "expiring_soon") {
+    return (
+      <span className="rounded-md bg-warning-300/10 px-2 py-0.5 body-sm-medium text-warning-300 whitespace-nowrap">
+        Próximo a Vencer
+      </span>
+    );
+  }
+  if (tag === "apt") {
+    return (
+      <span className="rounded-md bg-success-100 px-2 py-0.5 body-sm-medium text-success-400 whitespace-nowrap">
+        Apto Consumo
+      </span>
+    );
+  }
+  return <span className="body-md-regular text-text-400">—</span>;
+}
+
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 const columnHelper = createColumnHelper<DormantProduct>();
 
 const COLUMNS = [
-  columnHelper.accessor("reference", {
-    header: "N° Referencia",
+  columnHelper.accessor("name", {
+    id: "name",
+    header: "Producto",
+    cell: (info) => (
+      <span className="body-md-medium text-text-400">{info.getValue()}</span>
+    ),
+  }),
+
+  columnHelper.accessor("referenceLabel", {
+    id: "referencia",
+    header: "Referencia",
     cell: (info) => (
       <span className="heading-sm text-text-500">{info.getValue()}</span>
     ),
-    size: 150,
+    size: 124,
   }),
-  columnHelper.display({
-    id: "avatar",
-    header: "Producto",
-    enableSorting: false,
-    cell: (info) => <ProductAvatar name={info.row.original.name} />,
-    size: 90,
-  }),
-  columnHelper.accessor("name", {
-    header: "Nombre",
-    cell: (info) => (
-      <span className="body-md-regular text-text-400">{info.getValue()}</span>
-    ),
-  }),
-  columnHelper.accessor("category", {
-    header: "Categoría",
-    cell: (info) => (
-      <span className="body-md-regular text-text-400">{info.getValue()}</span>
-    ),
-    size: 130,
-  }),
-  columnHelper.accessor("lastSaleDate", {
-    header: "Última venta",
-    sortingFn: "datetime",
-    cell: (info) => {
-      const d = new Date(info.getValue());
-      const day = d.getDate();
-      const month = d
-        .toLocaleDateString("es-AR", { month: "long" })
-        .replace(/^\w/, (c) => c.toUpperCase());
 
-      if (day && month) {
-        return (
-          <span className="body-md-regular text-text-400">
-            {day} de {month} {d.getFullYear()}
-          </span>
-        );
-      } else {
-        return <span className="body-md-regular text-text-400">-</span>;
-      }
-    },
-    size: 160,
+  columnHelper.accessor("imageUrl", {
+    id: "imagen",
+    header: "Imagen",
+    enableSorting: false,
+    cell: (info) => <ProductImage url={info.getValue()} />,
+    size: 100,
   }),
+
   columnHelper.accessor("stock", {
+    id: "stock",
     header: "Stock",
     cell: (info) => (
-      <span className="body-md-regular text-text-400">
-        {info.getValue()} unidades
+      <span className="body-md-regular text-text-500">{info.getValue()}</span>
+    ),
+    size: 82,
+  }),
+
+  columnHelper.accessor("expirationDate", {
+    id: "vencimiento",
+    header: "Vencimiento",
+    cell: (info) => (
+      <span className="body-md-regular text-text-500">
+        {info.getValue() ?? "—"}
       </span>
     ),
-    size: 130,
+    size: 109,
   }),
-  columnHelper.accessor("dormantDays", {
-    header: "Sin movimiento",
+
+  columnHelper.accessor("daysUntilExpiry", {
+    id: "diasHastaVencimiento",
+    header: "Días hasta Vencimiento",
+    cell: (info) => {
+      const days = info.getValue();
+      if (days === null)
+        return <span className="body-md-regular text-text-400">—</span>;
+      return (
+        <span className="rounded-md bg-background-200 px-2 py-0.5 body-sm-medium text-text-400">
+          {days} días
+        </span>
+      );
+    },
+    size: 112,
+  }),
+
+  columnHelper.accessor("expiryTag", {
+    id: "tag",
+    header: "Tag",
+    enableSorting: false,
+    cell: (info) => <ExpiryTagBadge tag={info.getValue()} />,
+    size: 128,
+  }),
+
+  columnHelper.accessor("lastSaleDate", {
+    id: "ultimaVenta",
+    header: "Última venta",
     cell: (info) => (
       <span className="body-md-regular text-text-400">
-        {info.getValue()} días
+        {info.getValue() || "—"}
       </span>
     ),
-    size: 150,
+    size: 113,
+  }),
+
+  columnHelper.accessor("dormantDays", {
+    id: "diasSinMovimiento",
+    header: "Días sin movimiento",
+    cell: (info) => {
+      const days = info.getValue();
+      return (
+        <div className="flex justify-between">
+          <span className="body-md-regular text-text-500">
+            {days === 999 ? "—" : days}
+          </span>
+          <SparklesIcon className="size-6 text-info-300 fill-info-300" />
+        </div>
+      );
+    },
   }),
 ];
 
@@ -121,7 +177,9 @@ interface DormantProductsTableProps {
 }
 
 export function DormantProductsTable({ data }: DormantProductsTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "name", desc: false },
+  ]);
 
   const table = useReactTable({
     data,
@@ -139,14 +197,18 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
   return (
     <div className="flex flex-col gap-3">
       <SectionHeader
-        title="Productos Sin Movimiento"
-        lastUpdated={<>Última actualización el <LastUpdated /></>}
+        title="Productos Sin Movimiento/Por Vencer"
+        description="Vendé tus productos sin movimientos con nuestras sugerencias!"
+        lastUpdated={
+          <>
+            Última actualización el <LastUpdated />
+          </>
+        }
       />
 
-      {/* Table card */}
-      <div className="overflow-hidden space-y-3.5">
+      <div className="space-y-3.5 overflow-hidden">
         <div className="overflow-x-auto rounded-2xl border border-border-200 bg-background-400 shadow-lg">
-          <table className="w-full min-w-[760px] border-collapse">
+          <table className="w-full border-collapse">
             <thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr
@@ -156,8 +218,12 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      style={{ width: header.column.columnDef.size }}
-                      className="px-5 py-3.5 text-left"
+                      style={
+                        header.column.columnDef.size
+                          ? { width: header.column.columnDef.size }
+                          : undefined
+                      }
+                      className="px-3 py-3.5 text-left"
                     >
                       {header.column.getCanSort() ? (
                         <button
@@ -195,7 +261,7 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
                   }`}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-5 py-4">
+                    <td key={cell.id} className="px-3 py-3">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
@@ -208,18 +274,15 @@ export function DormantProductsTable({ data }: DormantProductsTableProps) {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="">
-          <Pagination
-            pageIndex={table.getState().pagination.pageIndex}
-            pageCount={Math.max(1, table.getPageCount())}
-            canPrevious={table.getCanPreviousPage()}
-            canNext={table.getCanNextPage()}
-            onPrevious={() => table.previousPage()}
-            onNext={() => table.nextPage()}
-            onGoTo={(p) => table.setPageIndex(p)}
-          />
-        </div>
+        <Pagination
+          pageIndex={table.getState().pagination.pageIndex}
+          pageCount={Math.max(1, table.getPageCount())}
+          canPrevious={table.getCanPreviousPage()}
+          canNext={table.getCanNextPage()}
+          onPrevious={() => table.previousPage()}
+          onNext={() => table.nextPage()}
+          onGoTo={(p) => table.setPageIndex(p)}
+        />
       </div>
     </div>
   );

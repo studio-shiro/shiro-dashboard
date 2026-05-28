@@ -62,11 +62,14 @@ export interface TopProduct {
 
 export interface DormantProduct {
   id: string;
-  reference: string;
   name: string;
-  category: string;
-  lastSaleDate: string;
+  referenceLabel: string;
+  imageUrl: string | null;
   stock: number;
+  expirationDate: string | null;
+  daysUntilExpiry: number | null;
+  expiryTag: "expiring_soon" | "apt" | null;
+  lastSaleDate: string;
   dormantDays: number;
 }
 

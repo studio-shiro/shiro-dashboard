@@ -57,6 +57,7 @@ lib/
   supabase/         # Supabase clients (server and client)
   validations/      # Zod schemas per module
 actions/            # Server Actions per module
+store/              # Zustand stores
 types/              # Shared TypeScript types
 ```
 
@@ -162,7 +163,75 @@ if (role !== "admin") return { error: "Forbidden" };
 
 ### Dashboard Home
 
-Key metrics on login: sales for day/week/month with comparison to previous period, low-stock products (below configurable threshold), latest sales, new customers this month.
+Key metrics on login: low-stock products (below configurable threshold), latest sales, new customers this month.
+
+All metrics are controlled by a **period filter** implemented as a Zustand store (`usePeriodStore`) shared across all dashboard components.
+
+**Period filter — selector options:**
+
+| Filter   | What it shows                           |
+| -------- | --------------------------------------- |
+| `today`  | Current day                             |
+| `week`   | Current calendar week (Mon–Sun)         |
+| `month`  | Current calendar month                  |
+| `custom` | User-defined date range via date picker |
+
+**Arrow navigation (`← →`) per filter:**
+
+- **Today:** moves one day backward/forward.
+- **Week:** moves one full week backward/forward.
+- **Month:** moves one full month backward/forward.
+- **Custom — single day selected:** behaves like `today`, moves one day backward/forward.
+- **Custom — date range selected:** moves the entire range by its exact duration. Example: range of 11 days (May 10→20) → left arrow yields Apr 29→May 9, right arrow yields May 21→31. Arrows are hidden or disabled while the date picker is open.
+
+**Comparison logic:**
+
+All filters support a secondary comparison selector with three options:
+
+- `previous_period` — the immediately preceding period of the same duration (default for all filters)
+- `same_period_last_year` — same range shifted back exactly 1 year
+- `none` — no comparison shown
+
+Comparison defaults by filter:
+
+- **Today:** previous day
+- **Week:** previous week
+- **Month:** previous month
+- **Custom range:** range of identical length immediately before the selected start date
+
+**Period store shape (`store/period.ts`):**
+
+```ts
+type PeriodFilter = "today" | "week" | "month" | "custom";
+type ComparisonMode = "previous_period" | "same_period_last_year" | "none";
+
+interface PeriodState {
+  filter: PeriodFilter;
+  // For 'custom': both dates required. Single day = dateFrom === dateTo.
+  dateFrom: string | null; // ISO date string yyyy-mm-dd
+  dateTo: string | null; // ISO date string yyyy-mm-dd
+  comparison: ComparisonMode;
+  setFilter: (filter: PeriodFilter) => void;
+  setCustomRange: (from: string, to: string) => void;
+  setComparison: (mode: ComparisonMode) => void;
+}
+```
+
+Derived helpers (computed from store state, not stored):
+
+- `getActiveDateRange()` → `{ from: Date, to: Date }`
+- `getComparisonDateRange()` → `{ from: Date, to: Date } | null`
+
+These helpers live in `lib/period.ts` as pure functions that receive the store state and return the computed ranges. They are used by both Server Actions (for DB queries) and client components (for display).
+
+**Header display format:**
+
+```
+←   Mayo 2026   →          [vs. Abril 2026 ▾]
+←   Hoy, 27 mayo   →       [vs. ayer ▾]
+←   Semana 19–25 mayo   →  [vs. sem. anterior ▾]
+←   10–20 mayo   →         [vs. 29 abr–9 may ▾]
+```
 
 ### Products
 
@@ -242,16 +311,27 @@ product_id, business_id, unit_price, alert_threshold, created_at, updated_at
 
 ## Seed data
 
-The demo needs realistic data to communicate value:
+The demo needs realistic data to communicate value. Seed lives in `supabase/seed.sql` or `scripts/seed.ts`.
+
+**Required volume:**
 
 - 20+ products with images, prices, and categories
 - 3+ brands, 4+ categories
-- 50 sales distributed over the last month (so dashboard charts have shape)
 - 15 customers with linked purchase history
 - Some products with low stock to demonstrate the alert system
 - Some batches with upcoming expiration dates (if the module is enabled in the demo)
 
-Seed lives in `supabase/seed.sql` or `scripts/seed.ts`.
+**Sales distribution — critical for the period filter:**
+
+The seed must include sales spread across multiple time granularities so every filter (`today`, `week`, `month`, `custom`) renders meaningful charts and non-zero metrics:
+
+- **Last 3 months:** ~150 sales total distributed across all days, with realistic variation (weekends slightly higher, some slow days).
+- **Current month:** at least 50 sales, spread across all weeks of the month so the month filter has shape.
+- **Current week:** at least 8–10 sales distributed across different days so the week filter has shape.
+- **Today:** at least 2–3 sales so the today filter is non-empty.
+- **Same periods from last year** (same month and same week 12 months ago): at least 30 sales total, so the `same_period_last_year` comparison mode returns real data instead of zeros.
+
+Sales amounts should vary realistically — avoid uniform quantities. Mix single-unit sales with multi-unit orders.
 
 ## Out of scope (v1)
 
@@ -271,6 +351,7 @@ If any of these appear in a task, ask before implementing.
 - Server Actions in `actions/[module].ts` with verb prefix (e.g. `createProductAction`, `updateStockAction`)
 - Zod schemas in `lib/validations/[module].ts`
 - Shared types in `types/[module].ts`
+- Period helpers (date range computation) in `lib/period.ts`
 - No business logic in components — use Server Actions
 - Prefer `async/await` over `.then()/.catch()`
 - **Language rule:** Everything internal must be in English — variable names, function names, interface names, property names, type names, file names, JSX comments, and code comments. The only Spanish allowed is visible UI content: labels, headings, placeholder text, error messages, and other text rendered to the user.
