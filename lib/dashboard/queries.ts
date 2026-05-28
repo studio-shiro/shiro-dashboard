@@ -52,13 +52,18 @@ export async function fetchDormantProducts(
   const sixMonthsAgo = new Date(
     Date.now() - 6 * 30 * 24 * 60 * 60 * 1000,
   ).toISOString();
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const tenDaysAgo = Date.now() - 10 * 24 * 60 * 60 * 1000;
   const now = Date.now();
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const [productsResult, salesResult] = await Promise.all([
     supabase
       .from("products")
-      .select("id, reference, name, categories(name), stock!inner(quantity)")
+      .select(
+        "id, reference, name, image_url, created_at, stock!inner(quantity, alert_threshold), product_batches(lot_number, expiration_date)",
+      )
       .eq("business_id", businessId)
       .eq("active", true),
     supabase
@@ -76,41 +81,108 @@ export async function fetchDormantProducts(
     }
   }
 
-  type StockRelation = { quantity: number } | Array<{ quantity: number }>;
-  type CategoryRelation = { name: string } | Array<{ name: string }> | null;
+  type StockRelation =
+    | { quantity: number; alert_threshold: number }
+    | Array<{ quantity: number; alert_threshold: number }>;
+  type BatchRelation = Array<{
+    lot_number: string | null;
+    expiration_date: string | null;
+  }>;
 
-  const resolveStock = (rel: StockRelation): number => {
-    if (Array.isArray(rel)) return rel[0]?.quantity ?? 0;
-    return rel.quantity;
+  const resolveStock = (
+    rel: StockRelation,
+  ): { quantity: number; alertThreshold: number } => {
+    const row = Array.isArray(rel) ? rel[0] : rel;
+    return {
+      quantity: row?.quantity ?? 0,
+      alertThreshold: row?.alert_threshold ?? 0,
+    };
   };
-  const resolveCategory = (rel: CategoryRelation): string => {
-    if (!rel) return "Sin categoría";
-    if (Array.isArray(rel)) return rel[0]?.name ?? "Sin categoría";
-    return rel.name;
+
+  const formatDate = (iso: string): string => {
+    const d = new Date(iso);
+    const day = String(d.getUTCDate()).padStart(2, "0");
+    const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+    return `${day}/${month}/${d.getUTCFullYear()}`;
   };
 
   return (productsResult.data ?? [])
-    .filter((p) => {
-      const qty = resolveStock(p.stock as StockRelation);
-      if (qty === 0) return false;
-      const lastSaleDate = latestSale.get(p.id as string);
-      if (!lastSaleDate) return true;
-      return new Date(lastSaleDate).getTime() < thirtyDaysAgo;
-    })
     .map((p) => {
-      const lastSaleDate = latestSale.get(p.id as string) ?? null;
+      const { quantity: qty, alertThreshold } = resolveStock(
+        p.stock as StockRelation,
+      );
+
+      const batches = (p.product_batches as BatchRelation) ?? [];
+
+      // Find nearest non-expired batch
+      let daysUntilExpiry: number | null = null;
+      let expirationDate: string | null = null;
+      let referenceLabel = p.reference as string;
+
+      const batchWithExpiry = batches.find((b) => b.expiration_date !== null);
+      if (batchWithExpiry) {
+        if (batchWithExpiry.lot_number) referenceLabel = batchWithExpiry.lot_number;
+      }
+
+      const nonExpiredBatches = batches
+        .filter((b) => b.expiration_date !== null)
+        .map((b) => {
+          const expiry = new Date(b.expiration_date!);
+          expiry.setHours(0, 0, 0, 0);
+          const days = Math.ceil(
+            (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+          );
+          return { days, dateIso: b.expiration_date! };
+        })
+        .filter((b) => b.days >= 0)
+        .sort((a, b) => a.days - b.days);
+
+      if (nonExpiredBatches.length > 0) {
+        daysUntilExpiry = nonExpiredBatches[0].days;
+        expirationDate = formatDate(nonExpiredBatches[0].dateIso);
+      }
+
+      const expiryTag: DormantProduct["expiryTag"] =
+        daysUntilExpiry !== null
+          ? daysUntilExpiry <= 10
+            ? "expiring_soon"
+            : "apt"
+          : null;
+
+      const lastSaleDateRaw = latestSale.get(p.id as string) ?? null;
+      const dormantDays = lastSaleDateRaw
+        ? Math.floor((now - new Date(lastSaleDateRaw).getTime()) / 86_400_000)
+        : 999;
+
+      const lastSaleDate = lastSaleDateRaw ? formatDate(lastSaleDateRaw) : "";
+
+      const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
+      const createdAt = new Date(p.created_at as string).getTime();
+      const isOlderThan10Days = now - createdAt >= tenDaysMs;
+
+      const isLowStock = qty > 0 && qty <= alertThreshold;
+      const isExpiringSoon = daysUntilExpiry !== null && daysUntilExpiry <= 10;
+      const isDormant =
+        (lastSaleDateRaw !== null && dormantDays >= 10) ||
+        (lastSaleDateRaw === null && isOlderThan10Days);
+
+      if (!isLowStock && !isExpiringSoon && !isDormant) return null;
+      if (qty === 0) return null;
+
       return {
         id: p.id as string,
-        reference: p.reference as string,
         name: p.name as string,
-        category: resolveCategory(p.categories as CategoryRelation),
-        lastSaleDate: lastSaleDate ? lastSaleDate.slice(0, 10) : "",
-        stock: resolveStock(p.stock as StockRelation),
-        dormantDays: lastSaleDate
-          ? Math.floor((now - new Date(lastSaleDate).getTime()) / 86_400_000)
-          : 999,
-      };
+        referenceLabel,
+        imageUrl: (p.image_url as string | null) ?? null,
+        stock: qty,
+        expirationDate,
+        daysUntilExpiry,
+        expiryTag,
+        lastSaleDate,
+        dormantDays,
+      } satisfies DormantProduct;
     })
+    .filter((p): p is DormantProduct => p !== null)
     .sort((a, b) => a.dormantDays - b.dormantDays);
 }
 
