@@ -5,14 +5,22 @@ export interface PeriodOption {
   label: string;
 }
 
-export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
+export function getPeriodOptions(
+  periodType: PeriodType,
+  minDate?: Date,
+): PeriodOption[] {
   const now = new Date();
+
+  const minMonth = minDate
+    ? new Date(minDate.getFullYear(), minDate.getMonth(), 1)
+    : null;
 
   switch (periodType) {
     case "month": {
       const options: PeriodOption[] = [];
       for (let i = 0; i < 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        if (minMonth && d < minMonth) break;
         const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         const label = d
           .toLocaleDateString("es-AR", { month: "long", year: "numeric" })
@@ -24,9 +32,14 @@ export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
 
     case "today": {
       const options: PeriodOption[] = [];
+      const minDay = minDate
+        ? new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate())
+        : null;
       for (let i = 0; i < 7; i++) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
+        const dayOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        if (minDay && dayOnly < minDay) break;
         const value = d.toISOString().slice(0, 10);
         let label: string;
         if (i === 0) {
@@ -47,6 +60,7 @@ export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
       const options: PeriodOption[] = [];
       for (let i = 0; i < 5; i++) {
         const year = now.getFullYear() - i;
+        if (minDate && year < minDate.getFullYear()) break;
         options.push({ value: String(year), label: String(year) });
       }
       return options;

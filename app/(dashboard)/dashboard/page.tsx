@@ -212,7 +212,7 @@ export default async function DashboardPage({
         <Suspense
           fallback={<div className="h-9 w-72 animate-pulse rounded-lg" />}
         >
-          <PeriodFilter />
+          <PeriodFilter accountCreatedAt={user?.created_at ?? null} />
         </Suspense>
       </div>
 

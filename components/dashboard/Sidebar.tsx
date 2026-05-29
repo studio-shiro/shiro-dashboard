@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Divider } from "@/components/shared/Divider";
 import Button from "@/components/shared/Button";
+import { LogoUploadModal } from "@/components/dashboard/LogoUploadModal";
 import logoShiroStudio from "@/public/logo-shiro-studio.svg";
 import logoShiroI from "@/public/logo-shiro-i.svg";
 
@@ -36,6 +37,7 @@ import {
   Cog6ToothIcon as Cog6ToothIconSolid,
   CubeIcon as CubeIconSolid,
   BanknotesIcon as BankNotesIconSolid,
+  PencilSquareIcon,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
@@ -143,28 +145,36 @@ export default function Sidebar({
   const [collapsed, setCollapsed] = useState(false);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(logoUrl);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
     if (file.size > 3 * 1024 * 1024) return;
+    setPendingFile(file);
+  }
 
+  async function handleConfirmUpload() {
+    if (!pendingFile) return;
     setUploading(true);
-    const path = buildStoragePath("businesses", businessId, businessId, file);
-    const url = await uploadFile(file, "logos", path);
-
+    const path = buildStoragePath(
+      "businesses",
+      businessId,
+      businessId,
+      pendingFile,
+    );
+    const url = await uploadFile(pendingFile, "logos", path);
     if (url) {
       setCurrentLogoUrl(url);
       await updateBusinessLogoAction(url);
     }
     setUploading(false);
+    setPendingFile(null);
   }
-
-
 
   const isActive = (href: string) =>
     href === "/dashboard"
@@ -194,10 +204,19 @@ export default function Sidebar({
 
       {/* Logo / upload zone */}
       <div className="flex flex-col items-center gap-2 px-4 pb-3 pt-5">
+        {/* Hidden file input — shared by empty state and hover overlay */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+
         {currentLogoUrl ? (
           <div
             className={cn(
-              "relative shrink-0 overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out",
+              "group relative shrink-0 overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out",
               collapsed ? "size-16" : "size-25",
             )}
           >
@@ -208,42 +227,53 @@ export default function Sidebar({
               className="object-cover"
               sizes={collapsed ? "64px" : "100px"}
             />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-black/70 opacity-0 transition-opacity group-hover:opacity-100">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center gap-1 text-white"
+                aria-label="Actualizar logo"
+              >
+                <PencilSquareIcon className={cn("shrink-0", "size-6")} />
+              </button>
+            </div>
           </div>
         ) : (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              aria-label="Subir logo del negocio"
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Subir logo del negocio"
+            className={cn(
+              "relative flex shrink-0 flex-col items-center justify-center overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out hover:opacity-80",
+              collapsed ? "size-16" : "size-25",
+            )}
+          >
+            <ArrowUpTrayIcon
               className={cn(
-                "relative flex shrink-0 flex-col items-center justify-center overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out hover:opacity-80",
-                collapsed ? "size-16" : "size-25",
-                uploading && "opacity-50",
+                "shrink-0 text-text-500",
+                collapsed ? "size-5" : "size-6",
               )}
-            >
-              <ArrowUpTrayIcon
-                className={cn(
-                  "shrink-0 text-text-500",
-                  collapsed ? "size-5" : "size-6",
-                )}
-              />
-              {!collapsed && (
-                <span className="mt-1.5 text-center font-body text-[12px] leading-4 text-text-500">
-                  Subir logo
-                </span>
-              )}
-            </button>
-          </>
+            />
+            {!collapsed && (
+              <span className="mt-1.5 text-center font-body text-[12px] leading-4 text-text-500">
+                Subir logo
+              </span>
+            )}
+          </button>
         )}
       </div>
+
+      {/* Logo upload modal */}
+      {pendingFile && (
+        <LogoUploadModal
+          file={pendingFile}
+          uploading={uploading}
+          onConfirm={handleConfirmUpload}
+          onClose={() => setPendingFile(null)}
+          onNewFile={(f) => setPendingFile(f)}
+        />
+      )}
 
       <div className="px-3">
         <Divider />

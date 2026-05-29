@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { getPeriodOptions } from "@/lib/dashboard/periodComparison";
-import { getDefaultPeriod } from "@/lib/dashboard/dateRange";
+import { getDefaultPeriod, formatPeriodLabel } from "@/lib/dashboard/dateRange";
 import { DateRangePicker } from "@/components/dashboard/DateRangePicker";
 import { PeriodMenu } from "@/components/shared/PeriodMenu";
 import type { PeriodType } from "@/types/dashboard";
@@ -18,7 +18,11 @@ const PERIOD_TYPES: { type: PeriodType; label: string }[] = [
   { type: "custom", label: "Personalizado" },
 ];
 
-export function PeriodFilter() {
+interface PeriodFilterProps {
+  accountCreatedAt: string | null;
+}
+
+export function PeriodFilter({ accountCreatedAt }: PeriodFilterProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const defaultPeriod = getDefaultPeriod();
@@ -28,6 +32,8 @@ export function PeriodFilter() {
   const currentValue = searchParams.get("value") ?? defaultPeriod.value;
 
   const [openPicker, setOpenPicker] = useState<PickerState>(null);
+
+  const minDate = accountCreatedAt ? new Date(accountCreatedAt) : undefined;
 
   function navigate(type: PeriodType, value: string) {
     const params = new URLSearchParams({ type, value });
@@ -51,13 +57,6 @@ export function PeriodFilter() {
   }
 
   function handleOptionSelect(value: string) {
-    console.log(
-      "[handleOptionSelect] OpenPicker: ",
-      openPicker,
-      "value: ",
-      value,
-    );
-
     if (!openPicker || openPicker === "custom") return;
     navigate(openPicker, value);
     setOpenPicker(null);
@@ -70,7 +69,7 @@ export function PeriodFilter() {
 
   const options =
     openPicker && openPicker !== "custom"
-      ? getPeriodOptions(openPicker as PeriodType)
+      ? getPeriodOptions(openPicker as PeriodType, minDate)
       : [];
 
   return (
@@ -84,7 +83,11 @@ export function PeriodFilter() {
 
       <div className="flex items-center gap-1.5">
         {PERIOD_TYPES.map(({ type, label }) => {
-          const isHighlighted = openPicker ? openPicker === type : currentType === type;
+          const isHighlighted = openPicker === null && currentType === type;
+          const buttonLabel =
+            currentType === type && openPicker === null
+              ? formatPeriodLabel(type, currentValue)
+              : label;
           return (
             <div key={type} className="relative">
               <button
@@ -97,9 +100,14 @@ export function PeriodFilter() {
                     : "border border-border-400 bg-background-400 text-text-500 hover:border-border-500",
                 )}
               >
-                {label}
+                {buttonLabel}
                 {type !== "today" && (
-                  <ChevronDownIcon className="size-5" />
+                  <ChevronDownIcon
+                    className={cn(
+                      "size-5 transition-transform",
+                      openPicker === type && "rotate-180",
+                    )}
+                  />
                 )}
               </button>
 
@@ -119,6 +127,7 @@ export function PeriodFilter() {
                   value={currentType === "custom" ? currentValue : null}
                   onChange={handleCustomRange}
                   onClose={() => setOpenPicker(null)}
+                  minDate={minDate}
                 />
               )}
             </div>

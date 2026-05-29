@@ -35,28 +35,12 @@ export function PeriodMenu({
                 >
                   <span
                     className={cn(
-                      "flex size-5 shrink-0 items-center justify-center rounded-sm border bg-background-500",
-                      isSelected
-                        ? "border-accent-selected"
-                        : "border-border-300",
+                      "relative flex size-5 shrink-0 items-center justify-center rounded-full border bg-background-500",
+                      isSelected ? "border-accent-selected" : "border-border-300",
                     )}
                   >
                     {isSelected && (
-                      <svg
-                        width="12"
-                        height="9"
-                        viewBox="0 0 12 9"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="M1 4L4.5 7.5L11 1"
-                          stroke="#c23d0e"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      <span className="size-2.5 rounded-full bg-accent-selected" />
                     )}
                   </span>
                   <span className="body-lg-regular text-text-400 whitespace-nowrap">

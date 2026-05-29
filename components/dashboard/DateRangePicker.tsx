@@ -5,18 +5,58 @@ import { es } from "react-day-picker/locale";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import type { DateRange } from "react-day-picker";
 import "@daypicker/react/style.css";
+import { cn } from "@/lib/utils";
+import Button from "../shared/Button";
 
 interface DateRangePickerProps {
   value: string | null; // "YYYY-MM-DD_YYYY-MM-DD" or null
   onChange: (from: string, to: string) => void;
   onClose: () => void;
+  /** Earliest selectable date — disables days before it and blocks backward month navigation */
+  minDate?: Date;
+  /** Latest selectable date — defaults to today */
+  maxDate?: Date;
+}
+
+function isSameMonth(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
 }
 
 export function DateRangePicker({
   value,
   onChange,
   onClose,
+  minDate,
+  maxDate,
 }: DateRangePickerProps) {
+  const effectiveMaxDate = maxDate ?? new Date();
+
+  const startMonth = minDate
+    ? new Date(minDate.getFullYear(), minDate.getMonth(), 1)
+    : undefined;
+
+  const endMonth = new Date(
+    effectiveMaxDate.getFullYear(),
+    effectiveMaxDate.getMonth(),
+    1,
+  );
+
+  const [displayedMonth, setDisplayedMonth] = useState<Date>(endMonth);
+
+  const isPrevDisabled =
+    startMonth !== undefined && isSameMonth(displayedMonth, startMonth);
+  const isNextDisabled = isSameMonth(displayedMonth, endMonth);
+
+  const navButtonBase = "flex items-center justify-center transition-colors";
+  const navButtonActive = "text-text-400 hover:text-text-500 cursor-pointer";
+  const navButtonDisabled =
+    "text-text-300 cursor-not-allowed pointer-events-none";
+
+  const disabledDates = [
+    ...(minDate ? [{ before: minDate }] : []),
+    { after: effectiveMaxDate },
+  ];
+
   const parseInitial = (): DateRange | undefined => {
     if (!value) return undefined;
     const [fromStr, toStr] = value.split("_");
@@ -48,6 +88,7 @@ export function DateRangePicker({
             locale={es}
             selected={selected}
             onSelect={setSelected}
+            onMonthChange={setDisplayedMonth}
             weekStartsOn={0}
             formatters={{
               formatWeekdayName: (date) => {
@@ -56,44 +97,38 @@ export function DateRangePicker({
               },
             }}
             showOutsideDays
-            endMonth={new Date()}
-            disabled={{ after: new Date() }}
+            startMonth={startMonth}
+            endMonth={endMonth}
+            disabled={disabledDates}
             classNames={{
-              root: "bg-white font-body border border-[#c4cdd5] rounded-[12px] shadow-md gap-3 pb-[60px] p-4",
+              root: "bg-white font-body border border-[#c4cdd5] rounded-[12px] shadow-md gap-3 pb-[60px] p-4 w-[320px]",
               month: "flex-1 flex flex-col",
               month_grid: "w-full",
-              // month_caption:
-              //   "flex items-center justify-between pb-[10px] pt-[5px]",
-              // nav: "flex items-center gap-2",
               caption_label: "capitalize",
-              // caption_label:
-              //   "capitalize font-bold text-[20px] text-[#212b36] leading-none",
-              button_previous:
-                "flex items-center justify-center text-text-400 hover:text-text-500 transition-colors",
-              button_next:
-                "flex items-center justify-center text-text-400 hover:text-text-500 transition-colors",
+              button_previous: cn(
+                navButtonBase,
+                isPrevDisabled ? navButtonDisabled : navButtonActive,
+              ),
+              button_next: cn(
+                navButtonBase,
+                isNextDisabled ? navButtonDisabled : navButtonActive,
+              ),
               weekdays: "flex",
               weekday:
                 "flex-1 flex items-center justify-center px-[3px] py-[12px] text-[14px] text-text-400 text-center font-normal leading-[20px]",
               weeks: "flex flex-col gap-[2px] pt-[4px]",
               week: "flex",
-              // day is the cell wrapper — range backgrounds live here to span full column width
               day: "flex-1 relative",
               day_button: [
                 "w-full relative px-3 py-3 flex items-center justify-center rounded-full",
                 "text-[16px] text-text-400 text-center font-normal leading-[20px]",
                 "hover:bg-background-300 transition-colors outline-none",
               ].join(" "),
-              // selected is applied to both the day cell div AND the day_button.
-              // Only set text color here — cell background/rounding come from range_* classes.
               selected: "[&_button]:text-white",
-              // range_start/end: solid orange on the cell div, pill cap on the open side
               range_start:
                 "bg-[#e84911] rounded-tl-[24px] rounded-bl-[24px] [&_button]:text-white [&_button:hover]:bg-transparent",
               range_end:
                 "bg-[#e84911] rounded-tr-[24px] rounded-br-[24px] [&_button]:text-white [&_button:hover]:bg-transparent",
-              // range_middle: semi-transparent strip
-              // first/last child of each week row get pill caps to close the strip at row edges
               range_middle: [
                 "bg-[#FF5A1F9C]/60 [&_button]:text-white",
                 "[&:first-child]:rounded-tl-[24px] [&:first-child]:rounded-bl-[24px]",
@@ -108,9 +143,9 @@ export function DateRangePicker({
             components={{
               Chevron: ({ orientation }) =>
                 orientation === "left" ? (
-                  <ChevronLeftIcon className="size-6 text-text-400" />
+                  <ChevronLeftIcon className="size-6" />
                 ) : (
-                  <ChevronRightIcon className="size-6 text-text-400" />
+                  <ChevronRightIcon className="size-6" />
                 ),
               DayButton: ({
                 day: _day,
@@ -128,22 +163,14 @@ export function DateRangePicker({
             }}
           />
 
-          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between border-t border-[#c4cdd5] pt-3">
-            <span className="body-sm-regular text-text-300">
-              {!selected?.from
-                ? "Seleccioná una fecha de inicio"
-                : !selected.to
-                  ? "Seleccioná una fecha de fin"
-                  : ""}
-            </span>
-            <button
-              type="button"
+          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between pt-3">
+            <Button
+              className="w-full"
               disabled={!canApply}
               onClick={handleApply}
-              className="rounded-[6px] bg-accent-selected px-4 py-2 text-xs font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
             >
               Aplicar
-            </button>
+            </Button>
           </div>
         </div>
       </div>
