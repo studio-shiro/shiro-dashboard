@@ -12,7 +12,6 @@ import Button from "@/components/shared/Button";
 import { LogoUploadModal } from "@/components/dashboard/LogoUploadModal";
 import logoShiroStudio from "@/public/logo-shiro-studio.svg";
 import logoShiroI from "@/public/logo-shiro-i.svg";
-
 import {
   UsersIcon as UsersIconOutline,
   ShoppingCartIcon as ShoppingCartIconOutline,
@@ -129,7 +128,7 @@ const NavItem = ({
       <Icon className="size-5 shrink-0" />
       {!collapsed && <span className="flex-1 truncate leading-5">{label}</span>}
       {active && (
-        <span className="absolute right-0 top-1/2 h-[22px] w-1 -translate-y-1/2 rounded-l-sm bg-accent" />
+        <span className="absolute right-0 top-1/2 h-5.5 w-1 -translate-y-1/2 rounded-l-sm bg-accent" />
       )}
     </Button>
   );
@@ -337,11 +336,6 @@ export default function Sidebar({
               height={collapsed ? 24 : 25}
             />
           </Link>
-          {/* {!collapsed && (
-            <p className="text-center font-body text-[10px] leading-3 text-text-400">
-              By Shiro Studio © All rights reserved
-            </p>
-          )} */}
         </div>
       ) : (
         <div className="flex justify-center items-center gap-1.5 px-4 pb-3">
