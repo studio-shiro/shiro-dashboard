@@ -17,10 +17,6 @@ const PERIOD_LABELS: Record<
     title: "Ventas del Día",
     description: "Los productos que vendiste el día de hoy.",
   },
-  week: {
-    title: "Ventas de la Semana",
-    description: "Los productos que vendiste esta semana.",
-  },
   month: {
     title: "Ventas del Mes",
     description: "Los productos que vendiste este mes.",
@@ -28,6 +24,10 @@ const PERIOD_LABELS: Record<
   year: {
     title: "Ventas del Año",
     description: "Los productos que vendiste este año.",
+  },
+  custom: {
+    title: "Ventas del Período",
+    description: "Los productos que vendiste en el período seleccionado.",
   },
 };
 

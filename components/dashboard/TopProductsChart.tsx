@@ -96,62 +96,76 @@ export function TopProductsChart({ data }: TopProductsChartProps) {
       />
 
       <div className="flex h-[290px] items-center rounded-2xl border border-border-200 bg-background-400 px-5 py-4 shadow-md">
-        {/* Donut chart */}
-        <div className="relative h-55 w-55 shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={false}
-                isAnimationActive={false}
-                wrapperStyle={{ zIndex: 10 }}
-              />
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={58}
-                outerRadius={82}
-                dataKey="value"
-                startAngle={90}
-                endAngle={-270}
-                strokeWidth={2}
-                stroke="#fffffd"
-                activeShape={renderActiveShape}
-                onMouseEnter={(_, index) => setActiveIndex(index)}
-                onMouseLeave={() => setActiveIndex(undefined)}
-              >
-                {data.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-          <CenterLabel />
-        </div>
-
-        {/* Legend */}
-        <div className="ml-6 flex flex-col gap-2.5">
-          {data.map((product, index) => (
-            <div
-              key={product.name}
-              className="flex items-center gap-2 transition-opacity duration-150"
-              style={{
-                opacity:
-                  activeIndex === undefined || activeIndex === index ? 1 : 0.35,
-              }}
-            >
-              <span
-                className="size-3 shrink-0 rounded-full"
-                style={{ backgroundColor: product.color }}
-              />
-              <span className="heading-xl text-text-500">{product.value}%</span>
-              <span className="body-lg-regular text-text-500">
-                {product.name}
-              </span>
+        {data.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
+            <p className="body-md-semibold text-text-400">
+              Sin productos vendidos en este período
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Donut chart */}
+            <div className="relative h-55 w-55 shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={false}
+                    isAnimationActive={false}
+                    wrapperStyle={{ zIndex: 10 }}
+                  />
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={58}
+                    outerRadius={82}
+                    dataKey="value"
+                    startAngle={90}
+                    endAngle={-270}
+                    strokeWidth={2}
+                    stroke="#fffffd"
+                    activeShape={renderActiveShape}
+                    onMouseEnter={(_, index) => setActiveIndex(index)}
+                    onMouseLeave={() => setActiveIndex(undefined)}
+                  >
+                    {data.map((entry, index) => (
+                      <Cell key={index} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <CenterLabel />
             </div>
-          ))}
-        </div>
+
+            {/* Legend */}
+            <div className="ml-6 flex flex-col gap-2.5">
+              {data.map((product, index) => (
+                <div
+                  key={product.name}
+                  className="flex items-center gap-2 transition-opacity duration-150"
+                  style={{
+                    opacity:
+                      activeIndex === undefined || activeIndex === index
+                        ? 1
+                        : 0.35,
+                  }}
+                >
+                  <span
+                    className="size-3 shrink-0 rounded-full"
+                    style={{ backgroundColor: product.color }}
+                  />
+                  <span className="heading-xl text-text-500">
+                    {product.value}%
+                  </span>
+                  <span className="body-lg-regular text-text-500">
+                    {product.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

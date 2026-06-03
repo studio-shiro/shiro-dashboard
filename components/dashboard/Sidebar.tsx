@@ -1,15 +1,17 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
+import { uploadFile, buildStoragePath } from "@/lib/supabase/storage";
+import { updateBusinessLogoAction } from "@/actions/business";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Divider } from "@/components/shared/Divider";
 import Button from "@/components/shared/Button";
+import { LogoUploadModal } from "@/components/dashboard/LogoUploadModal";
 import logoShiroStudio from "@/public/logo-shiro-studio.svg";
 import logoShiroI from "@/public/logo-shiro-i.svg";
-
 import {
   UsersIcon as UsersIconOutline,
   ShoppingCartIcon as ShoppingCartIconOutline,
@@ -22,6 +24,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   BanknotesIcon as BankNotesIconOutline,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
 import {
   UsersIcon as UsersIconSolid,
@@ -33,6 +36,7 @@ import {
   Cog6ToothIcon as Cog6ToothIconSolid,
   CubeIcon as CubeIconSolid,
   BanknotesIcon as BankNotesIconSolid,
+  PencilSquareIcon,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
@@ -92,8 +96,6 @@ const navItems = [
   // },
 ];
 
-// TODO: Actualizar imagen de negocio (deberia ser una img que este subida a la DB asociada al cliente para que tome esa como referencia segun cada instancia de cliente)
-
 const NavItem = ({
   href,
   label,
@@ -126,15 +128,52 @@ const NavItem = ({
       <Icon className="size-5 shrink-0" />
       {!collapsed && <span className="flex-1 truncate leading-5">{label}</span>}
       {active && (
-        <span className="absolute right-0 top-1/2 h-[22px] w-1 -translate-y-1/2 rounded-l-sm bg-accent" />
+        <span className="absolute right-0 top-1/2 h-5.5 w-1 -translate-y-1/2 rounded-l-sm bg-accent" />
       )}
     </Button>
   );
 };
 
-export default function Sidebar() {
+export default function Sidebar({
+  logoUrl,
+  businessId,
+}: {
+  logoUrl: string | null;
+  businessId: string;
+}) {
   const [collapsed, setCollapsed] = useState(false);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(logoUrl);
+  const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 3 * 1024 * 1024) return;
+    setPendingFile(file);
+  }
+
+  async function handleConfirmUpload() {
+    if (!pendingFile) return;
+    setUploading(true);
+    const path = buildStoragePath(
+      "businesses",
+      businessId,
+      businessId,
+      pendingFile,
+    );
+    const url = await uploadFile(pendingFile, "logos", path);
+    if (url) {
+      setCurrentLogoUrl(url);
+      await updateBusinessLogoAction(url);
+    }
+    setUploading(false);
+    setPendingFile(null);
+  }
 
   const isActive = (href: string) =>
     href === "/dashboard"
@@ -162,24 +201,78 @@ export default function Sidebar() {
         )}
       </button>
 
-      {/* Logo */}
+      {/* Logo / upload zone */}
       <div className="flex flex-col items-center gap-2 px-4 pb-3 pt-5">
-        <div
-          className={cn(
-            "flex items-center justify-center rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out",
-            collapsed ? "size-16" : "size-25",
-          )}
-        >
-          <span
+        {/* Hidden file input — shared by empty state and hover overlay */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+
+        {currentLogoUrl ? (
+          <div
             className={cn(
-              "font-display font-bold text-text-500 transition-[font-size] duration-200",
-              collapsed ? "text-base" : "text-2xl",
+              "group relative shrink-0 overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out",
+              collapsed ? "size-16" : "size-25",
             )}
           >
-            SS
-          </span>
-        </div>
+            <Image
+              src={currentLogoUrl}
+              alt="Logo del negocio"
+              fill
+              className="object-cover"
+              sizes={collapsed ? "64px" : "100px"}
+            />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-full bg-black/70 opacity-0 transition-opacity group-hover:opacity-100">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center gap-1 text-white"
+                aria-label="Actualizar logo"
+              >
+                <PencilSquareIcon className={cn("shrink-0", "size-6")} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Subir logo del negocio"
+            className={cn(
+              "relative flex shrink-0 flex-col items-center justify-center overflow-hidden rounded-full bg-background-300 transition-[width,height] duration-200 ease-in-out hover:opacity-80",
+              collapsed ? "size-16" : "size-25",
+            )}
+          >
+            <ArrowUpTrayIcon
+              className={cn(
+                "shrink-0 text-text-500",
+                collapsed ? "size-5" : "size-6",
+              )}
+            />
+            {!collapsed && (
+              <span className="mt-1.5 text-center font-body text-[12px] leading-4 text-text-500">
+                Subir logo
+              </span>
+            )}
+          </button>
+        )}
       </div>
+
+      {/* Logo upload modal */}
+      {pendingFile && (
+        <LogoUploadModal
+          file={pendingFile}
+          uploading={uploading}
+          onConfirm={handleConfirmUpload}
+          onClose={() => setPendingFile(null)}
+          onNewFile={(f) => setPendingFile(f)}
+        />
+      )}
 
       <div className="px-3">
         <Divider />
@@ -243,11 +336,6 @@ export default function Sidebar() {
               height={collapsed ? 24 : 25}
             />
           </Link>
-          {/* {!collapsed && (
-            <p className="text-center font-body text-[10px] leading-3 text-text-400">
-              By Shiro Studio © All rights reserved
-            </p>
-          )} */}
         </div>
       ) : (
         <div className="flex justify-center items-center gap-1.5 px-4 pb-3">

@@ -8,41 +8,43 @@ Admin system for small and mid-sized physical retail businesses that manage stoc
 - **Backend/DB:** Supabase (Auth + Database + Storage + RLS)
 - **Language:** TypeScript (strict mode)
 - **Styles:** Tailwind CSS + shadcn/ui
-- **Validation:** Zod (always in Server Actions, never client-side only)
-- **Charts:** Recharts — used for all dashboard data visualizations (bar charts, line charts, pie/donut charts). Always use `ResponsiveContainer` for layout, `"use client"` directive required.
-- **Tables:** TanStack Table v8 (`@tanstack/react-table`) — headless table engine for all data tables. Use `createColumnHelper` for type-safe columns, `getSortedRowModel` + `getPaginationRowModel` for client-side sort/pagination. Style with Tailwind only — no table UI library.
-- **Global state:** Zustand — used for shared client state (e.g. period filter). Stores live in `store/`. Always define store type explicitly with `create<T>()`. Only use in client components.
+- **Validation:** Zod — always in Server Actions, never client-side only
+- **Charts:** Recharts — all data visualizations. Always `ResponsiveContainer` + `"use client"`.
+- **Tables:** TanStack Table v8 (`@tanstack/react-table`) — `createColumnHelper`, `getSortedRowModel`, `getPaginationRowModel`. Tailwind only, no table UI library.
+- **Global state:** Zustand — shared client state only. Stores in `store/`. Always `create<T>()`. Client components only.
 
 ## Commands
 
 ```bash
-yarn dev             # Development server
-yarn build           # Production build
-yarn typecheck       # Type check (run after changes)
-yarn lint            # ESLint
+yarn dev        # dev server
+yarn build      # production build
+yarn typecheck  # run after every series of changes
+yarn lint       # ESLint
 ```
 
-> IMPORTANT: Always run `typecheck` after a series of changes before marking a task as done.
-> IMPORTANT: This project uses **yarn**. Never use `npm` to install dependencies or run scripts.
-> NOTE: Yarn 4 with nodeLinker: node-modules (see .yarnrc.yml). PnP mode is disabled — required for Next.js Turbopack compatibility.
+> Always use `yarn`. Never `npm`.
+> Run `bash init.sh` at the start of every session before making any changes.
+
+## Agent system
+
+`.agents/` defines roles and handoff protocols. `CLAUDE.md` is the source of truth for all conventions — agents read this file, they do not override it.
 
 ## Architecture
 
-### Required patterns
+- All CRUD through Server Actions. No business logic in API routes.
+- Zod validation in every Server Action before touching the DB.
+- `revalidatePath` after every mutation.
+- RLS on every Supabase table from day one.
+- `business_id` on every table — multi-tenant ready. **Exception: `product_catalog` (see Barcode scanning).**
+- Code patterns live in `.agents/context/PATTERNS.md`. Non-negotiable rules in `.agents/context/RULES.md`.
 
-- **Server Actions** for all CRUD — never expose business logic in API routes unnecessarily
-- **Zod** to validate inputs in every Server Action before touching the DB
-- **`revalidatePath`** after every mutation to invalidate cache
-- **RLS enabled from day one** on all Supabase tables
-- **`business_id`** on all tables — multi-tenant ready from the start, even if there's only one client today
-
-### Directory structure
+## Directory structure
 
 ```
 app/
-  (auth)/           # Login, no dashboard layout
+  (auth)/           # Login — no dashboard layout
   (dashboard)/      # Authenticated area with shared layout
-    page.tsx        # Dashboard home (metrics)
+    page.tsx        # Dashboard home
     products/
     stock/
     sales/
@@ -51,313 +53,185 @@ app/
     categories/
     settings/
 components/
-  ui/               # shadcn/ui — do not modify directly
+  ui/               # shadcn/ui — never modify directly
   [feature]/        # Components per module
 lib/
-  supabase/         # Supabase clients (server and client)
+  supabase/         # server.ts and client.ts — only allowed Supabase instantiation points
   validations/      # Zod schemas per module
 actions/            # Server Actions per module
 store/              # Zustand stores
 types/              # Shared TypeScript types
 ```
 
-## Supabase — clients
-
-These are the only two allowed patterns for instantiating Supabase. Do not create clients any other way.
-
-```ts
-// lib/supabase/server.ts — Server Components, Server Actions, Route Handlers
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-
-export async function createClient() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (cs) =>
-          cs.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
-          ),
-      },
-    },
-  );
-}
-```
-
-```ts
-// lib/supabase/client.ts — Client Components only
-import { createBrowserClient } from "@supabase/ssr";
-
-export const createClient = () =>
-  createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-```
-
-## Server Actions — standard pattern
-
-All Server Actions follow this pattern without exception:
-
-```ts
-"use server";
-import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
-
-const schema = z.object({
-  name: z.string().min(1),
-});
-
-export async function createProductAction(formData: FormData) {
-  // 1. Validate with Zod
-  const parsed = schema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return { error: parsed.error.flatten().fieldErrors };
-
-  // 2. Verify session — always getUser(), never getSession()
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Unauthorized" };
-
-  // 3. Write to DB with business_id from user metadata
-  const { error } = await supabase.from("products").insert({
-    ...parsed.data,
-    business_id: user.user_metadata.business_id,
-  });
-  if (error) return { error: error.message };
-
-  // 4. Invalidate cache and return
-  revalidatePath("/products");
-  return { success: true };
-}
-```
-
-Rules:
-
-- Always return `{ error }` or `{ success: true }` — never throw exceptions to the client
-- Never skip Zod validation even if the input looks simple
-- Never use `getSession()` to verify auth — use `getUser()`
-
 ## Auth and roles
 
-Login via Supabase Auth (email/password). Two roles managed via `user_metadata.role`:
+Login via Supabase Auth (email/password). Roles in `user_metadata.role`:
 
 - **admin** — full access: settings, reports, user management
-- **operator** — can manage stock, register sales, and view products; NO access to settings or financial reports
+- **operator** — stock, sales, products; no settings or financial reports
 
-Roles are validated in both Server Actions and RLS policies. If either layer is missing, the feature is incomplete.
-
-```ts
-// Role check in Server Action
-const role = user.user_metadata.role;
-if (role !== "admin") return { error: "Forbidden" };
-```
+Both Server Actions and RLS policies must enforce role restrictions. Missing either layer = incomplete feature.
 
 ## Modules
 
-### Dashboard Home
+### Dashboard home
 
-Key metrics on login: low-stock products (below configurable threshold), latest sales, new customers this month.
+Metrics on login: low-stock products, latest sales, new customers this month. All metrics driven by the period filter (`usePeriodStore` Zustand store).
 
-All metrics are controlled by a **period filter** implemented as a Zustand store (`usePeriodStore`) shared across all dashboard components.
+**Period filter options:** `today` / `week` (Mon–Sun) / `month` / `custom` (date range picker).
 
-**Period filter — selector options:**
+**Arrow navigation:** moves the period by its own duration. Custom range moves by exact day count. Arrows hidden while date picker is open.
 
-| Filter   | What it shows                           |
-| -------- | --------------------------------------- |
-| `today`  | Current day                             |
-| `week`   | Current calendar week (Mon–Sun)         |
-| `month`  | Current calendar month                  |
-| `custom` | User-defined date range via date picker |
+**Comparison modes:** `previous_period` (default) / `same_period_last_year` / `none`.
 
-**Arrow navigation (`← →`) per filter:**
+**Store shape** (`store/period.ts`): `filter`, `dateFrom`, `dateTo`, `comparison` + setters. Derived helpers `getActiveDateRange()` and `getComparisonDateRange()` live as pure functions in `lib/period.ts` — not in the store.
 
-- **Today:** moves one day backward/forward.
-- **Week:** moves one full week backward/forward.
-- **Month:** moves one full month backward/forward.
-- **Custom — single day selected:** behaves like `today`, moves one day backward/forward.
-- **Custom — date range selected:** moves the entire range by its exact duration. Example: range of 11 days (May 10→20) → left arrow yields Apr 29→May 9, right arrow yields May 21→31. Arrows are hidden or disabled while the date picker is open.
-
-**Comparison logic:**
-
-All filters support a secondary comparison selector with three options:
-
-- `previous_period` — the immediately preceding period of the same duration (default for all filters)
-- `same_period_last_year` — same range shifted back exactly 1 year
-- `none` — no comparison shown
-
-Comparison defaults by filter:
-
-- **Today:** previous day
-- **Week:** previous week
-- **Month:** previous month
-- **Custom range:** range of identical length immediately before the selected start date
-
-**Period store shape (`store/period.ts`):**
-
-```ts
-type PeriodFilter = "today" | "week" | "month" | "custom";
-type ComparisonMode = "previous_period" | "same_period_last_year" | "none";
-
-interface PeriodState {
-  filter: PeriodFilter;
-  // For 'custom': both dates required. Single day = dateFrom === dateTo.
-  dateFrom: string | null; // ISO date string yyyy-mm-dd
-  dateTo: string | null; // ISO date string yyyy-mm-dd
-  comparison: ComparisonMode;
-  setFilter: (filter: PeriodFilter) => void;
-  setCustomRange: (from: string, to: string) => void;
-  setComparison: (mode: ComparisonMode) => void;
-}
-```
-
-Derived helpers (computed from store state, not stored):
-
-- `getActiveDateRange()` → `{ from: Date, to: Date }`
-- `getComparisonDateRange()` → `{ from: Date, to: Date } | null`
-
-These helpers live in `lib/period.ts` as pure functions that receive the store state and return the computed ranges. They are used by both Server Actions (for DB queries) and client components (for display).
-
-**Header display format:**
+**Header display examples:**
 
 ```
-←   Mayo 2026   →          [vs. Abril 2026 ▾]
-←   Hoy, 27 mayo   →       [vs. ayer ▾]
-←   Semana 19–25 mayo   →  [vs. sem. anterior ▾]
-←   10–20 mayo   →         [vs. 29 abr–9 may ▾]
+←  Mayo 2026  →           [vs. Abril 2026 ▾]
+←  Hoy, 27 mayo  →        [vs. ayer ▾]
+←  Semana 19–25 mayo  →   [vs. sem. anterior ▾]
+←  10–20 mayo  →          [vs. 29 abr–9 may ▾]
 ```
 
 ### Products
 
-Full CRUD. Fields: name, description, price, image (Supabase Storage), category (FK), brand (FK), active. Views: list and detail. Filters by category and brand.
+Full CRUD. Fields: name, description, price, image (Supabase Storage), category (FK), brand (FK), active, barcode. List + detail views. Filters by category and brand.
 
-**Batches and expiration dates (optional):** Products can have batches/variants with expiration date and quantity, modeled as `product → product_variants` where each variant is a batch with `expiration_date` and `quantity`. Businesses that don't handle perishables can disable this feature entirely. The system alerts when a batch is close to expiring.
+Optional batches/expiration: `product → product_variants` (batch with `expiration_date` + `quantity`). Can be disabled per business. Alerts when a batch is close to expiring.
 
 ### Stock
 
-Linked to products (not a standalone table). Fields: product_id, quantity, alert_threshold, updated_at. When quantity falls below threshold → alert shown on dashboard home (v1). Email via Resend in v2.
+Linked to products — not standalone. Fields: product_id, quantity, alert_threshold, updated_at. Below threshold → alert on dashboard (v1), email via Resend (v2).
 
-**Stock-out prediction:** Beyond threshold alerts, the system projects stock-out dates based on sales velocity over the last 30 days: "At this rate, product X will run out of stock in 6 days." Calculated from existing sales data — no ML required.
+Stock-out prediction: project depletion date from 30-day sales velocity. No ML — pure arithmetic on existing sales data.
 
 ### Sales
 
-Manual registration. Fields: product_id, customer_id (nullable), quantity, unit_price, total (computed), date, notes. Registering a sale automatically decrements stock in the same operation.
+Manual registration. Fields: product_id, customer_id (nullable FK), quantity, unit_price, total (computed), date, notes. Sale creation decrements stock atomically.
 
-**Gross/net sales:** The system should handle the difference between gross and net sales, calculated automatically. What discounts/costs apply for the net calculation is TBD with the client.
-
-**Bulk price updates:** Flow for updating product prices in bulk (by percentage or fixed value). TBD with the client.
+Gross/net sales handling TBD with client. Bulk price update flow TBD with client.
 
 ### Customers
 
-Not a full CRM. Fields: name, email, phone, created_at. Includes linked purchase history.
+Fields: name, email, phone, created_at. Linked purchase history. Not a full CRM.
 
-### Brands and Categories
+### Brands and categories
 
-Catalog organization. Structure: name, description, optional image. Brands can have a logo.
+Fields: name, description, optional image/logo. Single-level hierarchy in v1.
 
 ### Settings
 
-Business name and logo (Supabase Storage), currency, contact info, stock alert thresholds, email/WhatsApp for notifications. Logo appears in the header. Footer displays the Shiro Studio brand.
+Business name, logo (Supabase Storage), currency, contact info, stock alert thresholds, notification email/WhatsApp. Logo in header. Shiro Studio branding in footer.
 
 ## Product differentiators
 
-Features that set this dashboard apart from generic tools. Prioritize in the demo:
+### 1. Conversational analytics (start here)
 
-### 1. Conversational analytics (high priority — start here)
-
-The admin queries their business in natural language: "What was my best-selling product in April?", "Which customers haven't bought in the last 60 days?", "Which days of the week do I sell the most?". Claude receives the question, generates the Supabase query, and responds with real business data in natural language. Most impactful feature in a demo.
+Admin asks in natural language → Claude generates Supabase query → responds with real business data. Most impactful demo feature.
 
 ### 2. Stock-out prediction
 
-Proactive alert based on 30-day sales velocity: "At this rate, product X will run out in 6 days." No ML — uses existing sales data.
+"At this rate, product X runs out in 6 days." Derived from 30-day sales velocity.
 
 ### 3. Supplier notifications
 
-When stock for a product drops to a set level, the system automatically emails or WhatsApps the supplier. Clear differentiator vs. generic tools.
+Auto-email or WhatsApp to supplier when stock hits a threshold.
 
-### 4. Automatic monthly report
+### 4. Monthly report
 
-Monthly summary sent to the owner by email: top products, revenue, period comparisons.
+Auto-sent to owner: top products, revenue, period comparisons.
 
 ### 5. Expiration alerts
 
-For businesses using product batches, alerts when expiration dates are approaching. Optional — can be disabled per business.
+For batches with expiration dates. Optional per business.
 
-## Extra features (considered, not core)
+## Barcode scanning
 
-- **Barcode scanning:** `@zxing/browser` (QR + all formats), `quagga2` (EAN/UPC, better for linear barcodes), `react-qr-reader` (QR only, simpler).
+Progressive lookup — always in this order:
 
-## Database (Supabase)
+1. `products` (business-scoped, by `barcode` column) → found: pre-fill form
+2. `product_catalog` (global Shiro cache, no `business_id`) → found: suggest + confirm
+3. External API — only if `business_type` is eligible (see table below) → found: upsert to `product_catalog`, suggest + confirm
+4. Manual fallback → empty form with barcode pre-filled; on save, result enters `product_catalog`
 
-- All tables have `business_id` — no exceptions
-- RLS enabled on all tables from the start
-- Images always in Supabase Storage; store URL in DB, never base64
-- Explicit foreign keys between related tables
-- `product_variants` relation for batches with expiration date (optional per business)
+Every manual entry enriches the global cache. Over time the cache reduces external API calls to near zero.
 
-Table and column naming: **snake_case in English**.
+**External API eligibility by `business_type`:**
 
-```sql
--- Examples
-products, stock, sales, customers, brands, categories, businesses
-product_id, business_id, unit_price, alert_threshold, created_at, updated_at
-```
+| business_type                             | API                                | Coverage  |
+| ----------------------------------------- | ---------------------------------- | --------- |
+| `kiosk`, `supermarket`, `pharmacy_retail` | Open Food Facts, Open Beauty Facts | Good      |
+| `bookstore`                               | Open Library (ISBN)                | Good      |
+| `electronics`                             | UPC Item DB                        | Moderate  |
+| `mechanic`, `hardware`, `other`           | None — skip to manual              | Poor/none |
+
+**`business_type` valid values:** `kiosk` · `supermarket` · `pharmacy_retail` · `bookstore` · `electronics` · `mechanic` · `hardware` · `other`
+
+`business_type` also drives future UI hints and default field configuration per module.
+
+**Key schema facts:**
+
+- `products.barcode` — indexed by `(business_id, barcode)`
+- `product_catalog` — global, **no `business_id`**, no RLS. Public metadata only. Explicit exception to the `business_id` rule.
+- `businesses.business_type` — `text` with CHECK constraint on the valid values above
+
+**Types:** `BusinessType`, `ProductCatalogEntry`, `BarcodeResult` → `types/barcode.ts`
+**Action:** `lookupBarcodeAction(barcode)` → `actions/barcode.ts`
+**Scanning libraries:** `@zxing/browser` (all formats, recommended) · `quagga2` (EAN/UPC, better perf) · `react-qr-reader` (QR only)
+
+## Database
+
+- `business_id` on every table. Exception: `product_catalog`.
+- RLS on every table. Exception: `product_catalog` (public metadata).
+- Images in Supabase Storage — URL in DB, never base64.
+- snake_case English for all table and column names.
 
 ## Seed data
 
-The demo needs realistic data to communicate value. Seed lives in `supabase/seed.sql` or `scripts/seed.ts`.
+Seed in `supabase/seed.sql` or `scripts/seed.ts`. Required for demo:
 
-**Required volume:**
-
-- 20+ products with images, prices, and categories
+- 20+ products with images, prices, categories, some with `barcode` values
 - 3+ brands, 4+ categories
-- 15 customers with linked purchase history
-- Some products with low stock to demonstrate the alert system
-- Some batches with upcoming expiration dates (if the module is enabled in the demo)
+- 15 customers with purchase history
+- Some products below alert threshold
+- Some batches with upcoming expiration dates (if module enabled)
+- `businesses` row with `business_type` set
 
-**Sales distribution — critical for the period filter:**
+Sales distribution (critical for period filter demo):
 
-The seed must include sales spread across multiple time granularities so every filter (`today`, `week`, `month`, `custom`) renders meaningful charts and non-zero metrics:
+- Last 3 months: ~150 sales, realistic daily variation
+- Current month: 50+ sales across all weeks
+- Current week: 8–10 sales across different days
+- Today: 2–3 sales
+- Same periods last year: 30+ sales (for `same_period_last_year` comparison)
 
-- **Last 3 months:** ~150 sales total distributed across all days, with realistic variation (weekends slightly higher, some slow days).
-- **Current month:** at least 50 sales, spread across all weeks of the month so the month filter has shape.
-- **Current week:** at least 8–10 sales distributed across different days so the week filter has shape.
-- **Today:** at least 2–3 sales so the today filter is non-empty.
-- **Same periods from last year** (same month and same week 12 months ago): at least 30 sales total, so the `same_period_last_year` comparison mode returns real data instead of zeros.
-
-Sales amounts should vary realistically — avoid uniform quantities. Mix single-unit sales with multi-unit orders.
+Mix single-unit and multi-unit sales. Avoid uniform quantities.
 
 ## Out of scope (v1)
 
-Do not implement — these features are explicitly out of scope:
+Do not implement. Ask before proceeding if a task touches any of these:
 
-- Electronic invoicing / AFIP integration
-- Payroll and employee management
+- AFIP / electronic invoicing
+- Payroll / employee management
 - Multiple branches
 - Public e-commerce storefront
 - Marketplace integrations (MercadoLibre, etc.)
 
-If any of these appear in a task, ask before implementing.
-
 ## Code conventions
 
-- Components in PascalCase (both component name and file name)
-- Server Actions in `actions/[module].ts` with verb prefix (e.g. `createProductAction`, `updateStockAction`)
-- Zod schemas in `lib/validations/[module].ts`
-- Shared types in `types/[module].ts`
-- Period helpers (date range computation) in `lib/period.ts`
-- No business logic in components — use Server Actions
-- Prefer `async/await` over `.then()/.catch()`
-- **Language rule:** Everything internal must be in English — variable names, function names, interface names, property names, type names, file names, JSX comments, and code comments. The only Spanish allowed is visible UI content: labels, headings, placeholder text, error messages, and other text rendered to the user.
+- Components: PascalCase file and export name
+- Server Actions: `actions/[module].ts`, verb prefix — `createProductAction`, `lookupBarcodeAction`
+- Zod schemas: `lib/validations/[module].ts`
+- Types: `types/[module].ts`
+- Period helpers: `lib/period.ts`
+- No business logic in components
+- Prefer `async/await` over `.then()`
+- **English everywhere** (identifiers, types, file names, comments). **Spanish for UI-visible text only** (labels, headings, placeholders, error messages).
 
 ## Deploy
 
-- **Dashboard:** Vercel (Next.js)
-- **DB/Auth/Storage:** Supabase
-- **WhatsApp chatbot (future):** separate NestJS service on Railway or Fly.io — does NOT live in this repo. One server handles multiple clients, each with their own WhatsApp number pointing to `/webhook/[business-id]`. Use ngrok during development.
+- Dashboard: Vercel
+- DB / Auth / Storage: Supabase
+- WhatsApp chatbot (future): separate NestJS service on Railway or Fly.io, not in this repo. One server, multiple clients via `/webhook/[business-id]`. Use ngrok in development.

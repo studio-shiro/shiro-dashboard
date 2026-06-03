@@ -5,14 +5,22 @@ export interface PeriodOption {
   label: string;
 }
 
-export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
+export function getPeriodOptions(
+  periodType: PeriodType,
+  minDate?: Date,
+): PeriodOption[] {
   const now = new Date();
+
+  const minMonth = minDate
+    ? new Date(minDate.getFullYear(), minDate.getMonth(), 1)
+    : null;
 
   switch (periodType) {
     case "month": {
       const options: PeriodOption[] = [];
       for (let i = 0; i < 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        if (minMonth && d < minMonth) break;
         const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         const label = d
           .toLocaleDateString("es-AR", { month: "long", year: "numeric" })
@@ -22,33 +30,16 @@ export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
       return options;
     }
 
-    case "week": {
-      const options: PeriodOption[] = [];
-      const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // Monday = 0
-      const currentMonday = new Date(now);
-      currentMonday.setDate(now.getDate() - dayOfWeek);
-      currentMonday.setHours(0, 0, 0, 0);
-      for (let i = 0; i < 8; i++) {
-        const weekStart = new Date(currentMonday);
-        weekStart.setDate(currentMonday.getDate() - i * 7);
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        const value = weekStart.toISOString().slice(0, 10);
-        const startDay = weekStart.getDate();
-        const startMonth = weekStart.getMonth() + 1;
-        const endDay = weekEnd.getDate();
-        const endMonth = weekEnd.getMonth() + 1;
-        const label = `${startDay}/${startMonth} — ${endDay}/${endMonth}`;
-        options.push({ value, label });
-      }
-      return options;
-    }
-
     case "today": {
       const options: PeriodOption[] = [];
+      const minDay = minDate
+        ? new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate())
+        : null;
       for (let i = 0; i < 7; i++) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
+        const dayOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        if (minDay && dayOnly < minDay) break;
         const value = d.toISOString().slice(0, 10);
         let label: string;
         if (i === 0) {
@@ -69,15 +60,20 @@ export function getPeriodOptions(periodType: PeriodType): PeriodOption[] {
       const options: PeriodOption[] = [];
       for (let i = 0; i < 5; i++) {
         const year = now.getFullYear() - i;
+        if (minDate && year < minDate.getFullYear()) break;
         options.push({ value: String(year), label: String(year) });
       }
       return options;
     }
+
+    case "custom":
+      return [];
   }
 }
 
 export function getDefaultPeriodValues(
   periodType: PeriodType,
+  periodValue?: string,
 ): [string, string] {
   const now = new Date();
 
@@ -87,19 +83,6 @@ export function getDefaultPeriodValues(
       const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const previous = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, "0")}`;
       return [current, previous];
-    }
-
-    case "week": {
-      const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1;
-      const currentMonday = new Date(now);
-      currentMonday.setDate(now.getDate() - dayOfWeek);
-      currentMonday.setHours(0, 0, 0, 0);
-      const previousMonday = new Date(currentMonday);
-      previousMonday.setDate(currentMonday.getDate() - 7);
-      return [
-        currentMonday.toISOString().slice(0, 10),
-        previousMonday.toISOString().slice(0, 10),
-      ];
     }
 
     case "today": {
@@ -113,6 +96,20 @@ export function getDefaultPeriodValues(
 
     case "year": {
       return [String(now.getFullYear()), String(now.getFullYear() - 1)];
+    }
+
+    case "custom": {
+      const value = periodValue ?? `${now.toISOString().slice(0, 10)}_${now.toISOString().slice(0, 10)}`;
+      const [fromStr, toStr] = value.split("_");
+      const from = new Date(`${fromStr}T00:00:00.000Z`);
+      const to = new Date(`${toStr}T00:00:00.000Z`);
+      const durationMs = to.getTime() - from.getTime() + 86_400_000;
+      const prevTo = new Date(from.getTime() - 1);
+      const prevFrom = new Date(from.getTime() - durationMs);
+      return [
+        value,
+        `${prevFrom.toISOString().slice(0, 10)}_${prevTo.toISOString().slice(0, 10)}`,
+      ];
     }
   }
 }

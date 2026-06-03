@@ -19,6 +19,7 @@ import {
 } from "@heroicons/react/24/outline";
 import type { DormantProduct } from "@/lib/dashboard/dormantProducts";
 import { Pagination } from "@/components/shared/Pagination";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 const PAGE_SIZE = 5;
 
@@ -163,7 +164,22 @@ const COLUMNS = [
           <span className="body-md-regular text-text-500">
             {days === 999 ? "—" : days}
           </span>
-          <SparklesIcon className="size-6 text-info-300 fill-info-300" />
+          <Tooltip
+            side="left"
+            content={
+              <div className="flex max-w-[214px] items-start gap-2 rounded-lg bg-info-100 px-2.5 py-2 shadow-lg">
+                <SparklesIcon className="mt-px size-4 shrink-0 fill-info-300 text-info-300" />
+                <p className="body-sm-regular text-text-400">
+                  <span className="body-sm-semibold">IA sugiere activar 2x1</span>{" "}
+                  para aumentar la rotación y mover las ventas de este producto.
+                </p>
+              </div>
+            }
+          >
+            <button type="button" className="cursor-default">
+              <SparklesIcon className="size-5 text-info-300 fill-info-300" />
+            </button>
+          </Tooltip>
         </div>
       );
     },
