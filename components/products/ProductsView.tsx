@@ -13,8 +13,7 @@ import {
   DEFAULT_COLUMN_VISIBILITY,
   FIXED_COLUMN_IDS,
 } from "./ProductsTable";
-
-const LOCALSTORAGE_KEY = "shiro-products-col-visibility";
+import { PRODUCTS_COL_VISIBILITY_KEY } from "./ProductsColumns";
 
 interface ProductsViewProps {
   products: ProductTableRow[];
@@ -47,7 +46,7 @@ export function ProductsView({ products, createdCount, uploadError }: ProductsVi
   // Load persisted column visibility from localStorage after mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(LOCALSTORAGE_KEY);
+      const stored = localStorage.getItem(PRODUCTS_COL_VISIBILITY_KEY);
       if (stored)
         setColumnVisibility(JSON.parse(stored) as Record<string, boolean>);
     } catch {}
@@ -75,7 +74,7 @@ export function ProductsView({ products, createdCount, uploadError }: ProductsVi
     });
     setColumnVisibility(safe);
     try {
-      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(safe));
+      localStorage.setItem(PRODUCTS_COL_VISIBILITY_KEY, JSON.stringify(safe));
     } catch {}
   }
 

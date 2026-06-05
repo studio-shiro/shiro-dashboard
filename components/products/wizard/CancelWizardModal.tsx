@@ -5,10 +5,13 @@ interface CancelWizardModalProps {
   onClose: () => void;
 }
 
-export function CancelWizardModal({ onConfirm, onClose }: CancelWizardModalProps) {
+export function CancelWizardModal({
+  onConfirm,
+  onClose,
+}: CancelWizardModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="flex w-full max-w-sm flex-col gap-5 rounded-xl bg-white p-7 shadow-xl">
+      <div className="flex w-full max-w-lg flex-col gap-5 rounded-xl bg-white p-7 shadow-xl">
         <div className="flex flex-col gap-2">
           <p className="heading-lg text-text-500">
             ¿Cancelar la carga de productos?
@@ -19,10 +22,20 @@ export function CancelWizardModal({ onConfirm, onClose }: CancelWizardModalProps
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="tertiary" size="xs" onClick={onConfirm} className="flex-1">
+          <Button
+            variant="tertiary"
+            size="xs"
+            onClick={onConfirm}
+            className="flex-1"
+          >
             Sí, cancelar
           </Button>
-          <Button variant="primary" size="xs" onClick={onClose} className="flex-1">
+          <Button
+            variant="primary"
+            size="xs"
+            onClick={onClose}
+            className="flex-1"
+          >
             Continuar Cargando
           </Button>
         </div>

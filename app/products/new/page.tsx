@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PencilIcon, PaperClipIcon } from "@heroicons/react/24/outline";
+import { BarcodeIcon } from "@/components/icons/BarcodeIcon";
 import { useProductWizardStore } from "@/store/productWizard";
 import { MethodCard } from "@/components/products/wizard/MethodCard";
 import { WizardProgressBar } from "@/components/products/wizard/WizardProgressBar";
@@ -23,8 +24,6 @@ export default function ProductMethodPage() {
     }
   }
 
-  // TODO: TESTEAR barcode.svg en MethodCard
-
   return (
     <div className="flex flex-1 flex-col gap-2.5">
       {/* Content */}
@@ -44,7 +43,7 @@ export default function ProductMethodPage() {
           <div className="grid grid-cols-3 gap-4">
             <MethodCard
               label="Escanear Código"
-              icon="/barcode.svg"
+              icon={BarcodeIcon}
               selected={selected === "scan"}
               onClick={() => setSelected("scan")}
             />

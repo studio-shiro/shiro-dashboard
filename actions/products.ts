@@ -192,6 +192,7 @@ export async function createProductsBulkAction(
       .insert({
         ...productData,
         reference: reference ?? "",
+        image_url: item.image_url ?? null,
         business_id: businessId,
         active: true,
       })

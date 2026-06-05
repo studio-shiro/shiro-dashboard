@@ -8,8 +8,13 @@ import { WizardProgressBar } from "@/components/products/wizard/WizardProgressBa
 import { WizardBottomNav } from "@/components/products/wizard/WizardBottomNav";
 import { DeleteProductModal } from "@/components/products/wizard/DeleteProductModal";
 import { ProductDetailsTable } from "@/components/products/wizard/ProductDetailsTable";
+import { ColumnSetupStep } from "@/components/products/wizard/ColumnSetupStep";
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import type { FeedbackBannerState } from "@/components/shared/FeedbackBanner";
+import {
+  PRODUCTS_COL_VISIBILITY_KEY,
+  DEFAULT_COLUMN_VISIBILITY,
+} from "@/components/products/ProductsColumns";
 
 const PAGE_SIZE = 5;
 
@@ -19,6 +24,8 @@ export default function DetailsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [banner, setBanner] = useState<FeedbackBannerState>(null);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean> | null>(null);
+  const [showSetup, setShowSetup] = useState(false);
 
   // Guard
   useEffect(() => {
@@ -26,6 +33,20 @@ export default function DetailsPage() {
       router.replace("/products/new/scan");
     }
   }, [scannedItems.length, router]);
+
+  // Read column visibility from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(PRODUCTS_COL_VISIBILITY_KEY);
+      if (stored) {
+        setColumnVisibility(JSON.parse(stored) as Record<string, boolean>);
+      } else {
+        setShowSetup(true);
+      }
+    } catch {
+      setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+    }
+  }, []);
 
   const pageCount = Math.ceil(scannedItems.length / PAGE_SIZE);
   const pageItems = scannedItems.slice(
@@ -43,11 +64,9 @@ export default function DetailsPage() {
     setDeleteTarget(null);
     setBanner({ type: "success", message: "Producto eliminado correctamente." });
 
-    // If all products removed, go back to scan
     if (scannedItems.length <= 1) {
       router.replace("/products/new/scan");
     } else {
-      // Adjust page if needed
       const newCount = scannedItems.length - 1;
       const maxPage = Math.ceil(newCount / PAGE_SIZE) - 1;
       if (pageIndex > maxPage) setPageIndex(maxPage);
@@ -55,6 +74,22 @@ export default function DetailsPage() {
   }
 
   const canSubmit = scannedItems.every((p) => p.name && p.price !== null && p.price > 0);
+
+  if (showSetup) {
+    return (
+      <div className="flex flex-1 flex-col gap-2.5">
+        <ColumnSetupStep
+          onDone={(visibility) => {
+            setColumnVisibility(visibility);
+            setShowSetup(false);
+          }}
+        />
+        <WizardProgressBar steps={["complete", "complete", "current"]} />
+      </div>
+    );
+  }
+
+  if (!columnVisibility) return null;
 
   return (
     <div className="flex flex-1 flex-col gap-2.5">
@@ -83,6 +118,7 @@ export default function DetailsPage() {
           pageCount={pageCount}
           onPageChange={setPageIndex}
           totalCount={scannedItems.length}
+          columnVisibility={columnVisibility}
         />
       </div>
 

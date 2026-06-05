@@ -66,12 +66,12 @@ export default function ScanPage() {
         <div
           className={
             scannedItems.length > 0
-              ? "flex w-full max-w-5xl items-start gap-16"
+              ? "flex items-center justify-center gap-16"
               : "flex flex-col items-center gap-8"
           }
         >
-          {/* Left: scanner + input */}
-          <div className="flex max-w-[465px] flex-col justify-center items-center gap-8">
+          {/* Scanner + input */}
+          <div className="flex w-[460px] shrink-0 flex-col items-center gap-12">
             <div className="flex flex-col gap-1">
               <h1 className="heading-xl text-text-500">
                 Escanea tu Producto Nuevo
@@ -94,9 +94,9 @@ export default function ScanPage() {
             <BarcodeInput onSubmit={handleBarcode} disabled={isPending} />
           </div>
 
-          {/* Right: scanned list */}
+          {/* Scanned list */}
           {scannedItems.length > 0 && (
-            <div className="flex-1">
+            <div className="w-[760px] shrink-0">
               <ScannedProductList items={scannedItems} onRemove={removeItem} />
             </div>
           )}

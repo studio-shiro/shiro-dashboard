@@ -19,6 +19,8 @@ import type { ProductTableRow } from "@/types/database";
 
 // ─── Column visibility constants ─────────────────────────────────────────────
 
+export const PRODUCTS_COL_VISIBILITY_KEY = "shiro-products-col-visibility";
+
 export const FIXED_COLUMN_IDS = [
   "producto",
   "costo",
