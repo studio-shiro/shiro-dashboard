@@ -1,6 +1,11 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
-import { productSchema, updateProductSchema } from "@/lib/validations/products";
+import {
+  productSchema,
+  updateProductSchema,
+  wizardProductSchema,
+} from "@/lib/validations/products";
+import type { WizardProduct } from "@/store/productWizard";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ProductTableRow, BatchForTable } from "@/types/database";
@@ -143,4 +148,105 @@ export async function deleteProductAction(id: string) {
 
   revalidatePath("/products");
   return { success: true };
+}
+
+export async function createProductsBulkAction(
+  products: WizardProduct[],
+): Promise<{ created?: number; error?: string }> {
+  if (!products.length) return { error: "No hay productos para crear." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const businessId: string = user.user_metadata.business_id;
+  let created = 0;
+  const errors: string[] = [];
+
+  for (const item of products) {
+    const parsed = wizardProductSchema.safeParse({
+      name: item.name,
+      reference: item.reference,
+      description: item.description,
+      price: item.price,
+      cost_price: item.cost_price,
+      category_id: item.category_id,
+      brand_id: item.brand_id,
+      barcode: item.barcode,
+      image_url: item.image_url,
+      tracks_batches: item.tracks_batches,
+      stock_quantity: item.stock_quantity,
+    });
+
+    if (!parsed.success) {
+      errors.push(`"${item.name || item.barcode}": datos inválidos.`);
+      continue;
+    }
+
+    const { stock_quantity, reference, ...productData } = parsed.data;
+
+    const { data: newProduct, error: productError } = await supabase
+      .from("products")
+      .insert({
+        ...productData,
+        reference: reference ?? "",
+        business_id: businessId,
+        active: true,
+      })
+      .select("id")
+      .single();
+
+    if (productError || !newProduct) {
+      errors.push(`"${item.name || item.barcode}": ${productError?.message ?? "error desconocido"}.`);
+      continue;
+    }
+
+    if (stock_quantity > 0) {
+      await supabase.from("stock").insert({
+        product_id: newProduct.id,
+        business_id: businessId,
+        quantity: stock_quantity,
+        alert_threshold: 0,
+      });
+    }
+
+    if (item.tracks_batches && (item.lot_number || item.expiration_date)) {
+      await supabase.from("product_batches").insert({
+        product_id: newProduct.id,
+        business_id: businessId,
+        lot_number: item.lot_number,
+        quantity: stock_quantity,
+        expiration_date: item.expiration_date,
+        received_at: new Date().toISOString(),
+      });
+    }
+
+    // Per CLAUDE.md: manual barcode entries enrich the global product_catalog
+    if (item.source === "unknown") {
+      await supabase.from("product_catalog").upsert(
+        {
+          barcode: item.barcode,
+          name: parsed.data.name,
+          description: parsed.data.description ?? null,
+          image_url: parsed.data.image_url ?? null,
+          brand: item.brand_name ?? null,
+          category: item.category_name ?? null,
+          source: "manual",
+        },
+        { onConflict: "barcode" },
+      );
+    }
+
+    created++;
+  }
+
+  revalidatePath("/products");
+
+  if (created === 0) {
+    return { error: errors.length ? errors.join(" ") : "No se pudo crear ningún producto." };
+  }
+
+  return { created };
 }

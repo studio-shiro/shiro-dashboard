@@ -6,6 +6,10 @@ import {
   ChevronRightIcon,
   ChevronDownIcon,
   CubeIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  DocumentDuplicateIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { FlagIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
@@ -53,8 +57,10 @@ export function buildColumns(
   pendingIds: Set<string>,
   onToggle: (product: ProductTableRow) => void,
   onDelete: (id: string) => void,
+  onDuplicate: (id: string) => void,
   expandedRows: Set<string>,
   onToggleExpand: (id: string) => void,
+  columnVisibility: Record<string, boolean>,
 ) {
   return [
     columnHelper.accessor("name", {
@@ -242,6 +248,7 @@ export function buildColumns(
         const isActive =
           product.id in localActive ? localActive[product.id] : product.active;
         const isPending = pendingIds.has(product.id);
+        const showBatch = columnVisibility.vencimientos !== false;
 
         return (
           <div className="flex items-center gap-2">
@@ -251,8 +258,33 @@ export function buildColumns(
               disabled={isPending}
             />
             <RowActionsMenu
-              productId={product.id}
-              onDelete={() => onDelete(product.id)}
+              actions={[
+                {
+                  label: "Editar Producto",
+                  icon: PencilIcon,
+                  href: `/products/${product.id}/edit`,
+                },
+                ...(showBatch
+                  ? [
+                      {
+                        label: "Agregar Lote",
+                        icon: PlusCircleIcon,
+                        href: `/products/${product.id}/batches/new`,
+                      } as const,
+                    ]
+                  : []),
+                {
+                  label: "Duplicar Producto",
+                  icon: DocumentDuplicateIcon,
+                  onClick: () => onDuplicate(product.id),
+                },
+                {
+                  label: "Eliminar Producto",
+                  icon: TrashIcon,
+                  variant: "danger" as const,
+                  onClick: () => onDelete(product.id),
+                },
+              ]}
             />
           </div>
         );

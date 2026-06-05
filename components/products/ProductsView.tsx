@@ -18,11 +18,27 @@ const LOCALSTORAGE_KEY = "shiro-products-col-visibility";
 
 interface ProductsViewProps {
   products: ProductTableRow[];
+  createdCount?: number;
+  uploadError?: boolean;
 }
 
-export function ProductsView({ products }: ProductsViewProps) {
+export function ProductsView({ products, createdCount, uploadError }: ProductsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [banner, setBanner] = useState<FeedbackBannerState>(null);
+  const [banner, setBanner] = useState<FeedbackBannerState>(() => {
+    if (createdCount !== undefined) {
+      return {
+        type: "success",
+        message: `${createdCount === 1 ? "Producto registrado" : `${createdCount} productos registrados`} correctamente.`,
+      };
+    }
+    if (uploadError) {
+      return {
+        type: "error",
+        message: "No se pudieron guardar los productos. Intentá nuevamente.",
+      };
+    }
+    return null;
+  });
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);

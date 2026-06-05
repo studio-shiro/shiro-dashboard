@@ -16,6 +16,7 @@ import {
   PlusIcon,
   ArrowDownIcon,
   ArrowUpIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import {
@@ -86,8 +87,10 @@ export function ProductsTable({
     pendingIds,
     handleToggle,
     handleDelete,
+    handleDuplicate,
     expandedRows,
     handleToggleExpand,
+    columnVisibility,
   );
 
   const table = useReactTable({
@@ -144,20 +147,20 @@ export function ProductsTable({
     });
   }
 
+  function handleDuplicate(id: string) {
+    // TODO: implementar duplicar producto
+    console.log(`Duplicate method called with ID: ${id}`);
+  }
+
   const isEmpty = originalCount === 0;
   const isSearchEmpty = !isEmpty && products.length === 0;
   const isGrowable = isEmpty || isSearchEmpty;
   const visibleColCount = table.getVisibleLeafColumns().length;
 
   return (
-    <div className={cn("flex flex-col", isGrowable ? "flex-1" : "gap-4")}>
+    <div className="flex flex-1 flex-col gap-4">
       {/* Table card */}
-      <div
-        className={cn(
-          "overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg",
-          isGrowable && "flex flex-1 flex-col",
-        )}
-      >
+      <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg">
         {/* Header — always rendered inside a real <table> for consistent column alignment */}
         <table className="w-full border-collapse">
           <thead>
@@ -239,16 +242,19 @@ export function ProductsTable({
         {/* Empty states — flex divs outside <table> so they can grow to fill remaining height */}
         {isEmpty && (
           <div className="flex flex-1 items-center justify-center px-4">
-            <div className="mx-auto flex max-w-xs flex-col items-center gap-4">
-              <p className="body-lg-medium text-text-500">
-                Comenzá a cargar tus Productos
+            <div className="flex flex-col items-center gap-2">
+              <CubeIcon className="size-20 text-text-500" strokeWidth={1} />
+              <p className="heading-lg text-text-500 mt-2">Sin Productos</p>
+              <p className="body-lg-regular text-text-400">
+                Comenzá a cargar tus productos.
               </p>
-              <Button href="/products/new" variant="primary" className="w-full">
+              <Button
+                href="/products/new"
+                variant="primary"
+                className="mt-2 w-[328px]"
+              >
                 <PlusIcon className="size-5" />
                 Agregar Producto
-              </Button>
-              <Button type="button" variant="tertiary" className="w-full">
-                Importá tus Productos
               </Button>
             </div>
           </div>

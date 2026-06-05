@@ -1,8 +1,13 @@
 import { getProductsAction } from "@/actions/products";
 import { ProductsView } from "@/components/products/ProductsView";
 
-export default async function ProductsPage() {
+interface ProductsPageProps {
+  searchParams: Promise<{ created?: string; uploadError?: string }>;
+}
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const result = await getProductsAction();
+  const params = await searchParams;
 
   if (!result.data) {
     return (
@@ -12,5 +17,14 @@ export default async function ProductsPage() {
     );
   }
 
-  return <ProductsView products={result.data} />;
+  const createdCount = params.created ? Number(params.created) : undefined;
+  const uploadError = params.uploadError === "true";
+
+  return (
+    <ProductsView
+      products={result.data}
+      createdCount={createdCount}
+      uploadError={uploadError}
+    />
+  );
 }

@@ -6,6 +6,7 @@ export type Business = {
   contact_email: string | null;
   contact_phone: string | null;
   stock_alert_threshold: number;
+  business_type: import("./barcode").BusinessType | null;
   created_at: string;
   updated_at: string;
 };
@@ -23,6 +24,7 @@ export type Product = {
   brand_id: string | null;
   active: boolean;
   tracks_batches: boolean;
+  barcode: string | null;
   created_at: string;
   updated_at: string;
 };
