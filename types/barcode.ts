@@ -1,4 +1,4 @@
-export type BarcodeSource = "local" | "catalog" | "external" | "unknown";
+export type BarcodeSource = "local" | "catalog" | "external" | "unknown" | "manual";
 
 export type BusinessType =
   | "kiosk"

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 type StepState = "empty" | "current" | "complete";
 
 interface WizardProgressBarProps {
-  steps: [StepState, StepState, StepState];
+  steps: StepState[];
 }
 
 export function WizardProgressBar({ steps }: WizardProgressBarProps) {

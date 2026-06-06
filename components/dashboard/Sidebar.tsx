@@ -10,17 +10,13 @@ import Image from "next/image";
 import { Divider } from "@/components/shared/Divider";
 import Button from "@/components/shared/Button";
 import { LogoUploadModal } from "@/components/dashboard/LogoUploadModal";
-import logoShiroStudio from "@/public/logo-shiro-studio.svg";
-import logoShiroI from "@/public/logo-shiro-i.svg";
+import LogoShiroStudio from "@/public/logo-shiro-studio.svg";
+import LogoShiroI from "@/public/logo-shiro-i.svg";
 import {
   UsersIcon as UsersIconOutline,
   ShoppingCartIcon as ShoppingCartIconOutline,
   ChartBarIcon as ChartBarIconOutline,
   ArchiveBoxIcon as ArchiveBoxIconOutline,
-  TagIcon as TagIconOutline,
-  Squares2X2Icon as Squares2X2IconOutline,
-  Cog6ToothIcon as Cog6ToothIconOutline,
-  CubeIcon as CubeIconOutline,
   ChevronLeftIcon,
   ChevronRightIcon,
   BanknotesIcon as BankNotesIconOutline,
@@ -31,28 +27,16 @@ import {
   ShoppingCartIcon as ShoppingCartIconSolid,
   ChartBarIcon as ChartBarIconSolid,
   ArchiveBoxIcon as ArchiveBoxIconSolid,
-  TagIcon as TagIconSolid,
-  Squares2X2Icon as Squares2X2IconSolid,
-  Cog6ToothIcon as Cog6ToothIconSolid,
-  CubeIcon as CubeIconSolid,
   BanknotesIcon as BankNotesIconSolid,
   PencilSquareIcon,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
-  // {
-  //   href: "/stock",
-  //   label: "Stock",
-  //   iconOutline: ArchiveBoxIconOutline,
-  //   iconSolid: ArchiveBoxIconSolid,
-  // },
   {
     href: "/sales",
     label: "Operaciones",
     iconOutline: BankNotesIconOutline,
-    // iconOutline: ShoppingCartIconOutline
     iconSolid: BankNotesIconSolid,
-    // iconSolid: ShoppingCartIconSolid,
   },
   {
     href: "/dashboard",
@@ -65,8 +49,6 @@ const navItems = [
     label: "Productos",
     iconOutline: ShoppingCartIconOutline,
     iconSolid: ShoppingCartIconSolid,
-    // iconOutline: CubeIconOutline,
-    // iconSolid: CubeIconSolid,
   },
   {
     href: "/customers",
@@ -79,21 +61,7 @@ const navItems = [
     label: "Marcas",
     iconOutline: ArchiveBoxIconOutline,
     iconSolid: ArchiveBoxIconSolid,
-    // iconOutline: TagIconOutline,
-    // iconSolid: TagIconSolid,
   },
-  // {
-  //   href: "/customers",
-  //   label: "Clientes",
-  //   iconOutline: UsersIconOutline,
-  //   iconSolid: UsersIconSolid,
-  // },
-  // {
-  //   href: "/categories",
-  //   label: "Categorías",
-  //   iconOutline: Squares2X2IconOutline,
-  //   iconSolid: Squares2X2IconSolid,
-  // },
 ];
 
 const NavItem = ({
@@ -329,18 +297,13 @@ export default function Sidebar({
       {!collapsed ? (
         <div className="flex flex-col items-center gap-1.5 px-4 pb-3 pt-4">
           <Link href="https://www.shirostudio.co/" target="_blank">
-            <Image
-              src={logoShiroStudio}
-              alt="Shiro Studio"
-              width={collapsed ? 24 : 90}
-              height={collapsed ? 24 : 25}
-            />
+            <LogoShiroStudio aria-label="Shiro Studio" />
           </Link>
         </div>
       ) : (
         <div className="flex justify-center items-center gap-1.5 px-4 pb-3">
           <Link href="https://www.shirostudio.co/" target="_blank">
-            <Image src={logoShiroI} alt="Shiro Studio" height={24} />
+            <LogoShiroI aria-label="Shiro Studio" />
           </Link>
         </div>
       )}

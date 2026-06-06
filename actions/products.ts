@@ -186,11 +186,13 @@ export async function createProductsBulkAction(
     }
 
     const { stock_quantity, reference, ...productData } = parsed.data;
+    const dbBarcode = item.barcode.startsWith("manual-") ? null : item.barcode;
 
     const { data: newProduct, error: productError } = await supabase
       .from("products")
       .insert({
         ...productData,
+        barcode: dbBarcode,
         reference: reference ?? "",
         image_url: item.image_url ?? null,
         business_id: businessId,

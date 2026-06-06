@@ -30,6 +30,7 @@ interface ProductWizardState {
   scannedItems: WizardProduct[];
   setMethod: (method: "scan" | "manual" | "excel") => void;
   addItem: (item: WizardProduct) => void;
+  addEmptyItem: () => void;
   removeItem: (barcode: string) => void;
   updateItem: (barcode: string, updates: Partial<WizardProduct>) => void;
   reset: () => void;
@@ -45,6 +46,33 @@ export const useProductWizardStore = create<ProductWizardState>()(
 
       addItem: (item) =>
         set((state) => ({ scannedItems: [...state.scannedItems, item] })),
+
+      addEmptyItem: () =>
+        set((state) => ({
+          scannedItems: [
+            ...state.scannedItems,
+            {
+              barcode: `manual-${crypto.randomUUID()}`,
+              source: "manual",
+              name: "",
+              reference: "",
+              image_url: null,
+              brand_id: null,
+              brand_name: null,
+              category_id: null,
+              category_name: null,
+              description: null,
+              price: null,
+              cost_price: null,
+              stock_quantity: 0,
+              tracks_batches: false,
+              lot_number: null,
+              batch_barcode: null,
+              manufacture_date: null,
+              expiration_date: null,
+            },
+          ],
+        })),
 
       removeItem: (barcode) =>
         set((state) => ({

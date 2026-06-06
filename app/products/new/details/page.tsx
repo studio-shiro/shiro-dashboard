@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PlusIcon } from "@heroicons/react/24/outline";
+import { createClient } from "@/lib/supabase/client";
+import { uploadFile, buildStoragePath } from "@/lib/supabase/storage";
 import { useProductWizardStore } from "@/store/productWizard";
 import type { WizardProduct } from "@/store/productWizard";
 import { WizardProgressBar } from "@/components/products/wizard/WizardProgressBar";
@@ -20,19 +23,23 @@ const PAGE_SIZE = 5;
 
 export default function DetailsPage() {
   const router = useRouter();
-  const { scannedItems, updateItem, removeItem } = useProductWizardStore();
+  const { method, scannedItems, updateItem, removeItem, addEmptyItem } = useProductWizardStore();
   const [pageIndex, setPageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [banner, setBanner] = useState<FeedbackBannerState>(null);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean> | null>(null);
   const [showSetup, setShowSetup] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const pendingFiles = useRef<Map<string, File>>(new Map());
 
   // Guard
   useEffect(() => {
-    if (scannedItems.length === 0) {
+    if (method === "scan" && scannedItems.length === 0) {
       router.replace("/products/new/scan");
+    } else if (method !== "scan" && method !== "manual") {
+      router.replace("/products/new");
     }
-  }, [scannedItems.length, router]);
+  }, [method, scannedItems.length, router]);
 
   // Read column visibility from localStorage
   useEffect(() => {
@@ -54,18 +61,42 @@ export default function DetailsPage() {
     pageIndex * PAGE_SIZE + PAGE_SIZE,
   );
 
+  function handleFilePicked(barcode: string, file: File) {
+    pendingFiles.current.set(barcode, file);
+  }
+
+  async function handleNext() {
+    if (pendingFiles.current.size > 0) {
+      setIsUploading(true);
+      try {
+        const { data: { user } } = await createClient().auth.getUser();
+        const businessId: string = user?.user_metadata?.business_id;
+        for (const [barcode, file] of pendingFiles.current) {
+          const path = buildStoragePath("products", businessId, barcode, file);
+          const url = await uploadFile(file, "product-images", path);
+          if (url) updateItem(barcode, { image_url: url });
+        }
+        pendingFiles.current.clear();
+      } finally {
+        setIsUploading(false);
+      }
+    }
+    router.push("/products/new/uploading");
+  }
+
   function handleDelete(item: WizardProduct) {
     setDeleteTarget(item);
   }
 
   function confirmDelete() {
     if (!deleteTarget) return;
+    pendingFiles.current.delete(deleteTarget.barcode);
     removeItem(deleteTarget.barcode);
     setDeleteTarget(null);
     setBanner({ type: "success", message: "Producto eliminado correctamente." });
 
     if (scannedItems.length <= 1) {
-      router.replace("/products/new/scan");
+      router.replace(method === "manual" ? "/products/new" : "/products/new/scan");
     } else {
       const newCount = scannedItems.length - 1;
       const maxPage = Math.ceil(newCount / PAGE_SIZE) - 1;
@@ -84,7 +115,9 @@ export default function DetailsPage() {
             setShowSetup(false);
           }}
         />
-        <WizardProgressBar steps={["complete", "complete", "current"]} />
+        <WizardProgressBar
+          steps={method === "manual" ? ["complete", "current"] : ["complete", "complete", "current"]}
+        />
       </div>
     );
   }
@@ -95,12 +128,27 @@ export default function DetailsPage() {
     <div className="flex flex-1 flex-col gap-2.5">
       {/* Content */}
       <div className="flex flex-1 flex-col gap-4 overflow-hidden">
-        <div className="flex flex-col gap-1 pt-4">
-          <h1 className="heading-xl text-text-500">Edita tu Producto Nuevo</h1>
-          <p className="body-md-regular text-text-400">
-            Editá la información de los nuevos productos que estás agregando a
-            tu inventario.
-          </p>
+        <div className="flex items-end justify-between pt-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="heading-xl text-text-500">
+              {method === "manual" ? "Agregá un Producto Manualmente" : "Edita tu Producto Nuevo"}
+            </h1>
+            <p className="body-md-regular text-text-400">
+              {method === "manual"
+                ? "Completá la información del producto para agregarlo a tu inventario."
+                : "Editá la información de los nuevos productos que estás agregando a tu inventario."}
+            </p>
+          </div>
+          {method === "manual" && (
+            <button
+              type="button"
+              onClick={addEmptyItem}
+              className="flex shrink-0 items-center gap-2 rounded-md border border-accent bg-background-300 px-4 py-2 body-sm-semibold text-accent shadow-sm hover:bg-accent/5"
+            >
+              <PlusIcon className="size-5" />
+              Agregar Producto
+            </button>
+          )}
         </div>
 
         {banner && (
@@ -114,6 +162,7 @@ export default function DetailsPage() {
           items={pageItems}
           onUpdate={(barcode, updates) => updateItem(barcode, updates)}
           onDelete={handleDelete}
+          onFilePicked={handleFilePicked}
           pageIndex={pageIndex}
           pageCount={pageCount}
           onPageChange={setPageIndex}
@@ -123,12 +172,14 @@ export default function DetailsPage() {
       </div>
 
       {/* Progress + nav */}
-      <WizardProgressBar steps={["complete", "complete", "current"]} />
+      <WizardProgressBar
+        steps={method === "manual" ? ["complete", "current"] : ["complete", "complete", "current"]}
+      />
       <WizardBottomNav
-        onBack={() => router.push("/products/new/scan")}
-        onNext={() => router.push("/products/new/uploading")}
-        nextLabel="Subir Productos"
-        nextDisabled={!canSubmit}
+        onBack={() => router.push(method === "manual" ? "/products/new" : "/products/new/scan")}
+        onNext={() => { void handleNext(); }}
+        nextLabel={isUploading ? "Subiendo imágenes..." : "Subir Productos"}
+        nextDisabled={!canSubmit || isUploading}
       />
 
       {deleteTarget && (

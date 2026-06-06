@@ -11,16 +11,20 @@ import { WizardBottomNav } from "@/components/products/wizard/WizardBottomNav";
 
 export default function ProductMethodPage() {
   const router = useRouter();
-  const { setMethod } = useProductWizardStore();
+  const { setMethod, addEmptyItem, reset } = useProductWizardStore();
   const [selected, setSelected] = useState<"scan" | "manual" | "excel" | null>(
     null,
   );
 
   function handleContinue() {
     if (!selected) return;
+    reset();
     setMethod(selected);
     if (selected === "scan") {
       router.push("/products/new/scan");
+    } else if (selected === "manual") {
+      addEmptyItem();
+      router.push("/products/new/details");
     }
   }
 
@@ -51,7 +55,6 @@ export default function ProductMethodPage() {
               label="Ingreso Manual"
               icon={PencilIcon}
               selected={selected === "manual"}
-              disabled
               onClick={() => setSelected("manual")}
             />
             <MethodCard
