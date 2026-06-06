@@ -36,7 +36,9 @@ export default function DetailsPage() {
   useEffect(() => {
     if (method === "scan" && scannedItems.length === 0) {
       router.replace("/products/new/scan");
-    } else if (method !== "scan" && method !== "manual") {
+    } else if (method === "excel" && scannedItems.length === 0) {
+      router.replace("/products/new/excel/upload");
+    } else if (method !== "scan" && method !== "manual" && method !== "excel") {
       router.replace("/products/new");
     }
   }, [method, scannedItems.length, router]);
@@ -116,7 +118,13 @@ export default function DetailsPage() {
           }}
         />
         <WizardProgressBar
-          steps={method === "manual" ? ["complete", "current"] : ["complete", "complete", "current"]}
+          steps={
+            method === "manual"
+              ? ["complete", "current"]
+              : method === "excel"
+                ? ["complete", "complete", "complete", "current"]
+                : ["complete", "complete", "current"]
+          }
         />
       </div>
     );
@@ -173,10 +181,24 @@ export default function DetailsPage() {
 
       {/* Progress + nav */}
       <WizardProgressBar
-        steps={method === "manual" ? ["complete", "current"] : ["complete", "complete", "current"]}
+        steps={
+          method === "manual"
+            ? ["complete", "current"]
+            : method === "excel"
+              ? ["complete", "complete", "complete", "current"]
+              : ["complete", "complete", "current"]
+        }
       />
       <WizardBottomNav
-        onBack={() => router.push(method === "manual" ? "/products/new" : "/products/new/scan")}
+        onBack={() =>
+          router.push(
+            method === "manual"
+              ? "/products/new"
+              : method === "excel"
+                ? "/products/new/excel/upload"
+                : "/products/new/scan",
+          )
+        }
         onNext={() => { void handleNext(); }}
         nextLabel={isUploading ? "Subiendo imágenes..." : "Subir Productos"}
         nextDisabled={!canSubmit || isUploading}

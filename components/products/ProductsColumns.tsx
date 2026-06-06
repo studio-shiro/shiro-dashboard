@@ -4,7 +4,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import {
   ChevronRightIcon,
-  ChevronDownIcon,
   CubeIcon,
   PencilIcon,
   PlusCircleIcon,
@@ -13,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { FlagIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { cn } from "@/lib/utils";
 import { RowActionsMenu } from "./RowActionsMenu";
 import formatCurrency from "@/helpers/formatCurrency";
 import type { ProductTableRow } from "@/types/database";
@@ -86,11 +86,12 @@ export function buildColumns(
                 onClick={() => onToggleExpand(row.original.id)}
                 className="shrink-0 text-text-400 transition-colors hover:text-text-500"
               >
-                {isExpanded ? (
-                  <ChevronDownIcon className="size-6" />
-                ) : (
-                  <ChevronRightIcon className="size-6" />
-                )}
+                <ChevronRightIcon
+                  className={cn(
+                    "size-6 transition-transform duration-200",
+                    isExpanded && "rotate-90",
+                  )}
+                />
               </button>
             )}
           </div>
@@ -197,11 +198,12 @@ export function buildColumns(
                 onClick={() => onToggleExpand(row.original.id)}
                 className="shrink-0 text-text-400 transition-colors hover:text-text-500"
               >
-                {isExpanded ? (
-                  <ChevronDownIcon className="size-6" />
-                ) : (
-                  <ChevronRightIcon className="size-6" />
-                )}
+                <ChevronRightIcon
+                  className={cn(
+                    "size-6 transition-transform duration-200",
+                    isExpanded && "rotate-90",
+                  )}
+                />
               </button>
             )}
           </div>

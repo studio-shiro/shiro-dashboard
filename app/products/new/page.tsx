@@ -25,6 +25,8 @@ export default function ProductMethodPage() {
     } else if (selected === "manual") {
       addEmptyItem();
       router.push("/products/new/details");
+    } else if (selected === "excel") {
+      router.push("/products/new/excel");
     }
   }
 
@@ -61,7 +63,6 @@ export default function ProductMethodPage() {
               label="Importar de Excel"
               icon={PaperClipIcon}
               selected={selected === "excel"}
-              disabled
               onClick={() => setSelected("excel")}
             />
           </div>
@@ -69,7 +70,13 @@ export default function ProductMethodPage() {
       </div>
 
       {/* Progress + nav */}
-      <WizardProgressBar steps={["current", "empty", "empty"]} />
+      <WizardProgressBar
+        steps={
+          selected === "excel"
+            ? ["current", "empty", "empty", "empty"]
+            : ["current", "empty", "empty"]
+        }
+      />
       <WizardBottomNav
         onBack={() => router.push("/products")}
         onNext={handleContinue}

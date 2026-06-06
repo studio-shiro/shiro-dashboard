@@ -165,15 +165,68 @@ export async function createProductsBulkAction(
   let created = 0;
   const errors: string[] = [];
 
+  // Pre-fetch all brands and categories so we can resolve names → IDs
+  const [{ data: allBrands }, { data: allCategories }] = await Promise.all([
+    supabase.from("brands").select("id, name").eq("business_id", businessId),
+    supabase.from("categories").select("id, name").eq("business_id", businessId),
+  ]);
+
+  const brandMap = new Map<string, string>();
+  for (const b of allBrands ?? []) brandMap.set(b.name.toLowerCase(), b.id);
+
+  const categoryMap = new Map<string, string>();
+  for (const c of allCategories ?? []) categoryMap.set(c.name.toLowerCase(), c.id);
+
+  // Create any brands/categories that appear in the import but don't exist yet
+  const newBrandNames = [
+    ...new Set(
+      products
+        .map((p) => p.brand_name)
+        .filter((n): n is string => !!n && !brandMap.has(n.toLowerCase())),
+    ),
+  ];
+  if (newBrandNames.length) {
+    const { data: created } = await supabase
+      .from("brands")
+      .insert(newBrandNames.map((name) => ({ name, business_id: businessId })))
+      .select("id, name");
+    for (const b of created ?? []) brandMap.set(b.name.toLowerCase(), b.id);
+  }
+
+  const newCategoryNames = [
+    ...new Set(
+      products
+        .map((p) => p.category_name)
+        .filter((n): n is string => !!n && !categoryMap.has(n.toLowerCase())),
+    ),
+  ];
+  if (newCategoryNames.length) {
+    const { data: created } = await supabase
+      .from("categories")
+      .insert(
+        newCategoryNames.map((name) => ({ name, business_id: businessId })),
+      )
+      .select("id, name");
+    for (const c of created ?? []) categoryMap.set(c.name.toLowerCase(), c.id);
+  }
+
   for (const item of products) {
+    // Resolve brand_id and category_id from names when IDs aren't already set
+    const resolvedBrandId =
+      item.brand_id ??
+      (item.brand_name ? (brandMap.get(item.brand_name.toLowerCase()) ?? null) : null);
+    const resolvedCategoryId =
+      item.category_id ??
+      (item.category_name ? (categoryMap.get(item.category_name.toLowerCase()) ?? null) : null);
+
     const parsed = wizardProductSchema.safeParse({
       name: item.name,
       reference: item.reference,
       description: item.description,
       price: item.price,
       cost_price: item.cost_price,
-      category_id: item.category_id,
-      brand_id: item.brand_id,
+      category_id: resolvedCategoryId,
+      brand_id: resolvedBrandId,
       barcode: item.barcode,
       image_url: item.image_url,
       tracks_batches: item.tracks_batches,

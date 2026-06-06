@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
   XMarkIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   PhotoIcon,
   ArrowUpTrayIcon,
@@ -182,11 +181,12 @@ export function ProductDetailsTable({
                             onClick={() => toggleExpand(item.barcode)}
                             className="shrink-0 text-text-400 transition-colors hover:text-text-500"
                           >
-                            {isExpanded ? (
-                              <ChevronDownIcon className="size-5" />
-                            ) : (
-                              <ChevronRightIcon className="size-5 rotate-90" />
-                            )}
+                            <ChevronRightIcon
+                              className={cn(
+                                "size-5 transition-transform duration-200",
+                                isExpanded && "rotate-90",
+                              )}
+                            />
                           </button>
                         )}
                       </div>

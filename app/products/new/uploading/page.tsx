@@ -1,15 +1,41 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useProductWizardStore } from "@/store/productWizard";
 import { createProductsBulkAction } from "@/actions/products";
 
+const LOADING_MESSAGES = [
+  "Subiendo tus productos...",
+  "Validando los datos...",
+  "Preparando tu inventario...",
+  "Guardando en la base de datos...",
+  "¡Ya casi terminamos!",
+];
+
+const MESSAGE_INTERVAL = 2000;
+const FADE_DURATION = 300;
+
 export default function UploadingPage() {
   const router = useRouter();
   const { scannedItems, reset } = useProductWizardStore();
   const started = useRef(false);
+
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  // Cycle through loading messages with fade
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+        setVisible(true);
+      }, FADE_DURATION);
+    }, MESSAGE_INTERVAL);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (started.current) return;
@@ -49,7 +75,15 @@ export default function UploadingPage() {
             priority
           />
         </div>
-        <p className="body-lg-regular text-text-400">Subiendo tus productos...</p>
+        <p
+          className="body-lg-regular text-text-400 transition-opacity"
+          style={{
+            opacity: visible ? 1 : 0,
+            transitionDuration: `${FADE_DURATION}ms`,
+          }}
+        >
+          {LOADING_MESSAGES[msgIndex]}
+        </p>
       </div>
     </div>
   );
