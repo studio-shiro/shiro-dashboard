@@ -136,7 +136,7 @@ export function BrandsTable({
       }),
 
       columnHelper.display({
-        id: "acciones",
+        id: "actions",
         header: "",
         cell: ({ row }) => {
           const brand = row.original;

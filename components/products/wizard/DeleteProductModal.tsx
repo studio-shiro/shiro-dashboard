@@ -1,3 +1,4 @@
+import { TrashIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/shared/Button";
 
 interface DeleteProductModalProps {
@@ -12,17 +13,25 @@ export function DeleteProductModal({
   onClose,
 }: DeleteProductModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="flex w-full max-w-sm flex-col gap-5 rounded-xl bg-white p-7 shadow-xl">
-        <div className="flex flex-col gap-2">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: "rgba(56, 58, 61, 0.4)" }}
+    >
+      <div className="flex w-full max-w-lg flex-col items-center gap-5 rounded-xl bg-white p-9 shadow-2xl">
+        <div className="flex size-12 items-center justify-center rounded-full bg-red-50">
+          <TrashIcon className="size-7 text-danger-300" />
+        </div>
+
+        <div className="flex flex-col items-center gap-2 text-center">
           <p className="heading-lg text-text-500">¿Eliminar Producto?</p>
-          <p className="body-md-regular text-text-400">
-            Estás por eliminar{" "}
-            <span className="body-md-semibold">{productName}</span> de la lista.
-            Esta acción no se puede deshacer.
+          <p className="body-md-regular max-w-sm text-text-400">
+            Esta acción eliminará{" "}
+            <span className="body-md-semibold">{productName}</span> de la carga
+            actual y no podrá deshacerse.
           </p>
         </div>
-        <div className="flex gap-3">
+
+        <div className="flex w-full gap-3">
           <Button variant="tertiary" size="xs" onClick={onClose} className="flex-1">
             Cancelar
           </Button>
@@ -31,7 +40,7 @@ export function DeleteProductModal({
             onClick={onConfirm}
             className="flex-1 bg-danger-300 text-white hover:bg-red-700"
           >
-            Eliminar
+            Eliminar producto
           </Button>
         </div>
       </div>

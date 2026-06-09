@@ -19,35 +19,35 @@ import type { ProductTableRow } from "@/types/database";
 
 // ─── Column visibility constants ─────────────────────────────────────────────
 
-export const PRODUCTS_COL_VISIBILITY_KEY = "shiro-products-col-visibility";
+export const PRODUCTS_COL_VISIBILITY_KEY = "shiro-products-column-visibility";
 
 export const FIXED_COLUMN_IDS = [
-  "producto",
-  "costo",
-  "precio",
-  "acciones",
+  "product",
+  "cost",
+  "price",
+  "actions",
 ] as const;
 
 export const OPTIONAL_COLUMN_IDS = [
   "sku",
-  "imagen",
-  "marca",
-  "categoria",
-  "vencimientos",
+  "image",
+  "brand",
+  "category",
+  "batches",
   "stock",
 ] as const;
 
 export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
-  producto: true,
+  product: true,
   sku: true,
-  imagen: true,
-  marca: true,
-  categoria: true,
-  vencimientos: true,
-  costo: true,
-  precio: true,
+  image: true,
+  brand: true,
+  category: true,
+  batches: true,
+  cost: true,
+  price: true,
   stock: true,
-  acciones: true,
+  actions: true,
 };
 
 // ─── Column definitions ───────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export function buildColumns(
 ) {
   return [
     columnHelper.accessor("name", {
-      id: "producto",
+      id: "product",
       header: "Producto",
       enableSorting: true,
       cell: ({ row }) => {
@@ -109,7 +109,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("image_url", {
-      id: "imagen",
+      id: "image",
       header: "Imagen",
       enableSorting: false,
       cell: ({ getValue }) => {
@@ -132,7 +132,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor((row) => row.brand?.name ?? null, {
-      id: "marca",
+      id: "brand",
       header: "Marca",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -143,7 +143,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor((row) => row.category?.name ?? null, {
-      id: "categoria",
+      id: "category",
       header: "Categoría",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -154,7 +154,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("batch_count", {
-      id: "vencimientos",
+      id: "batches",
       header: "Vencimientos",
       enableSorting: false,
       cell: ({ row }) => {
@@ -212,7 +212,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("cost_price", {
-      id: "costo",
+      id: "cost",
       header: "Costo por Unidad",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -223,7 +223,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("price", {
-      id: "precio",
+      id: "price",
       header: "Precio Final por Unidad",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -245,14 +245,14 @@ export function buildColumns(
     }),
 
     columnHelper.display({
-      id: "acciones",
+      id: "actions",
       header: "Acciones",
       cell: ({ row }) => {
         const product = row.original;
         const isActive =
           product.id in localActive ? localActive[product.id] : product.active;
         const isPending = pendingIds.has(product.id);
-        const showBatch = columnVisibility.vencimientos !== false;
+        const showBatch = columnVisibility.batches !== false;
 
         return (
           <div className="flex items-center gap-2">

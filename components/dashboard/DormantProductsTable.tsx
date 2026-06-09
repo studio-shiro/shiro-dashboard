@@ -92,7 +92,7 @@ const COLUMNS = [
   }),
 
   columnHelper.accessor("imageUrl", {
-    id: "imagen",
+    id: "image",
     header: "Imagen",
     enableSorting: false,
     cell: (info) => <ProductImage url={info.getValue()} />,

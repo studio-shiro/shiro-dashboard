@@ -14,40 +14,40 @@ import { FIXED_COLUMN_IDS } from "@/components/products/ProductsColumns";
 import { DatePickerInput } from "@/components/products/wizard/DatePickerInput";
 
 const COL_WIDTHS: Record<string, string> = {
-  producto: "2fr",
+  product: "2fr",
   sku: "1fr",
-  imagen: "100px",
-  marca: "1.3fr",
-  categoria: "1.3fr",
-  vencimientos: "1fr",
-  costo: "1.1fr",
-  precio: "1.1fr",
+  image: "100px",
+  brand: "1.3fr",
+  category: "1.3fr",
+  batches: "1fr",
+  cost: "1.1fr",
+  price: "1.1fr",
   stock: "1fr",
   _delete: "40px",
 };
 
 const ORDERED_COLS = [
-  "producto",
+  "product",
   "sku",
-  "imagen",
-  "marca",
-  "categoria",
-  "vencimientos",
-  "costo",
-  "precio",
+  "image",
+  "brand",
+  "category",
+  "batches",
+  "cost",
+  "price",
   "stock",
   "_delete",
 ];
 
 const COL_HEADERS: Record<string, string> = {
-  producto: "Producto",
+  product: "Producto",
   sku: "SKU",
-  imagen: "Imagen",
-  marca: "Marca",
-  categoria: "Categoría",
-  vencimientos: "Vencimientos",
-  costo: "Costo Unitario",
-  precio: "Precio Final Unitario",
+  image: "Imagen",
+  brand: "Marca",
+  category: "Categoría",
+  batches: "Vencimientos",
+  cost: "Costo Unitario",
+  price: "Precio Final Unitario",
   stock: "Stock",
   _delete: "",
 };
@@ -157,10 +157,10 @@ export function ProductDetailsTable({
               >
                 {visibleCols.map((col) => {
                   /* ── Producto ── */
-                  if (col === "producto")
+                  if (col === "product")
                     return (
                       <div
-                        key="producto"
+                        key="product"
                         className="flex items-center gap-2 p-3"
                       >
                         <input
@@ -211,10 +211,10 @@ export function ProductDetailsTable({
                     );
 
                   /* ── Imagen ── */
-                  if (col === "imagen")
+                  if (col === "image")
                     return (
                       <div
-                        key="imagen"
+                        key="image"
                         className="relative flex items-center justify-center p-3"
                       >
                         {/* Photo icon — clickable */}
@@ -277,9 +277,9 @@ export function ProductDetailsTable({
                     );
 
                   /* ── Marca ── */
-                  if (col === "marca")
+                  if (col === "brand")
                     return (
-                      <div key="marca" className="p-3">
+                      <div key="brand" className="p-3">
                         <input
                           type="text"
                           value={item.brand_name ?? ""}
@@ -295,9 +295,9 @@ export function ProductDetailsTable({
                     );
 
                   /* ── Categoría ── */
-                  if (col === "categoria")
+                  if (col === "category")
                     return (
-                      <div key="categoria" className="p-3">
+                      <div key="category" className="p-3">
                         <input
                           type="text"
                           value={item.category_name ?? ""}
@@ -313,10 +313,10 @@ export function ProductDetailsTable({
                     );
 
                   /* ── Vencimientos (toggle) ── */
-                  if (col === "vencimientos")
+                  if (col === "batches")
                     return (
                       <div
-                        key="vencimientos"
+                        key="batches"
                         className="flex items-center justify-center p-3"
                       >
                         <button
@@ -342,9 +342,9 @@ export function ProductDetailsTable({
                     );
 
                   /* ── Costo Unitario ── */
-                  if (col === "costo")
+                  if (col === "cost")
                     return (
-                      <div key="costo" className="p-3">
+                      <div key="cost" className="p-3">
                         <div className="flex h-[30px] w-full items-center overflow-hidden rounded-md border border-border-400 bg-white pl-1 pr-2 shadow-sm focus-within:border-accent">
                           <CurrencyDollarIcon className="size-5 shrink-0 text-text-400" />
                           <input
@@ -367,9 +367,9 @@ export function ProductDetailsTable({
                     );
 
                   /* ── Precio Final ── */
-                  if (col === "precio")
+                  if (col === "price")
                     return (
-                      <div key="precio" className="p-3">
+                      <div key="price" className="p-3">
                         <div className="flex h-[30px] w-full items-center overflow-hidden rounded-md border border-border-400 bg-white pl-1 pr-2 shadow-sm focus-within:border-accent">
                           <CurrencyDollarIcon className="size-5 shrink-0 text-text-400" />
                           <input

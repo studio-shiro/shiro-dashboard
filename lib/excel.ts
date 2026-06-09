@@ -3,14 +3,14 @@ import type { WizardProduct } from "@/store/productWizard";
 import { PRODUCTS_COL_VISIBILITY_KEY } from "@/components/products/ProductsColumns";
 
 const DEFAULT_VISIBILITY: Record<string, boolean> = {
-  producto: true,
+  product: true,
   sku: true,
-  imagen: true,
-  marca: true,
-  categoria: true,
-  vencimientos: true,
-  costo: true,
-  precio: true,
+  image: true,
+  brand: true,
+  category: true,
+  batches: true,
+  cost: true,
+  price: true,
   stock: true,
 };
 
@@ -22,33 +22,33 @@ type ColDef = {
 };
 
 const ALL_COLUMNS: ColDef[] = [
-  { header: "Nombre", field: "name", colId: "producto", required: true },
-  { header: "Imagen (URL)", field: "image_url", colId: "imagen", required: false },
+  { header: "Nombre", field: "name", colId: "product", required: true },
+  { header: "Imagen (URL)", field: "image_url", colId: "image", required: false },
   { header: "SKU", field: "reference", colId: "sku", required: false },
-  { header: "Marca", field: "brand_name", colId: "marca", required: false },
+  { header: "Marca", field: "brand_name", colId: "brand", required: false },
   {
     header: "Categoría",
     field: "category_name",
-    colId: "categoria",
+    colId: "category",
     required: false,
   },
   {
     header: "Costo Unitario",
     field: "cost_price",
-    colId: "costo",
+    colId: "cost",
     required: false,
   },
   {
     header: "Precio Final Unitario",
     field: "price",
-    colId: "precio",
+    colId: "price",
     required: true,
   },
   { header: "Stock", field: "stock_quantity", colId: "stock", required: false },
   {
     header: "Vencimientos (SI/NO)",
     field: "tracks_batches",
-    colId: "vencimientos",
+    colId: "batches",
     required: false,
   },
 ];

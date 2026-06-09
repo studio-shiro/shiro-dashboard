@@ -54,7 +54,7 @@ export function ProductsTable({
   onActionError,
 }: ProductsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "producto", desc: false },
+    { id: "product", desc: false },
   ]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,

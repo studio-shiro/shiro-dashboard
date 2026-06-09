@@ -9,10 +9,10 @@ import {
 
 const COLUMN_LABELS: Record<string, string> = {
   sku: "SKU",
-  imagen: "Imagen",
-  marca: "Marca",
-  categoria: "Categoría",
-  vencimientos: "Vencimientos",
+  image: "Imagen",
+  brand: "Marca",
+  category: "Categoría",
+  batches: "Vencimientos",
   stock: "Stock",
 };
 
@@ -35,10 +35,10 @@ export function ColumnSetupStep({ onDone }: ColumnSetupStepProps) {
 
   function handleContinue() {
     const visibility: Record<string, boolean> = {
-      producto: true,
-      costo: true,
-      precio: true,
-      acciones: true,
+      product: true,
+      cost: true,
+      price: true,
+      actions: true,
       ...enabled,
     };
     try {

@@ -11,7 +11,7 @@ import { WizardBottomNav } from "@/components/products/wizard/WizardBottomNav";
 
 export default function ProductMethodPage() {
   const router = useRouter();
-  const { setMethod, addEmptyItem, reset } = useProductWizardStore();
+  const { setMethod, reset } = useProductWizardStore();
   const [selected, setSelected] = useState<"scan" | "manual" | "excel" | null>(
     null,
   );
@@ -23,7 +23,6 @@ export default function ProductMethodPage() {
     if (selected === "scan") {
       router.push("/products/new/scan");
     } else if (selected === "manual") {
-      addEmptyItem();
       router.push("/products/new/details");
     } else if (selected === "excel") {
       router.push("/products/new/excel");
@@ -74,7 +73,9 @@ export default function ProductMethodPage() {
         steps={
           selected === "excel"
             ? ["current", "empty", "empty", "empty"]
-            : ["current", "empty", "empty"]
+            : selected === "manual"
+              ? ["current", "empty"]
+              : ["current", "empty", "empty"]
         }
       />
       <WizardBottomNav
