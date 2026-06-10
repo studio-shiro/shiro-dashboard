@@ -11,15 +11,12 @@ import { WizardProgressBar } from "@/components/products/wizard/WizardProgressBa
 import { WizardBottomNav } from "@/components/products/wizard/WizardBottomNav";
 import { DeleteProductModal } from "@/components/products/wizard/DeleteProductModal";
 import { ProductDetailsTable } from "@/components/products/wizard/ProductDetailsTable";
-import { ColumnSetupStep } from "@/components/products/wizard/ColumnSetupStep";
 import { ManualProductForm } from "@/components/products/wizard/ManualProductForm";
 import { AddedProductsPanel } from "@/components/products/wizard/AddedProductsPanel";
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import type { FeedbackBannerState } from "@/components/shared/FeedbackBanner";
-import {
-  PRODUCTS_COL_VISIBILITY_KEY,
-  DEFAULT_COLUMN_VISIBILITY,
-} from "@/components/products/ProductsColumns";
+import { DEFAULT_COLUMN_VISIBILITY } from "@/components/products/ProductsColumns";
+import { getProductColumnsAction } from "@/actions/product-columns";
 
 const PAGE_SIZE = 5;
 
@@ -37,11 +34,9 @@ export default function DetailsPage() {
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [editTarget, setEditTarget] = useState<WizardProduct | null>(null);
   const [banner, setBanner] = useState<FeedbackBannerState>(null);
-  const [columnVisibility, setColumnVisibility] = useState<Record<
-    string,
-    boolean
-  > | null>(null);
-  const [showSetup, setShowSetup] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >(DEFAULT_COLUMN_VISIBILITY);
   const [isUploading, setIsUploading] = useState(false);
   const pendingFiles = useRef<Map<string, File>>(new Map());
   const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -57,18 +52,9 @@ export default function DetailsPage() {
     }
   }, [method, scannedItems.length, router]);
 
-  // Read column visibility from localStorage (all methods)
+  // Load column visibility from DB on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(PRODUCTS_COL_VISIBILITY_KEY);
-      if (stored) {
-        setColumnVisibility(JSON.parse(stored) as Record<string, boolean>);
-      } else {
-        setShowSetup(true);
-      }
-    } catch {
-      setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
-    }
+    void getProductColumnsAction().then(setColumnVisibility);
   }, []);
 
   // Cleanup banner timer on unmount
@@ -151,31 +137,6 @@ export default function DetailsPage() {
     scannedItems.length > 0 &&
     scannedItems.every((p) => p.name && p.price !== null && p.price > 0);
 
-  // ── Column setup (all methods) ──────────────────────────────────────────────
-  if (showSetup) {
-    return (
-      <div className="flex flex-1 flex-col gap-2.5">
-        <ColumnSetupStep
-          onDone={(visibility) => {
-            setColumnVisibility(visibility);
-            setShowSetup(false);
-          }}
-        />
-        <WizardProgressBar
-          steps={
-            method === "manual"
-              ? ["complete", "current"]
-              : method === "excel"
-                ? ["complete", "complete", "complete", "current"]
-                : ["complete", "complete", "current"]
-          }
-        />
-      </div>
-    );
-  }
-
-  if (!columnVisibility) return null;
-
   // ── Manual method layout ────────────────────────────────────────────────────
   if (method === "manual") {
     const hasProducts = scannedItems.length > 0;
@@ -204,10 +165,10 @@ export default function DetailsPage() {
       <div className="flex flex-1 flex-col gap-2.5">
         {/* ── No products: centered single-column ── */}
         {!hasProducts && (
-          <div className="flex flex-1 flex-col items-center gap-8 overflow-y-auto pt-8">
+          <div className="flex flex-1 flex-col items-center gap-5 overflow-y-auto pt-8">
             <div className="flex flex-col items-center gap-2 text-center">
               <h1 className="heading-xl text-text-500">{pageHeading}</h1>
-              <p className="body-md-regular max-w-sm text-text-400">
+              <p className="body-md-regular text-text-400">
                 Completá la información del producto para agregarlo a tu
                 inventario.
               </p>
@@ -222,6 +183,10 @@ export default function DetailsPage() {
             {/* Left: heading + form */}
             <div className="flex w-120 shrink-0 flex-col gap-4 overflow-y-auto">
               <h1 className="heading-xl text-text-500">{pageHeading}</h1>
+              <p className="body-md-regular text-text-400">
+                Completá la información del producto para agregarlo a tu
+                inventario.
+              </p>
               {formElement}
             </div>
 
@@ -230,14 +195,16 @@ export default function DetailsPage() {
               <AddedProductsPanel
                 items={scannedItems}
                 columnVisibility={columnVisibility}
-                banner={banner}
-                onBannerClose={() => setBanner(null)}
                 onEdit={(item) => setEditTarget(item)}
                 onDelete={handleDelete}
                 editingBarcode={editTarget?.barcode ?? null}
               />
             </div>
           </div>
+        )}
+
+        {banner && (
+          <FeedbackBanner banner={banner} onClose={() => setBanner(null)} />
         )}
 
         <WizardProgressBar steps={["complete", "current"]} />

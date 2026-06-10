@@ -1,12 +1,16 @@
 import { XMarkIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import type { WizardProduct } from "@/store/productWizard";
+import Image from "next/image";
 
 interface ScannedProductListProps {
   items: WizardProduct[];
   onRemove: (barcode: string) => void;
 }
 
-export function ScannedProductList({ items, onRemove }: ScannedProductListProps) {
+export function ScannedProductList({
+  items,
+  onRemove,
+}: ScannedProductListProps) {
   if (items.length === 0) return null;
 
   return (
@@ -21,18 +25,17 @@ export function ScannedProductList({ items, onRemove }: ScannedProductListProps)
             >
               {/* Thumbnail */}
               <div className="flex w-[69px] shrink-0 items-center justify-center py-1.5">
-                <div className="size-[47px] overflow-hidden rounded-lg">
+                <div className="flex size-[47px] items-center justify-center overflow-hidden rounded-lg">
                   {item.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={item.image_url}
                       alt={item.name || item.barcode}
                       className="h-full w-full object-cover"
+                      height={46}
+                      width={46}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-background-300">
-                      <PhotoIcon className="size-6 text-text-300" />
-                    </div>
+                    <PhotoIcon className="size-full text-text-300" />
                   )}
                 </div>
               </div>

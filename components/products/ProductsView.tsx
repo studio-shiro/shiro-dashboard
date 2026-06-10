@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useTransition } from "react";
 import type { ProductTableRow } from "@/types/database";
 import { exportProductsToExcel } from "@/lib/exportProducts";
 import { ProductsPageHeader } from "./ProductsPageHeader";
@@ -10,18 +10,18 @@ import {
 } from "@/components/shared/FeedbackBanner";
 import {
   ProductsTable,
-  DEFAULT_COLUMN_VISIBILITY,
   FIXED_COLUMN_IDS,
 } from "./ProductsTable";
-import { PRODUCTS_COL_VISIBILITY_KEY } from "./ProductsColumns";
+import { saveProductColumnsAction } from "@/actions/product-columns";
 
 interface ProductsViewProps {
   products: ProductTableRow[];
   createdCount?: number;
   uploadError?: boolean;
+  initialColumnVisibility: Record<string, boolean>;
 }
 
-export function ProductsView({ products, createdCount, uploadError }: ProductsViewProps) {
+export function ProductsView({ products, createdCount, uploadError, initialColumnVisibility }: ProductsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [banner, setBanner] = useState<FeedbackBannerState>(() => {
     if (createdCount !== undefined) {
@@ -38,19 +38,9 @@ export function ProductsView({ products, createdCount, uploadError }: ProductsVi
     }
     return null;
   });
-  const [columnVisibility, setColumnVisibility] = useState<
-    Record<string, boolean>
-  >(DEFAULT_COLUMN_VISIBILITY);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
   const [isDownloading, setIsDownloading] = useState(false);
-
-  // Load persisted column visibility from localStorage after mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(PRODUCTS_COL_VISIBILITY_KEY);
-      if (stored)
-        setColumnVisibility(JSON.parse(stored) as Record<string, boolean>);
-    } catch {}
-  }, []);
+  const [, startTransition] = useTransition();
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm.trim()) return products;
@@ -67,15 +57,11 @@ export function ProductsView({ products, createdCount, uploadError }: ProductsVi
   const isEmpty = products.length === 0;
 
   function handleColumnVisibilityChange(next: Record<string, boolean>) {
-    // Fixed columns always remain visible
     const safe = { ...next };
-    FIXED_COLUMN_IDS.forEach((id) => {
-      safe[id] = true;
-    });
+    FIXED_COLUMN_IDS.forEach((id) => { safe[id] = true; });
     setColumnVisibility(safe);
-    try {
-      localStorage.setItem(PRODUCTS_COL_VISIBILITY_KEY, JSON.stringify(safe));
-    } catch {}
+    const enabledKeys = Object.entries(safe).filter(([, v]) => v).map(([k]) => k);
+    startTransition(() => { void saveProductColumnsAction(enabledKeys); });
   }
 
   const showSuccessBanner = (message: string) =>

@@ -1,18 +1,6 @@
 import * as XLSX from "xlsx";
 import type { WizardProduct } from "@/store/productWizard";
-import { PRODUCTS_COL_VISIBILITY_KEY } from "@/components/products/ProductsColumns";
-
-const DEFAULT_VISIBILITY: Record<string, boolean> = {
-  product: true,
-  sku: true,
-  image: true,
-  brand: true,
-  category: true,
-  batches: true,
-  cost: true,
-  price: true,
-  stock: true,
-};
+import { DEFAULT_COLUMN_VISIBILITY } from "@/components/products/ProductsColumns";
 
 type ColDef = {
   header: string;
@@ -53,12 +41,7 @@ const ALL_COLUMNS: ColDef[] = [
   },
 ];
 
-function getVisibleColumns(): ColDef[] {
-  let visibility = DEFAULT_VISIBILITY;
-  try {
-    const stored = localStorage.getItem(PRODUCTS_COL_VISIBILITY_KEY);
-    if (stored) visibility = JSON.parse(stored) as Record<string, boolean>;
-  } catch {}
+function getVisibleColumns(visibility: Record<string, boolean> = DEFAULT_COLUMN_VISIBILITY): ColDef[] {
   return ALL_COLUMNS.filter((c) => c.required || visibility[c.colId] !== false);
 }
 
@@ -74,8 +57,8 @@ const EXAMPLE_VALUES: Record<string, string[]> = {
   "Vencimientos (SI/NO)": ["NO", "NO"],
 };
 
-export function downloadTemplate(): void {
-  const cols = getVisibleColumns();
+export function downloadTemplate(visibility: Record<string, boolean> = DEFAULT_COLUMN_VISIBILITY): void {
+  const cols = getVisibleColumns(visibility);
   const headers = cols.map((c) => c.header);
   const row1 = headers.map((h) => EXAMPLE_VALUES[h]?.[0] ?? "");
   const row2 = headers.map((h) => EXAMPLE_VALUES[h]?.[1] ?? "");

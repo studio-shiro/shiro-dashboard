@@ -12,8 +12,6 @@ import { DateFormInput } from "@/components/shared/DateFormInput";
 import Button from "@/components/shared/Button";
 import Image from "next/image";
 
-// ── Props ─────────────────────────────────────────────────────────────────────
-
 interface ManualProductFormProps {
   columnVisibility: Record<string, boolean>;
   editTarget: WizardProduct | null;
@@ -23,12 +21,10 @@ interface ManualProductFormProps {
   onFilePicked: (barcode: string, file: File) => void;
 }
 
-// ── Form state ────────────────────────────────────────────────────────────────
-
 interface FormState {
   name: string;
   reference: string;
-  stock_quantity: number;
+  stock_quantity: number | null;
   brand_name: string;
   category_name: string;
   cost_price: number | null;
@@ -42,7 +38,7 @@ interface FormState {
 const emptyForm: FormState = {
   name: "",
   reference: "",
-  stock_quantity: 0,
+  stock_quantity: null,
   brand_name: "",
   category_name: "",
   cost_price: null,
@@ -123,7 +119,7 @@ const FIELD_CONFIG: Record<string, SimpleFieldConfig> = {
     label: "Stock",
     min: 0,
     step: "1",
-    nullable: false,
+    nullable: true,
     placeholder: "0",
   },
   brand: {
@@ -292,7 +288,7 @@ export function ManualProductForm({
       source: "manual",
       name: form.name,
       reference: form.reference,
-      image_url: null,
+      image_url: imagePreview, // blob URL shows preview until real upload replaces it
       brand_id: null,
       brand_name: form.brand_name || null,
       category_id: null,
@@ -300,7 +296,7 @@ export function ManualProductForm({
       description: null,
       price: form.price,
       cost_price: form.cost_price,
-      stock_quantity: form.stock_quantity,
+      stock_quantity: form.stock_quantity ?? 0,
       tracks_batches: showBatches,
       lot_number: form.lot_number || null,
       batch_barcode: form.batch_barcode || null,
@@ -312,10 +308,9 @@ export function ManualProductForm({
     setForm(emptyForm);
     setImagePreview(null);
     setPendingFile(null);
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
+    // Don't revoke — the blob URL is now used as image_url in the product.
+    // It will be replaced by the Supabase URL on upload, or cleaned up on unmount.
+    blobUrlRef.current = null;
   }
 
   function handleSaveEdit() {
@@ -323,11 +318,12 @@ export function ManualProductForm({
     const updates: Partial<WizardProduct> = {
       name: form.name,
       reference: form.reference,
+      image_url: imagePreview,
       brand_name: form.brand_name || null,
       category_name: form.category_name || null,
       price: form.price,
       cost_price: form.cost_price,
-      stock_quantity: form.stock_quantity,
+      stock_quantity: form.stock_quantity ?? 0,
       tracks_batches: showBatches,
       lot_number: form.lot_number || null,
       batch_barcode: form.batch_barcode || null,
@@ -370,9 +366,8 @@ export function ManualProductForm({
 
   return (
     <div className="flex flex-col gap-[27px] rounded-xl border border-border-300 bg-white px-[15px] py-5 shadow-lg">
-      {/* ── Información del Producto ─────────────────────────────────── */}
       <div className="flex flex-col gap-[14px]">
-        <p className="body-sm-semibold text-text-500">
+        <p className="body-md-semibold text-text-500">
           Información del Producto
         </p>
 
@@ -467,9 +462,7 @@ export function ManualProductForm({
       {/* ── Información del Lote ─────────────────────────────────────── */}
       {showBatches && (
         <div className="flex flex-col gap-[14px]">
-          <p className="body-sm-semibold text-text-500">
-            Información del Lote
-          </p>
+          <p className="body-sm-semibold text-text-500">Información del Lote</p>
 
           <div className="flex flex-col gap-5">
             <div className="grid grid-cols-2 gap-5">

@@ -15,6 +15,7 @@ import { WizardBottomNav } from "@/components/products/wizard/WizardBottomNav";
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import type { FeedbackBannerState } from "@/components/shared/FeedbackBanner";
 import { downloadTemplate, parseExcelFile } from "@/lib/excel";
+import { getProductColumnsAction } from "@/actions/product-columns";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE_MB = 5;
@@ -64,9 +65,10 @@ export default function ExcelUploadPage() {
     setIsDragging(false);
   }
 
-  function handleDownloadTemplate() {
+  async function handleDownloadTemplate() {
     try {
-      downloadTemplate();
+      const visibility = await getProductColumnsAction();
+      downloadTemplate(visibility);
       setBanner({ type: "success", message: "Plantilla descargada correctamente." });
     } catch {
       setBanner({ type: "error", message: "La plantilla no se pudo descargar." });
@@ -123,7 +125,7 @@ export default function ExcelUploadPage() {
           {/* Download template */}
           <button
             type="button"
-            onClick={handleDownloadTemplate}
+            onClick={() => { void handleDownloadTemplate(); }}
             className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-border-400 bg-white px-4 shadow-sm transition-colors hover:bg-background-300 body-sm-semibold text-text-500"
           >
             <ArrowDownCircleIcon className="size-5 shrink-0" />

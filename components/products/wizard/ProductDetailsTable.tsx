@@ -19,7 +19,6 @@ const COL_WIDTHS: Record<string, string> = {
   image: "100px",
   brand: "1.3fr",
   category: "1.3fr",
-  batches: "1fr",
   cost: "1.1fr",
   price: "1.1fr",
   stock: "1fr",
@@ -32,7 +31,6 @@ const ORDERED_COLS = [
   "image",
   "brand",
   "category",
-  "batches",
   "cost",
   "price",
   "stock",
@@ -45,7 +43,6 @@ const COL_HEADERS: Record<string, string> = {
   image: "Imagen",
   brand: "Marca",
   category: "Categoría",
-  batches: "Vencimientos",
   cost: "Costo Unitario",
   price: "Precio Final Unitario",
   stock: "Stock",
@@ -54,6 +51,23 @@ const COL_HEADERS: Record<string, string> = {
 
 const inputCls =
   "w-full h-[30px] rounded-md border border-border-400 bg-white px-2 body-md-regular text-text-500 shadow-sm focus:border-accent focus:outline-none";
+
+/**
+ * There is no per-row switch for tracks_batches: it is derived from the batch
+ * fields the user fills in (batch_barcode is excluded — the scan pre-fills it).
+ */
+function batchUpdates(
+  item: WizardProduct,
+  updates: Partial<WizardProduct>,
+): Partial<WizardProduct> {
+  const merged = { ...item, ...updates };
+  return {
+    ...updates,
+    tracks_batches: Boolean(
+      merged.lot_number || merged.manufacture_date || merged.expiration_date,
+    ),
+  };
+}
 
 interface ProductDetailsTableProps {
   items: WizardProduct[];
@@ -92,6 +106,8 @@ export function ProductDetailsTable({
       for (const url of blobUrls.current) URL.revokeObjectURL(url);
     };
   }, []);
+
+  const batchesEnabled = columnVisibility.batches !== false;
 
   const visibleCols = ORDERED_COLS.filter((col) => {
     if (col === "_delete") return true;
@@ -175,7 +191,7 @@ export function ProductDetailsTable({
                             !item.name && "border-danger-300",
                           )}
                         />
-                        {item.tracks_batches && (
+                        {batchesEnabled && (
                           <button
                             type="button"
                             onClick={() => toggleExpand(item.barcode)}
@@ -217,7 +233,9 @@ export function ProductDetailsTable({
                         key="image"
                         className="relative flex items-center justify-center p-3"
                       >
-                        {/* Photo icon — clickable */}
+                        {/* Photo / image + "Imagen" pill — pill is centered
+                            over the image, or bottom-aligned with the
+                            placeholder icon (matches Figma) */}
                         <button
                           type="button"
                           onClick={() =>
@@ -227,37 +245,31 @@ export function ProductDetailsTable({
                           title="Cambiar imagen"
                         >
                           {previewUrl ? (
-                            <div className="size-full overflow-hidden rounded-md">
+                            <div className="size-full overflow-hidden rounded-[10px]">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={previewUrl}
                                 alt={item.name}
                                 className="size-full object-cover"
                               />
-                              <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
-                                <ArrowUpTrayIcon className="size-4 text-white" />
-                              </div>
                             </div>
                           ) : (
                             <PhotoIcon className="size-full text-text-300" />
                           )}
-                        </button>
-
-                        {/* "Imagen" upload button — absolute below icon, matches Figma */}
-                        {!previewUrl && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              fileInputRefs.current.get(item.barcode)?.click()
-                            }
-                            className="absolute bottom-2 flex h-[22px] items-center gap-0.5 overflow-hidden rounded-md border border-border-400 bg-white px-2 shadow-sm"
+                          <span
+                            className={cn(
+                              "absolute left-1/2 flex h-[22px] -translate-x-1/2 items-center gap-0.5 whitespace-nowrap rounded-md border border-border-400 bg-white px-2 shadow-sm transition-colors group-hover:bg-background-300",
+                              previewUrl
+                                ? "top-1/2 -translate-y-1/2"
+                                : "bottom-0",
+                            )}
                           >
-                            <ArrowUpTrayIcon className="size-3 text-text-500" />
+                            <ArrowUpTrayIcon className="size-3.5 text-text-500" />
                             <span className="body-sm-regular text-text-500">
                               Imagen
                             </span>
-                          </button>
-                        )}
+                          </span>
+                        </button>
 
                         <input
                           ref={(el) => {
@@ -309,35 +321,6 @@ export function ProductDetailsTable({
                           placeholder="-"
                           className={inputCls}
                         />
-                      </div>
-                    );
-
-                  /* ── Vencimientos (toggle) ── */
-                  if (col === "batches")
-                    return (
-                      <div
-                        key="batches"
-                        className="flex items-center justify-center p-3"
-                      >
-                        <button
-                          type="button"
-                          onClick={() =>
-                            onUpdate(item.barcode, {
-                              tracks_batches: !item.tracks_batches,
-                            })
-                          }
-                          className={cn(
-                            "relative h-5 w-9 rounded-full transition-colors",
-                            item.tracks_batches ? "bg-accent" : "bg-border-300",
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
-                              item.tracks_batches ? "left-[18px]" : "left-0.5",
-                            )}
-                          />
-                        </button>
                       </div>
                     );
 
@@ -432,7 +415,7 @@ export function ProductDetailsTable({
               </div>
 
               {/* Batch sub-rows — header labels + input cells (matching Figma layout) */}
-              {isExpanded && item.tracks_batches && (
+              {isExpanded && batchesEnabled && (
                 <>
                   {/* Sub-header row */}
                   <div className="grid grid-cols-4 border-b border-t border-border-200 bg-background-600">
@@ -441,12 +424,10 @@ export function ProductDetailsTable({
                       "EAN-13",
                       "Fecha de Elaboración",
                       "Fecha de Vencimiento",
-                    ].map((label, i) => (
+                    ].map((label) => (
                       <div
                         key={label}
-                        className={cn(
-                          "body-md-semibold p-2 pl-3 text-text-400",
-                        )}
+                        className="body-md-semibold p-2 pl-3 text-text-400"
                       >
                         {label}
                       </div>
@@ -458,9 +439,12 @@ export function ProductDetailsTable({
                       type="text"
                       value={item.lot_number ?? ""}
                       onChange={(e) =>
-                        onUpdate(item.barcode, {
-                          lot_number: e.target.value || null,
-                        })
+                        onUpdate(
+                          item.barcode,
+                          batchUpdates(item, {
+                            lot_number: e.target.value || null,
+                          }),
+                        )
                       }
                       placeholder="-"
                       className={inputCls}
@@ -469,9 +453,12 @@ export function ProductDetailsTable({
                       type="text"
                       value={item.batch_barcode ?? ""}
                       onChange={(e) =>
-                        onUpdate(item.barcode, {
-                          batch_barcode: e.target.value || null,
-                        })
+                        onUpdate(
+                          item.barcode,
+                          batchUpdates(item, {
+                            batch_barcode: e.target.value || null,
+                          }),
+                        )
                       }
                       placeholder="-"
                       className={inputCls}
@@ -479,13 +466,19 @@ export function ProductDetailsTable({
                     <DatePickerInput
                       value={item.manufacture_date ?? null}
                       onChange={(v) =>
-                        onUpdate(item.barcode, { manufacture_date: v })
+                        onUpdate(
+                          item.barcode,
+                          batchUpdates(item, { manufacture_date: v }),
+                        )
                       }
                     />
                     <DatePickerInput
                       value={item.expiration_date ?? null}
                       onChange={(v) =>
-                        onUpdate(item.barcode, { expiration_date: v })
+                        onUpdate(
+                          item.barcode,
+                          batchUpdates(item, { expiration_date: v }),
+                        )
                       }
                     />
                   </div>

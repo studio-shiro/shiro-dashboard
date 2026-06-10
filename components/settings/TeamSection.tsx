@@ -10,8 +10,8 @@ import {
 } from "@/actions/team";
 
 const ROLE_LABELS: Record<MemberRole, string> = {
-  owner: "Dueño",
-  operator: "Operador",
+  owner: "Administrador",
+  operator: "Usuario Estándar",
 };
 
 const STATUS_STYLES: Record<
@@ -160,8 +160,8 @@ export default function TeamSection({ members, currentUserId }: Props) {
                 defaultValue="operator"
                 className="rounded-md border border-border-200 bg-background-400 px-3 py-2 body-md-regular text-text-500 focus:outline-none focus:ring-2 focus:ring-accent/30"
               >
-                <option value="operator">Operador</option>
-                <option value="owner">Dueño</option>
+                <option value="operator">Usuario Estándar</option>
+                <option value="owner">Administrador</option>
               </select>
             </div>
           </div>
@@ -224,8 +224,8 @@ export default function TeamSection({ members, currentUserId }: Props) {
                     disabled={isPending}
                     className="rounded-md border border-border-200 bg-info-100 px-2 py-0.5 body-sm-medium text-info-400 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <option value="operator">Operador</option>
-                    <option value="owner">Dueño</option>
+                    <option value="operator">Usuario Estándar</option>
+                    <option value="owner">Administrador</option>
                   </select>
                 )}
 

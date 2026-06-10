@@ -1,27 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  CheckCircleIcon,
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  createColumnHelper,
+  flexRender,
+  type PaginationState,
+} from "@tanstack/react-table";
+import {
   ChevronRightIcon,
   CurrencyDollarIcon,
-  ExclamationTriangleIcon,
   PencilSquareIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import type { WizardProduct } from "@/store/productWizard";
-import type { FeedbackBannerState } from "@/components/shared/FeedbackBanner";
 import { cn } from "@/lib/utils";
+import { Pagination } from "@/components/shared/Pagination";
 
 interface AddedProductsPanelProps {
   items: WizardProduct[];
   columnVisibility: Record<string, boolean>;
-  banner: FeedbackBannerState;
-  onBannerClose: () => void;
   onEdit: (item: WizardProduct) => void;
   onDelete: (item: WizardProduct) => void;
   editingBarcode: string | null;
 }
+
+interface WizardTableMeta {
+  editingBarcode: string | null;
+  expandedBarcodes: Set<string>;
+  onToggleExpand: (barcode: string) => void;
+  onEdit: (item: WizardProduct) => void;
+  onDelete: (item: WizardProduct) => void;
+}
+
+const COLUMN_WIDTHS: Record<string, string> = {
+  product: "2fr",
+  sku: "1fr",
+  image: "80px",
+  brand: "1.2fr",
+  category: "1.2fr",
+  cost: "1.1fr",
+  price: "1.1fr",
+  stock: "0.8fr",
+  actions: "72px",
+};
 
 const COL_HEADERS: Record<string, string> = {
   product: "Producto",
@@ -34,23 +58,288 @@ const COL_HEADERS: Record<string, string> = {
   stock: "Stock",
 };
 
+const PAGE_SIZE = 8;
+
+const columnHelper = createColumnHelper<WizardProduct>();
+
+const columns = [
+  columnHelper.display({
+    id: "product",
+    header: () => COL_HEADERS.product,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = meta.editingBarcode === item.barcode;
+      const isExpanded = meta.expandedBarcodes.has(item.barcode);
+      return (
+        <div className="flex items-center gap-2 p-2.5">
+          <span
+            className={cn(
+              "body-md-semibold truncate underline underline-offset-2",
+              isEditing ? "text-text-300" : "text-text-400",
+            )}
+          >
+            {item.name || "—"}
+          </span>
+          <button
+            type="button"
+            onClick={() => meta.onToggleExpand(item.barcode)}
+            className={cn(
+              "shrink-0 transition-colors",
+              isEditing ? "text-text-300" : "text-text-300 hover:text-text-500",
+            )}
+            title={isExpanded ? "Colapsar" : "Expandir"}
+          >
+            <ChevronRightIcon
+              className={cn(
+                "size-6 text-text-400 transition-transform duration-200",
+                isExpanded && "rotate-90",
+              )}
+            />
+          </button>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "sku",
+    header: () => COL_HEADERS.sku,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="p-2.5">
+          <span
+            className={cn(
+              "body-md-semibold",
+              isEditing ? "text-text-300" : "text-text-500",
+            )}
+          >
+            {item.reference || "—"}
+          </span>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "image",
+    header: () => COL_HEADERS.image,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="flex items-center justify-center p-2">
+          {item.image_url ? (
+            <div
+              className={cn(
+                "size-12 overflow-hidden rounded-lg",
+                isEditing && "opacity-50",
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.image_url}
+                alt={item.name}
+                className="size-full object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "flex size-12 items-center justify-center rounded-lg bg-background-300",
+                isEditing && "opacity-50",
+              )}
+            >
+              <span className="body-xs-regular text-text-300">—</span>
+            </div>
+          )}
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "brand",
+    header: () => COL_HEADERS.brand,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="p-2.5">
+          <span
+            className={cn(
+              "body-md-regular",
+              isEditing ? "text-text-300" : "text-text-500",
+            )}
+          >
+            {item.brand_name || "—"}
+          </span>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "category",
+    header: () => COL_HEADERS.category,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="p-2.5">
+          <span
+            className={cn(
+              "body-md-regular",
+              isEditing ? "text-text-300" : "text-text-500",
+            )}
+          >
+            {item.category_name || "—"}
+          </span>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "cost",
+    header: () => COL_HEADERS.cost,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="p-2.5">
+          <span
+            className={cn(
+              "body-md-regular",
+              isEditing ? "text-text-300" : "text-text-500",
+            )}
+          >
+            {item.cost_price !== null
+              ? `$${item.cost_price.toLocaleString("es-AR")}`
+              : "—"}
+          </span>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "price",
+    header: () => COL_HEADERS.price,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="p-2.5">
+          <span
+            className={cn(
+              "body-md-regular",
+              isEditing ? "text-text-300" : "text-text-500",
+            )}
+          >
+            {item.price !== null
+              ? `$${item.price.toLocaleString("es-AR")}`
+              : "—"}
+          </span>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "stock",
+    header: () => COL_HEADERS.stock,
+    cell: ({ row, table }) => {
+      const { editingBarcode } = table.options.meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      return (
+        <div className="p-2.5">
+          <span
+            className={cn(
+              "body-md-regular",
+              isEditing ? "text-text-300" : "text-text-500",
+            )}
+          >
+            {item.stock_quantity}
+          </span>
+        </div>
+      );
+    },
+  }),
+  columnHelper.display({
+    id: "actions",
+    header: () => null,
+    cell: ({ row, table }) => {
+      const { editingBarcode, onEdit, onDelete } = table.options
+        .meta as WizardTableMeta;
+      const item = row.original;
+      const isEditing = editingBarcode === item.barcode;
+      const isBlocked = editingBarcode !== null && !isEditing;
+      return (
+        <div className="flex items-center justify-center gap-2 px-2">
+          <button
+            type="button"
+            onClick={() => onEdit(item)}
+            disabled={isBlocked || isEditing}
+            className={cn(
+              "transition-colors",
+              isBlocked || isEditing
+                ? "cursor-default text-text-200"
+                : "text-text-300 hover:text-accent",
+            )}
+            title="Editar"
+          >
+            <PencilSquareIcon className="size-6 text-text-400" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onDelete(item)}
+            disabled={isEditing}
+            className={cn(
+              "transition-colors",
+              isEditing
+                ? "cursor-default text-text-200"
+                : "text-text-300 hover:text-danger-300",
+            )}
+            title="Eliminar"
+          >
+            <XMarkIcon className="size-6 text-text-400" />
+          </button>
+        </div>
+      );
+    },
+  }),
+];
+
 export function AddedProductsPanel({
   items,
   columnVisibility,
-  banner,
-  onBannerClose,
   onEdit,
   onDelete,
   editingBarcode,
 }: AddedProductsPanelProps) {
-  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(new Set());
+  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
+    () => (items.length === 1 ? new Set([items[0].barcode]) : new Set()),
+  );
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: PAGE_SIZE,
+  });
+  const [prevItemsLength, setPrevItemsLength] = useState(items.length);
 
-  // Auto-expand the first item when it's added
-  useEffect(() => {
-    if (items.length === 1) {
+  // Adjusting state during render — avoids setState-in-effect cascades
+  if (prevItemsLength !== items.length) {
+    setPrevItemsLength(items.length);
+    if (items.length === 1 && prevItemsLength === 0) {
       setExpandedBarcodes(new Set([items[0].barcode]));
     }
-  }, [items.length]);
+    if (items.length > prevItemsLength) {
+      const lastPage = Math.max(0, Math.ceil(items.length / PAGE_SIZE) - 1);
+      setPagination((prev) => ({ ...prev, pageIndex: lastPage }));
+    }
+  }
 
   function toggleExpand(barcode: string) {
     setExpandedBarcodes((prev) => {
@@ -61,294 +350,182 @@ export function AddedProductsPanel({
     });
   }
 
-  const visibleCols = [
-    "product",
-    ...(columnVisibility.sku !== false ? ["sku"] : []),
-    ...(columnVisibility.image !== false ? ["image"] : []),
-    ...(columnVisibility.brand !== false ? ["brand"] : []),
-    ...(columnVisibility.category !== false ? ["category"] : []),
-    ...(columnVisibility.cost !== false ? ["cost"] : []),
-    "price",
-    ...(columnVisibility.stock !== false ? ["stock"] : []),
-  ];
+  const tanstackVisibility = {
+    product: true,
+    sku: columnVisibility.sku !== false,
+    image: columnVisibility.image !== false,
+    brand: columnVisibility.brand !== false,
+    category: columnVisibility.category !== false,
+    cost: columnVisibility.cost !== false,
+    price: true,
+    stock: columnVisibility.stock !== false,
+    actions: true,
+  };
 
-  const colCount = visibleCols.length + 1; // +1 for actions
-  const gridTemplate = [
-    "2fr",
-    ...(columnVisibility.sku !== false ? ["1fr"] : []),
-    ...(columnVisibility.image !== false ? ["80px"] : []),
-    ...(columnVisibility.brand !== false ? ["1.2fr"] : []),
-    ...(columnVisibility.category !== false ? ["1.2fr"] : []),
-    ...(columnVisibility.cost !== false ? ["1.1fr"] : []),
-    "1.1fr",
-    ...(columnVisibility.stock !== false ? ["0.8fr"] : []),
-    "72px",
-  ].join(" ");
+  const table = useReactTable({
+    data: items,
+    columns,
+    getRowId: (row) => row.barcode,
+    state: { pagination, columnVisibility: tanstackVisibility },
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    meta: {
+      editingBarcode,
+      expandedBarcodes,
+      onToggleExpand: toggleExpand,
+      onEdit,
+      onDelete,
+    },
+  });
+
+  const gridTemplate = table
+    .getVisibleLeafColumns()
+    .map((col) => COLUMN_WIDTHS[col.id])
+    .join(" ");
 
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-hidden rounded-xl border border-border-200 bg-white shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border-200 px-5 py-4">
-        <h2 className="heading-md text-text-500">Productos Agregados</h2>
-        {items.length > 0 && (
-          <span className="rounded-full bg-background-300 px-2.5 py-0.5 body-sm-semibold text-text-400">
-            {items.length}
-          </span>
-        )}
-      </div>
+    <div className="flex flex-1 flex-col gap-3 overflow-hidden">
+      <h2 className="heading-lg text-text-500">Productos Agregados</h2>
 
-      {/* Inline feedback banner */}
-      {banner && (
-        <div
-          className="mx-5 flex items-start gap-3 rounded-lg px-4 py-3"
-          style={{
-            backgroundColor: banner.type === "success" ? "#f2f6f2" : "#faf2f2",
-            borderLeft: `5px solid ${banner.type === "success" ? "#006922" : "#cd2b31"}`,
-          }}
-        >
-          {banner.type === "success" ? (
-            <CheckCircleIcon
-              className="mt-px size-5 shrink-0"
-              style={{ color: "#006922" }}
-            />
-          ) : (
-            <ExclamationTriangleIcon
-              className="mt-px size-5 shrink-0"
-              style={{ color: "#cd2b31" }}
-            />
-          )}
-          <p
-            className="flex-1 body-md-regular"
-            style={{ color: banner.type === "success" ? "#006922" : "#cd2b31" }}
-          >
-            {banner.message}
-          </p>
-          <button
-            type="button"
-            onClick={onBannerClose}
-            aria-label="Cerrar"
-            style={{ color: banner.type === "success" ? "#006922" : "#cd2b31" }}
-          >
-            <XMarkIcon className="size-5" />
-          </button>
-        </div>
-      )}
-
-      {/* Empty state */}
       {items.length === 0 && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 py-16 text-center">
           <div className="flex size-16 items-center justify-center rounded-full bg-background-300">
             <CurrencyDollarIcon className="size-8 text-border-400" />
           </div>
           <div className="flex flex-col gap-1">
-            <p className="body-md-semibold text-text-500">Ningún producto agregado</p>
-            <p className="body-sm-regular text-text-400">
-              Completá el formulario y hacé click en &ldquo;Agregar Producto&rdquo; para empezar.
+            <p className="body-md-semibold text-text-500">
+              Ningún producto agregado
+            </p>
+            <p className="body-md-regular text-text-400">
+              Completá el formulario y hacé click en &ldquo;Agregar
+              Producto&rdquo; para empezar.
             </p>
           </div>
         </div>
       )}
 
-      {/* Product list */}
       {items.length > 0 && (
-        <div className="flex-1 overflow-y-auto px-5 pb-5">
-          <div className="overflow-hidden rounded-xl border border-border-300">
-            {/* Table header */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto pb-2">
             <div
-              className="grid border-b border-border-300 bg-background-300"
-              style={{ gridTemplateColumns: gridTemplate }}
+              role="table"
+              aria-label="Productos agregados"
+              className="overflow-hidden rounded-xl shadow-lg"
             >
-              {visibleCols.map((col, i) => (
-                <div
-                  key={col}
-                  className={cn(
-                    "body-sm-semibold p-2.5 text-text-400",
-                    i < visibleCols.length - 1 && "border-r border-border-200",
-                  )}
-                >
-                  {COL_HEADERS[col]}
-                </div>
-              ))}
-              {/* Actions header */}
-              <div className="border-l border-border-200 p-2.5" />
-            </div>
-
-            {/* Rows */}
-            {items.map((item) => {
-              const isExpanded = expandedBarcodes.has(item.barcode);
-              const isEditing = editingBarcode === item.barcode;
-
-              return (
-                <div
-                  key={item.barcode}
-                  className={cn(
-                    "border-b border-border-200 last:border-0",
-                    isEditing && "bg-accent/5",
-                  )}
-                >
-                  {/* Main row */}
+              {/* Header */}
+              {table.getHeaderGroups().map((headerGroup) => (
+                <div key={headerGroup.id} role="rowgroup">
                   <div
-                    className="grid items-center"
+                    role="row"
+                    className="grid border-b border-border-200 bg-background-300"
                     style={{ gridTemplateColumns: gridTemplate }}
                   >
-                    {/* Producto */}
-                    <div className="flex items-center gap-2 p-2.5">
-                      <button
-                        type="button"
-                        onClick={() => toggleExpand(item.barcode)}
-                        className="shrink-0 text-text-300 transition-colors hover:text-text-500"
-                        title={isExpanded ? "Colapsar" : "Expandir"}
+                    {headerGroup.headers.map((header, i) => (
+                      <div
+                        key={header.id}
+                        role="columnheader"
+                        className={cn(
+                          "body-md-semibold p-2.5 text-text-400",
+                          i < headerGroup.headers.length - 1 &&
+                            "border-r border-border-200",
+                        )}
                       >
-                        <ChevronRightIcon
-                          className={cn(
-                            "size-4 transition-transform duration-200",
-                            isExpanded && "rotate-90",
-                          )}
-                        />
-                      </button>
-                      <span className="body-md-semibold truncate text-text-500">
-                        {item.name || <span className="text-text-300">—</span>}
-                      </span>
-                    </div>
-
-                    {/* SKU */}
-                    {columnVisibility.sku !== false && (
-                      <div className="border-l border-border-200 p-2.5">
-                        <span className="body-sm-regular text-text-400">
-                          {item.reference || "—"}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Imagen */}
-                    {columnVisibility.image !== false && (
-                      <div className="flex items-center justify-center border-l border-border-200 p-2">
-                        {item.image_url ? (
-                          <div className="size-12 overflow-hidden rounded-lg">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={item.image_url}
-                              alt={item.name}
-                              className="size-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex size-12 items-center justify-center rounded-lg bg-background-300">
-                            <span className="body-xs-regular text-text-300">—</span>
-                          </div>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
                         )}
                       </div>
-                    )}
-
-                    {/* Marca */}
-                    {columnVisibility.brand !== false && (
-                      <div className="border-l border-border-200 p-2.5">
-                        <span className="body-sm-regular text-text-400">
-                          {item.brand_name || "—"}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Categoría */}
-                    {columnVisibility.category !== false && (
-                      <div className="border-l border-border-200 p-2.5">
-                        <span className="body-sm-regular text-text-400">
-                          {item.category_name || "—"}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Costo */}
-                    {columnVisibility.cost !== false && (
-                      <div className="border-l border-border-200 p-2.5">
-                        <span className="body-sm-regular text-text-400">
-                          {item.cost_price !== null
-                            ? `$${item.cost_price.toLocaleString("es-AR")}`
-                            : "—"}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Precio */}
-                    <div className="border-l border-border-200 p-2.5">
-                      <span className="body-sm-semibold text-text-500">
-                        {item.price !== null
-                          ? `$${item.price.toLocaleString("es-AR")}`
-                          : "—"}
-                      </span>
-                    </div>
-
-                    {/* Stock */}
-                    {columnVisibility.stock !== false && (
-                      <div className="border-l border-border-200 p-2.5">
-                        <span className="body-sm-regular text-text-400">
-                          {item.stock_quantity}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex items-center justify-center gap-2 border-l border-border-200 px-2">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(item)}
-                        className="text-text-300 transition-colors hover:text-accent"
-                        title="Editar"
-                      >
-                        <PencilSquareIcon className="size-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete(item)}
-                        className="text-text-300 transition-colors hover:text-danger-300"
-                        title="Eliminar"
-                      >
-                        <XMarkIcon className="size-4" />
-                      </button>
-                    </div>
+                    ))}
                   </div>
-
-                  {/* Expanded batch info */}
-                  {isExpanded && item.tracks_batches && (
-                    <>
-                      <div className="grid grid-cols-4 border-t border-border-200 bg-background-300">
-                        {["Nro. Lote", "EAN-13", "Fecha Elaboración", "Fecha Vencimiento"].map(
-                          (label) => (
-                            <div key={label} className="body-sm-semibold p-2.5 text-text-400">
-                              {label}
-                            </div>
-                          ),
-                        )}
-                      </div>
-                      <div className="grid grid-cols-4 border-t border-border-200 bg-background-300 px-2.5 py-2">
-                        <span className="body-sm-regular p-0.5 text-text-500">
-                          {item.lot_number || "—"}
-                        </span>
-                        <span className="body-sm-regular p-0.5 text-text-500">
-                          {item.batch_barcode || "—"}
-                        </span>
-                        <span className="body-sm-regular p-0.5 text-text-500">
-                          {item.manufacture_date || "—"}
-                        </span>
-                        <span className="body-sm-regular p-0.5 text-text-500">
-                          {item.expiration_date || "—"}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Expanded non-batch info (no batch data but expandable for future) */}
-                  {isExpanded && !item.tracks_batches && (
-                    <div className="border-t border-border-200 bg-background-300 px-5 py-3">
-                      <p className="body-sm-regular text-text-300">
-                        Este producto no tiene seguimiento de lote activado.
-                      </p>
-                    </div>
-                  )}
                 </div>
-              );
-            })}
+              ))}
+
+              {/* Rows */}
+              <div role="rowgroup">
+                {table.getRowModel().rows.map((row) => {
+                  const item = row.original;
+                  const isExpanded = expandedBarcodes.has(item.barcode);
+
+                  return (
+                    <div
+                      key={row.id}
+                      className="border-b border-border-200 last:border-0"
+                    >
+                      <div
+                        role="row"
+                        className="grid items-center"
+                        style={{ gridTemplateColumns: gridTemplate }}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <div role="cell" key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {isExpanded && item.tracks_batches && (
+                        <>
+                          <div className="grid grid-cols-4 border-t border-border-200 bg-background-600">
+                            {[
+                              "Nro. Lote",
+                              "EAN-13",
+                              "Fecha Elaboración",
+                              "Fecha Vencimiento",
+                            ].map((label) => (
+                              <div
+                                key={label}
+                                className="body-md-semibold p-2.5 text-text-400"
+                              >
+                                {label}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-4 border-t border-border-200 bg-background-600 px-2.5 py-2">
+                            <span className="body-md-regular p-0.5 text-text-500">
+                              {item.lot_number || "—"}
+                            </span>
+                            <span className="body-md-regular p-0.5 text-text-500">
+                              {item.batch_barcode || "—"}
+                            </span>
+                            <span className="body-md-regular p-0.5 text-text-500">
+                              {item.manufacture_date || "—"}
+                            </span>
+                            <span className="body-md-regular p-0.5 text-text-500">
+                              {item.expiration_date || "—"}
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      {isExpanded && !item.tracks_batches && (
+                        <div className="border-t border-border-200 bg-background-300 px-5 py-3">
+                          <p className="body-md-regular text-text-300">
+                            Este producto no tiene seguimiento de lote activado.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+
+          {table.getPageCount() > 1 && (
+            <Pagination
+              pageIndex={table.getState().pagination.pageIndex}
+              pageCount={table.getPageCount()}
+              canPrevious={table.getCanPreviousPage()}
+              canNext={table.getCanNextPage()}
+              onPrevious={() => table.previousPage()}
+              onNext={() => table.nextPage()}
+              onGoTo={(p) => table.setPageIndex(p)}
+            />
+          )}
         </div>
       )}
     </div>

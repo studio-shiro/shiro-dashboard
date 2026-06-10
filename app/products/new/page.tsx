@@ -34,11 +34,11 @@ export default function ProductMethodPage() {
       {/* Content */}
       <div className="flex flex-1 items-center justify-center">
         <div className="flex flex-col items-center gap-8">
-          <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex flex-col gap-2 w-full">
             <h1 className="heading-xl text-text-500">
               Agrega un Producto Nuevo
             </h1>
-            <p className="body-md-regular max-w-sm text-text-400">
+            <p className="body-md-regular max-w-[525px] text-text-400">
               Elegí cómo querés agregar tus productos: escaneando el código de
               barras, ingresando los datos manualmente o importando una planilla
               de Excel.
@@ -68,16 +68,18 @@ export default function ProductMethodPage() {
         </div>
       </div>
 
-      {/* Progress + nav */}
-      <WizardProgressBar
-        steps={
-          selected === "excel"
-            ? ["current", "empty", "empty", "empty"]
-            : selected === "manual"
-              ? ["current", "empty"]
-              : ["current", "empty", "empty"]
-        }
-      />
+      {/* Progress + nav — progress bar only appears once a method is selected */}
+      {selected && (
+        <WizardProgressBar
+          steps={
+            selected === "excel"
+              ? ["current", "empty", "empty", "empty"]
+              : selected === "manual"
+                ? ["current", "empty"]
+                : ["current", "empty", "empty"]
+          }
+        />
+      )}
       <WizardBottomNav
         onBack={() => router.push("/products")}
         onNext={handleContinue}

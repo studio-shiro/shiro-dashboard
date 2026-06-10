@@ -4,8 +4,8 @@ import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import {
   ChevronRightIcon,
-  CubeIcon,
   PencilIcon,
+  PhotoIcon,
   PlusCircleIcon,
   DocumentDuplicateIcon,
   TrashIcon,
@@ -16,41 +16,20 @@ import { cn } from "@/lib/utils";
 import { RowActionsMenu } from "./RowActionsMenu";
 import formatCurrency from "@/helpers/formatCurrency";
 import type { ProductTableRow } from "@/types/database";
+import { PRODUCT_COLUMNS } from "@/lib/product-column-registry";
+import Image from "next/image";
 
-// ─── Column visibility constants ─────────────────────────────────────────────
+// ─── Column visibility constants (derived from registry) ─────────────────────
+export const FIXED_COLUMN_IDS: readonly string[] = PRODUCT_COLUMNS.filter(
+  (c) => c.required,
+).map((c) => c.key);
 
-export const PRODUCTS_COL_VISIBILITY_KEY = "shiro-products-column-visibility";
+export const OPTIONAL_COLUMN_IDS: readonly string[] = PRODUCT_COLUMNS.filter(
+  (c) => !c.required,
+).map((c) => c.key);
 
-export const FIXED_COLUMN_IDS = [
-  "product",
-  "cost",
-  "price",
-  "actions",
-] as const;
-
-export const OPTIONAL_COLUMN_IDS = [
-  "sku",
-  "image",
-  "brand",
-  "category",
-  "batches",
-  "stock",
-] as const;
-
-export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
-  product: true,
-  sku: true,
-  image: true,
-  brand: true,
-  category: true,
-  batches: true,
-  cost: true,
-  price: true,
-  stock: true,
-  actions: true,
-};
-
-// ─── Column definitions ───────────────────────────────────────────────────────
+export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> =
+  Object.fromEntries(PRODUCT_COLUMNS.map((c) => [c.key, c.defaultEnabled]));
 
 const columnHelper = createColumnHelper<ProductTableRow>();
 
@@ -116,16 +95,17 @@ export function buildColumns(
         const url = getValue();
         return url ? (
           <div className="h-15 w-15 overflow-hidden rounded-md border border-border-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={url}
               alt="Producto"
               className="h-full w-full object-cover"
+              height={60}
+              width={60}
             />
           </div>
         ) : (
-          <div className="flex h-15 w-15 items-center justify-center rounded-md border border-border-100 bg-background-300">
-            <CubeIcon className="size-5 text-text-300" />
+          <div className="flex h-16 w-16 items-center justify-center">
+            <PhotoIcon className="size-14 text-text-300" />
           </div>
         );
       },

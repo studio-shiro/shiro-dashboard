@@ -158,9 +158,9 @@ export function ProductsTable({
   const visibleColCount = table.getVisibleLeafColumns().length;
 
   return (
-    <div className="flex flex-1 flex-col gap-4">
+    <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* Table card */}
-      <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg">
         {/* Header — always rendered inside a real <table> for consistent column alignment */}
         <table className="w-full border-collapse">
           <thead>

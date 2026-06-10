@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
@@ -41,20 +41,31 @@ export function DatePickerInput({
   className,
 }: DatePickerInputProps) {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [pos, setPos] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+  }>({ left: 0 });
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true, // Client
+    () => false, // SSR
+  );
 
   const selected = value ? parseISO(value) : undefined;
+
+  const CALENDAR_HEIGHT = 320;
 
   function handleOpen() {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 4, left: rect.left });
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < CALENDAR_HEIGHT) {
+        setPos({ bottom: window.innerHeight - rect.top + 4, left: rect.left });
+      } else {
+        setPos({ top: rect.bottom + 4, left: rect.left });
+      }
     }
     setOpen(true);
   }
@@ -104,7 +115,7 @@ export function DatePickerInput({
             {/* Calendar */}
             <div
               className="fixed z-50"
-              style={{ top: pos.top, left: pos.left }}
+              style={{ top: pos.top, bottom: pos.bottom, left: pos.left }}
             >
               <DayPicker
                 mode="single"
@@ -134,8 +145,7 @@ export function DatePickerInput({
                   root: "bg-white font-body border border-border-300 rounded-xl shadow-lg p-4 w-[280px]",
                   months: "flex flex-col",
                   month: "flex flex-col gap-2",
-                  month_caption:
-                    "flex items-center justify-between px-1 py-1",
+                  month_caption: "flex items-center justify-between px-1 py-1",
                   caption_label:
                     "capitalize body-md-semibold text-text-500 mx-auto",
                   nav: "flex items-center gap-1",

@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "eyipyttwyaongflydfbt.supabase.co",
       },
+      {
+        protocol: "https",
+        hostname: "**.mlstatic.com",
+      },
     ],
   },
   turbopack: {
