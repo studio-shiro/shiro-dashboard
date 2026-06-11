@@ -49,7 +49,7 @@ export function FormInput({
         error
           ? "border-danger-300"
           : focused
-            ? "border-2 border-[rgba(255,156,122,0.5)]"
+            ? "border border-[rgba(255,156,122,0.5)]"
             : filled
               ? "border-text-400"
               : "border-border-300",

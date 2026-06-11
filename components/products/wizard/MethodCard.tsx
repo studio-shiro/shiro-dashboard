@@ -24,7 +24,7 @@ export function MethodCard({
         "flex h-[181px] w-[162px] flex-col items-center justify-center rounded-md transition-colors",
         selected
           ? "border-2 border-accent bg-accent/10"
-          : "border border-border-200 bg-white hover:border-border-400",
+          : "border border-border-400 bg-white hover:border-text-400",
         disabled && "cursor-not-allowed opacity-50",
       )}
     >

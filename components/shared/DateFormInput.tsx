@@ -47,6 +47,7 @@ export function DateFormInput({
       <DatePickerInput
         value={value}
         onChange={onChange}
+        variant="form"
         className="h-auto border-0 bg-transparent px-0 shadow-none"
       />
     </fieldset>

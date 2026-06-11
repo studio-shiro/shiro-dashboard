@@ -31,7 +31,10 @@ export function ProductsView({ products, createdCount, uploadError, initialColum
       showBanner(
         {
           type: "success",
-          message: `${createdCount === 1 ? "Producto registrado" : `${createdCount} productos registrados`} correctamente.`,
+          message:
+            createdCount === 1
+              ? "Producto agregado correctamente."
+              : "Productos agregados correctamente.",
         },
         3000,
       );

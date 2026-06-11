@@ -73,7 +73,7 @@ export function FormSelect({
         error
           ? "border-danger-300"
           : open
-            ? "border-2 border-[rgba(255,156,122,0.5)]"
+            ? "border border-[rgba(255,156,122,0.5)]"
             : filled
               ? "border-[#616161]"
               : "border-border-300",

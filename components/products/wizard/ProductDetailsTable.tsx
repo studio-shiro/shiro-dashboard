@@ -50,7 +50,7 @@ const COL_HEADERS: Record<string, string> = {
   _delete: "",
 };
 
-const inputCls =
+export const inputCls =
   "w-full h-[30px] rounded-[6px] border border-solid border-border-400 bg-white px-2 body-md-regular text-text-500 placeholder:text-text-500 shadow-sm focus:border-accent focus:outline-none";
 
 function getPageItems(current: number, count: number): (number | "ellipsis")[] {
@@ -79,7 +79,7 @@ function getPageItems(current: number, count: number): (number | "ellipsis")[] {
  * There is no per-row switch for tracks_batches: it is derived from the batch
  * fields the user fills in (batch_barcode is excluded — the scan pre-fills it).
  */
-function batchUpdates(
+export function batchUpdates(
   item: WizardProduct,
   updates: Partial<WizardProduct>,
 ): Partial<WizardProduct> {

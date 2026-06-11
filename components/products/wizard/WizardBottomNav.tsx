@@ -17,7 +17,7 @@ export function WizardBottomNav({
   backDisabled = false,
 }: WizardBottomNavProps) {
   return (
-    <div className="flex items-center justify-between rounded-lg border-t border-border-200 bg-white px-5 py-3 shadow-sm">
+    <div className="flex h-[84px] items-center justify-between rounded-lg border-t border-border-200 bg-white px-5 py-3 shadow-sm">
       <Button
         variant="tertiary"
         size="xs"
@@ -33,6 +33,7 @@ export function WizardBottomNav({
         size="xs"
         onClick={onNext}
         disabled={nextDisabled}
+        className="min-w-[158px]"
       >
         {nextLabel}
       </Button>

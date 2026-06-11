@@ -8,14 +8,18 @@ import { createProductsBulkAction } from "@/actions/products";
 
 const LOADING_MESSAGES = [
   "Subiendo tus productos...",
-  "Validando los datos...",
-  "Preparando tu inventario...",
-  "Guardando en la base de datos...",
+  "Validando la información ingresada...",
+  "Actualizando tu inventario...",
+  "Guardando los cambios...",
+  "Finalizando la carga...",
   "¡Ya casi terminamos!",
 ];
 
 const MESSAGE_INTERVAL = 2000;
 const FADE_DURATION = 300;
+// Even when the upload resolves fast, keep the screen long enough for the
+// user to see the messages rotate (Figma annotation: rotating phrases).
+const MIN_DISPLAY_MS = 4500;
 
 export default function UploadingPage() {
   const router = useRouter();
@@ -25,17 +29,19 @@ export default function UploadingPage() {
   const [msgIndex, setMsgIndex] = useState(0);
   const [visible, setVisible] = useState(true);
 
-  // Cycle through loading messages with fade
+  // Advance through loading messages with fade, stopping on the last one —
+  // the list reads as a progression, so looping back would look broken.
   useEffect(() => {
-    const id = setInterval(() => {
+    if (msgIndex >= LOADING_MESSAGES.length - 1) return;
+    const id = setTimeout(() => {
       setVisible(false);
       setTimeout(() => {
-        setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+        setMsgIndex((i) => Math.min(i + 1, LOADING_MESSAGES.length - 1));
         setVisible(true);
       }, FADE_DURATION);
     }, MESSAGE_INTERVAL);
-    return () => clearInterval(id);
-  }, []);
+    return () => clearTimeout(id);
+  }, [msgIndex]);
 
   useEffect(() => {
     if (started.current) return;
@@ -46,37 +52,42 @@ export default function UploadingPage() {
       return;
     }
 
+    const startedAt = Date.now();
     createProductsBulkAction(scannedItems).then((result) => {
-      reset();
-      if (result.error || !result.created) {
-        router.replace("/products?uploadError=true");
-      } else {
-        router.replace(`/products?created=${result.created}`);
-      }
+      const remaining = Math.max(0, MIN_DISPLAY_MS - (Date.now() - startedAt));
+      setTimeout(() => {
+        reset();
+        if (result.error || !result.created) {
+          router.replace("/products?uploadError=true");
+        } else {
+          router.replace(`/products?created=${result.created}`);
+        }
+      }, remaining);
     });
   }, [scannedItems, reset, router]);
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-white">
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex flex-col items-center">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-background-400">
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex h-[93px] flex-col items-center justify-end">
           <Image
             src="/shiro-logo-dot.svg"
             alt=""
-            width={22}
-            height={22}
+            width={24}
+            height={24}
             priority
+            className="animate-[shiro-dot-bounce_1s_ease-in-out_infinite]"
           />
           <Image
             src="/shiro-logo-only-i.svg"
             alt="Shiro"
-            width={27}
-            height={64}
+            width={28}
+            height={66}
             priority
           />
         </div>
         <p
-          className="body-lg-regular text-text-400 transition-opacity"
+          className="heading-md text-text-500 transition-opacity"
           style={{
             opacity: visible ? 1 : 0,
             transitionDuration: `${FADE_DURATION}ms`,

@@ -4,7 +4,11 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { DayPicker } from "react-day-picker";
 import { es } from "react-day-picker/locale";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CalendarDaysIcon as CalendarDaysOutlineIcon,
+} from "@heroicons/react/24/outline";
 import { CalendarDaysIcon } from "@heroicons/react/24/solid";
 import "@daypicker/react/style.css";
 import { cn } from "@/lib/utils";
@@ -13,6 +17,9 @@ interface DatePickerInputProps {
   value: string | null; // "YYYY-MM-DD"
   onChange: (value: string | null) => void;
   className?: string;
+  // "form" matches the Figma wizard form: 16px text, gray placeholder,
+  // 24px outline calendar icon. "table" keeps the compact table styling.
+  variant?: "table" | "form";
 }
 
 function parseISO(iso: string): Date {
@@ -39,6 +46,7 @@ export function DatePickerInput({
   value,
   onChange,
   className,
+  variant = "table",
 }: DatePickerInputProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{
@@ -55,7 +63,7 @@ export function DatePickerInput({
 
   const selected = value ? parseISO(value) : undefined;
 
-  const CALENDAR_HEIGHT = 320;
+  const CALENDAR_HEIGHT = 380;
 
   function handleOpen() {
     if (triggerRef.current) {
@@ -79,6 +87,9 @@ export function DatePickerInput({
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
+  const navButton =
+    "flex items-center justify-center transition-colors text-text-400 hover:text-text-500 cursor-pointer";
+
   return (
     <>
       <button
@@ -93,13 +104,22 @@ export function DatePickerInput({
       >
         <span
           className={cn(
-            "body-md-regular truncate",
-            selected ? "text-text-500" : "text-text-300",
+            "truncate",
+            variant === "form" ? "body-lg-regular" : "body-md-regular",
+            selected
+              ? "text-text-500"
+              : variant === "form"
+                ? "text-text-400"
+                : "text-text-300",
           )}
         >
           {selected ? formatDisplay(selected) : "00/00/0000"}
         </span>
-        <CalendarDaysIcon className="size-5 shrink-0 text-text-400" />
+        {variant === "form" ? (
+          <CalendarDaysOutlineIcon className="size-6 shrink-0 text-text-400" />
+        ) : (
+          <CalendarDaysIcon className="size-5 shrink-0 text-text-400" />
+        )}
       </button>
 
       {mounted &&
@@ -112,7 +132,8 @@ export function DatePickerInput({
               onClick={() => setOpen(false)}
             />
 
-            {/* Calendar */}
+            {/* Calendar — same UI as the dashboard filters calendar
+                (DateRangePicker), but single-date and any date selectable */}
             <div
               className="fixed z-50"
               style={{ top: pos.top, bottom: pos.bottom, left: pos.left }}
@@ -142,42 +163,36 @@ export function DatePickerInput({
                 }}
                 showOutsideDays
                 classNames={{
-                  root: "bg-white font-body border border-border-300 rounded-xl shadow-lg p-4 w-[280px]",
-                  months: "flex flex-col",
-                  month: "flex flex-col gap-2",
-                  month_caption: "flex items-center justify-between px-1 py-1",
-                  caption_label:
-                    "capitalize body-md-semibold text-text-500 mx-auto",
-                  nav: "flex items-center gap-1",
-                  button_previous:
-                    "flex items-center justify-center text-text-400 hover:text-text-500 cursor-pointer transition-colors",
-                  button_next:
-                    "flex items-center justify-center text-text-400 hover:text-text-500 cursor-pointer transition-colors",
+                  root: "bg-white font-body border border-[#c4cdd5] rounded-[12px] shadow-md gap-3 p-4 w-[320px]",
+                  month: "flex-1 flex flex-col",
                   month_grid: "w-full",
+                  caption_label: "capitalize",
+                  button_previous: navButton,
+                  button_next: navButton,
                   weekdays: "flex",
                   weekday:
-                    "flex-1 flex items-center justify-center py-2 body-sm-regular text-text-300 text-center",
-                  weeks: "flex flex-col gap-[2px] pt-1",
+                    "flex-1 flex items-center justify-center px-[3px] py-[12px] text-[14px] text-text-400 text-center font-normal leading-[20px]",
+                  weeks: "flex flex-col gap-[2px] pt-[4px]",
                   week: "flex",
                   day: "flex-1 relative",
                   day_button: [
-                    "w-full px-2 py-[7px] flex items-center justify-center rounded-full",
-                    "body-md-regular text-text-400 text-center",
+                    "w-full relative px-3 py-3 flex items-center justify-center rounded-full",
+                    "text-[16px] text-text-400 text-center font-normal leading-[20px]",
                     "hover:bg-background-300 transition-colors outline-none cursor-pointer",
                   ].join(" "),
                   selected:
                     "[&>button]:!bg-accent [&>button]:!text-white [&>button]:hover:!bg-accent-hover",
-                  today: "[&>button]:font-semibold [&>button]:text-accent",
-                  outside: "opacity-30",
+                  today: "font-semibold text-accent-selected",
+                  outside: "opacity-40",
                   hidden: "invisible",
                   disabled: "opacity-30 cursor-not-allowed",
                 }}
                 components={{
                   Chevron: ({ orientation }) =>
                     orientation === "left" ? (
-                      <ChevronLeftIcon className="size-4" />
+                      <ChevronLeftIcon className="size-6" />
                     ) : (
-                      <ChevronRightIcon className="size-4" />
+                      <ChevronRightIcon className="size-6" />
                     ),
                 }}
               />

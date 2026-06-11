@@ -88,6 +88,7 @@ type NumberFieldConfig = {
   step?: string;
   currency?: boolean; // true → renders CurrencyDollarIcon as adornStart
   nullable: boolean; // true → empty string maps to null; false → maps to 0
+  allowZero?: boolean; // true → 0 satisfies a required field (e.g. stock)
 };
 
 type DateFieldConfig = {
@@ -111,33 +112,39 @@ const FIELD_CONFIG: Record<string, SimpleFieldConfig> = {
     type: "text",
     formKey: "reference",
     label: "SKU",
+    required: true,
     placeholder: "Ej: #000001",
   },
   stock: {
     type: "number",
     formKey: "stock_quantity",
     label: "Stock",
+    required: true,
     min: 0,
     step: "1",
     nullable: true,
+    allowZero: true,
     placeholder: "0",
   },
   brand: {
     type: "text",
     formKey: "brand_name",
     label: "Marca",
+    required: true,
     placeholder: "Ej: Jorgito",
   },
   category: {
     type: "text",
     formKey: "category_name",
     label: "Categoría",
+    required: true,
     placeholder: "Ej: Golosinas",
   },
   cost: {
     type: "number",
     formKey: "cost_price",
     label: "Costo Unitario",
+    required: true,
     min: 0,
     step: "0.01",
     currency: true,
@@ -196,6 +203,7 @@ function renderField(
 
   if (cfg.type === "number") {
     const raw = form[cfg.formKey] as number | null;
+    const missing = cfg.allowZero ? raw === null : raw === null || raw <= 0;
     return (
       <FormInput
         label={cfg.label}
@@ -207,7 +215,7 @@ function renderField(
           cfg.currency ? <CurrencyDollarIcon className="size-6" /> : undefined
         }
         value={raw ?? ""}
-        error={cfg.required && cfg.nullable && !raw && isEditMode}
+        error={Boolean(cfg.required && isEditMode && missing)}
         onChange={(v) =>
           // safe cast: formKey and the null/number transformation are always
           // co-defined in the same config entry — they can't diverge at runtime
@@ -350,7 +358,10 @@ export function ManualProductForm({
     if (columnVisibility[colId] === false) return true;
     const val = form[cfg.formKey];
     if (cfg.type === "text") return (val as string).trim() !== "";
-    if (cfg.type === "number") return val !== null && (val as number) > 0;
+    if (cfg.type === "number") {
+      if (val === null) return false;
+      return cfg.allowZero ? (val as number) >= 0 : (val as number) > 0;
+    }
     return true;
   });
 
@@ -397,14 +408,14 @@ export function ManualProductForm({
                         </div>
                       </>
                     ) : (
-                      <PhotoIcon className="size-full text-border-300" />
+                      <PhotoIcon className="size-16 text-border-400" />
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute -bottom-[3px] left-0 flex h-[22px] w-[72px] items-center justify-center gap-0.5 rounded-md border border-border-400 bg-white px-2 shadow-sm"
+                    className="absolute -bottom-[3px] left-1/2 flex h-[22px] w-[72px] -translate-x-1/2 items-center justify-center gap-0.5 rounded-md border border-border-400 bg-white px-2 shadow-sm"
                   >
                     <ArrowUpTrayIcon className="size-3.5 shrink-0 text-text-500" />
                     <span className="body-sm-regular text-text-500">
@@ -462,7 +473,7 @@ export function ManualProductForm({
       {/* ── Información del Lote ─────────────────────────────────────── */}
       {showBatches && (
         <div className="flex flex-col gap-[14px]">
-          <p className="body-sm-semibold text-text-500">Información del Lote</p>
+          <p className="body-md-semibold text-text-500">Información del Lote</p>
 
           <div className="flex flex-col gap-5">
             <div className="grid grid-cols-2 gap-5">

@@ -56,7 +56,6 @@ export default function DetailsPage() {
     void getProductColumnsAction().then(setColumnVisibility);
   }, []);
 
-
   const pageCount = Math.ceil(scannedItems.length / PAGE_SIZE);
   const pageItems = scannedItems.slice(
     pageIndex * PAGE_SIZE,
@@ -100,7 +99,10 @@ export default function DetailsPage() {
       // If we were editing this item, cancel edit
       if (editTarget?.barcode === deleteTarget.barcode) setEditTarget(null);
       setDeleteTarget(null);
-      showBanner({ type: "success", message: "Producto eliminado correctamente." }, 3000);
+      showBanner(
+        { type: "success", message: "Producto eliminado correctamente." },
+        3000,
+      );
 
       // Scan/excel: fix pagination
       if (method !== "manual") {
@@ -110,13 +112,29 @@ export default function DetailsPage() {
       }
     } catch {
       setDeleteTarget(null);
-      showBanner({ type: "error", message: "El producto no se pudo eliminar." });
+      showBanner({
+        type: "error",
+        message: "El producto no se pudo eliminar.",
+      });
     }
   }
 
+  // All visible fields are required except image and batch/expiration fields.
+  // Applies to every method (manual, scan, excel).
+  const requireCol = (colId: string) => columnVisibility[colId] !== false;
   const canSubmit =
     scannedItems.length > 0 &&
-    scannedItems.every((p) => p.name && p.price !== null && p.price > 0);
+    scannedItems.every(
+      (p) =>
+        p.name.trim() !== "" &&
+        p.price !== null &&
+        p.price > 0 &&
+        (!requireCol("sku") || p.reference.trim() !== "") &&
+        (!requireCol("brand") || Boolean(p.brand_name)) &&
+        (!requireCol("category") || Boolean(p.category_name)) &&
+        (!requireCol("cost") || (p.cost_price !== null && p.cost_price > 0)) &&
+        (!requireCol("stock") || p.stock_quantity !== null),
+    );
 
   // ── Manual method layout ────────────────────────────────────────────────────
   if (method === "manual") {
@@ -132,7 +150,10 @@ export default function DetailsPage() {
         onAdd={(product) => addItem(product)}
         onUpdate={(barcode, updates) => {
           updateItem(barcode, updates);
-          showBanner({ type: "success", message: "Producto actualizado correctamente." }, 3000);
+          showBanner(
+            { type: "success", message: "Producto actualizado correctamente." },
+            3000,
+          );
         }}
         onCancelEdit={() => setEditTarget(null)}
         onFilePicked={handleFilePicked}
@@ -144,36 +165,40 @@ export default function DetailsPage() {
         {/* ── No products: centered single-column ── */}
         {!hasProducts && (
           <div className="flex flex-1 flex-col items-center gap-5 overflow-y-auto pt-8">
-            <div className="flex flex-col items-center gap-2 text-center">
+            {/* Title is left-aligned to the form card edge (Figma) */}
+            <div className="flex w-[481px] flex-col gap-1">
               <h1 className="heading-xl text-text-500">{pageHeading}</h1>
               <p className="body-md-regular text-text-400">
                 Completá la información del producto para agregarlo a tu
                 inventario.
               </p>
             </div>
-            <div className="w-120">{formElement}</div>
+            <div className="w-[481px]">{formElement}</div>
           </div>
         )}
 
         {/* ── With products: two-column layout ── */}
         {hasProducts && (
-          <div className="flex flex-1 gap-[27px] overflow-hidden pt-4">
+          <div className="flex flex-1 gap-9 overflow-hidden pt-4">
             {/* Left: heading + form */}
-            <div className="flex w-120 shrink-0 flex-col gap-4 overflow-y-auto">
-              <h1 className="heading-xl text-text-500">{pageHeading}</h1>
-              <p className="body-md-regular text-text-400">
-                Completá la información del producto para agregarlo a tu
-                inventario.
-              </p>
+            <div className="flex w-[481px] shrink-0 flex-col gap-5">
+              <div className="flex flex-col gap-1">
+                <h1 className="heading-xl text-text-500">{pageHeading}</h1>
+                <p className="body-md-regular text-text-400">
+                  Completá la información del producto para agregarlo a tu
+                  inventario.
+                </p>
+              </div>
               {formElement}
             </div>
 
-            {/* Right: added products panel */}
-            <div className="flex flex-1 flex-col overflow-hidden">
+            {/* Right: self-centers vertically within the row (form determines row height) */}
+            <div className="flex-1 self-center">
               <AddedProductsPanel
                 items={scannedItems}
                 columnVisibility={columnVisibility}
                 onEdit={(item) => setEditTarget(item)}
+                onUpdate={(barcode, updates) => updateItem(barcode, updates)}
                 onDelete={handleDelete}
                 editingBarcode={editTarget?.barcode ?? null}
               />
@@ -181,9 +206,7 @@ export default function DetailsPage() {
           </div>
         )}
 
-        {banner && (
-          <FeedbackBanner banner={banner} onClose={closeBanner} />
-        )}
+        {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}
 
         <WizardProgressBar steps={["complete", "current"]} />
         <WizardBottomNav
@@ -223,9 +246,7 @@ export default function DetailsPage() {
           </div>
         </div>
 
-        {banner && (
-          <FeedbackBanner banner={banner} onClose={closeBanner} />
-        )}
+        {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}
 
         <ProductDetailsTable
           items={pageItems}

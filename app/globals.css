@@ -406,6 +406,21 @@
 }
 
 /* ============================================================
+   ANIMATIONS
+============================================================ */
+
+/* Shiro "i" loader — the dot bounces above the stem */
+@keyframes shiro-dot-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* ============================================================
    FONT IMPORTS — add to your layout.tsx <head> instead if
    using next/font, which is recommended for Next.js
 ============================================================ */

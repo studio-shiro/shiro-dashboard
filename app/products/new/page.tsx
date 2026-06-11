@@ -33,7 +33,7 @@ export default function ProductMethodPage() {
     <div className="flex flex-1 flex-col gap-2.5">
       {/* Content */}
       <div className="flex flex-1 items-center justify-center">
-        <div className="flex flex-col items-center gap-8">
+        <div className="flex flex-col items-center gap-9">
           <div className="flex flex-col gap-2 w-full">
             <h1 className="heading-xl text-text-500">
               Agrega un Producto Nuevo
@@ -45,7 +45,7 @@ export default function ProductMethodPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-5">
             <MethodCard
               label="Escanear Código"
               icon={BarcodeIcon}
