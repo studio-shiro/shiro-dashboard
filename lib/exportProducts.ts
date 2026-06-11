@@ -9,7 +9,7 @@ type ExportColumn = {
 };
 
 const EXPORT_COLUMNS: Record<string, ExportColumn> = {
-  producto: {
+  product: {
     header: "Producto",
     width: 30,
     getValue: (p) => p.name,
@@ -19,33 +19,33 @@ const EXPORT_COLUMNS: Record<string, ExportColumn> = {
     width: 14,
     getValue: (p) => p.reference,
   },
-  imagen: {
+  image: {
     header: "Imagen (URL)",
     width: 40,
     getValue: (p) => p.image_url ?? "",
   },
-  marca: {
+  brand: {
     header: "Marca",
     width: 18,
     getValue: (p) => p.brand?.name ?? "",
   },
-  categoria: {
+  category: {
     header: "Categoría",
     width: 18,
     getValue: (p) => p.category?.name ?? "",
   },
-  vencimientos: {
+  batches: {
     header: "Vencimientos",
     width: 14,
     getValue: (p) => p.batch_count,
   },
-  costo: {
+  cost: {
     header: "Costo por Unidad",
     width: 20,
     isCurrency: true,
     getValue: (p) => p.cost_price ?? "",
   },
-  precio: {
+  price: {
     header: "Precio Final por Unidad",
     width: 24,
     isCurrency: true,
@@ -59,14 +59,14 @@ const EXPORT_COLUMNS: Record<string, ExportColumn> = {
 };
 
 const COLUMN_ORDER = [
-  "producto",
+  "product",
   "sku",
-  "imagen",
-  "marca",
-  "categoria",
-  "vencimientos",
-  "costo",
-  "precio",
+  "image",
+  "brand",
+  "category",
+  "batches",
+  "cost",
+  "price",
   "stock",
 ];
 

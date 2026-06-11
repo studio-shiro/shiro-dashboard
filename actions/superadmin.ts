@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createBusinessSchema } from "@/lib/validations/superadmin";
 import { sendInviteEmail } from "@/lib/email";
+import { PRODUCT_COLUMNS } from "@/lib/product-column-registry";
 
 export async function createBusinessWithOwnerAction(formData: FormData) {
   const parsed = createBusinessSchema.safeParse(Object.fromEntries(formData));
@@ -30,6 +31,16 @@ export async function createBusinessWithOwnerAction(formData: FormData) {
     .single();
   if (bizError || !business)
     return { error: bizError?.message ?? "Error al crear el negocio" };
+
+  // Seed default column configuration for the new business.
+  await admin.from("business_product_columns").insert(
+    PRODUCT_COLUMNS.map((col, i) => ({
+      business_id: business.id,
+      column_key: col.key,
+      enabled: col.defaultEnabled,
+      sort_order: i,
+    }))
+  );
 
   // 2. Generate the invite link without sending Supabase's default email.
   //    This creates the user in auth.users and returns the action link.

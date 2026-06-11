@@ -45,17 +45,18 @@ export default function TopBar({ user: supabaseUser }: TopBarProps) {
     supabaseUser.user_metadata?.name ?? supabaseUser.email ?? "Usuario";
   const roleLabels: Record<string, string> = {
     superadmin: "Super Admin",
-    owner: "Dueño",
-    operator: "Operador",
+    owner: "Administrador",
+    operator: "Usuario Estándar",
   };
-  const role = roleLabels[supabaseUser.user_metadata?.role] ?? "Operador";
+  const role =
+    roleLabels[supabaseUser.user_metadata?.role] ?? "Usuario Estándar";
 
   function handleLogout() {
     startTransition(() => logoutAction());
   }
 
   return (
-    <div className="flex shrink-0 items-center justify-between px-6 pb-9 pt-5">
+    <div className="flex shrink-0 items-center justify-between pb-9 pt-5 pr-2">
       {/* Breadcrumb */}
       <span className="body-lg-regular text-text-400">{breadcrumb}</span>
 

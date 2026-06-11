@@ -120,7 +120,7 @@ export default function CreateBusinessForm() {
               {/* Owner name */}
               <div className="flex flex-col gap-1">
                 <label className="body-sm-medium text-text-400">
-                  Nombre del dueño
+                  Nombre del Administrador
                 </label>
                 <input
                   name="owner_name"
@@ -139,7 +139,7 @@ export default function CreateBusinessForm() {
               {/* Owner email */}
               <div className="flex flex-col gap-1">
                 <label className="body-sm-medium text-text-400">
-                  Email del dueño
+                  Email del Administrador
                 </label>
                 <input
                   name="owner_email"
@@ -164,8 +164,8 @@ export default function CreateBusinessForm() {
 
             <div className="mt-5 flex items-center justify-between border-t border-border-200 pt-4">
               <p className="body-sm-regular text-text-400">
-                Se enviará una invitación al email del dueño para que configure
-                su contraseña.
+                Se enviará una invitación al email del Administrador para que
+                configure su contraseña.
               </p>
 
               <Button type="submit" disabled={isPending}>

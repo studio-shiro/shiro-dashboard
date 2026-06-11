@@ -16,13 +16,14 @@
 
 -- ─── Business ────────────────────────────────────────────────────────────────
 
-INSERT INTO businesses (id, name, currency, contact_email, contact_phone)
+INSERT INTO businesses (id, name, currency, contact_email, contact_phone, business_type)
 VALUES (
   '11111111-1111-1111-1111-111111111111',
   'Almacén Demo',
   'ARS',
   'demo@almacendemo.com.ar',
-  '011-4567-8900'
+  '011-4567-8900',
+  'supermarket'
 );
 
 -- ─── Brands ──────────────────────────────────────────────────────────────────

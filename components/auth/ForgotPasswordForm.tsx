@@ -21,7 +21,9 @@ export default function ForgotPasswordForm() {
         const msg =
           typeof err === "string"
             ? err
-            : Object.values(err as Record<string, string[]>).flat().join(", ");
+            : Object.values(err as Record<string, string[]>)
+                .flat()
+                .join(", ");
         setError(msg);
         return;
       }
@@ -33,7 +35,9 @@ export default function ForgotPasswordForm() {
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-semibold text-zinc-900">Shiro Studio</h1>
-        <p className="mt-1 text-sm text-zinc-500">Recuperá el acceso a tu cuenta</p>
+        <p className="mt-1 text-sm text-zinc-500">
+          Recuperá el acceso a tu cuenta
+        </p>
       </div>
 
       {sent ? (
@@ -51,7 +55,10 @@ export default function ForgotPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-zinc-700 mb-1"
+            >
               Email
             </label>
             <input
@@ -60,7 +67,7 @@ export default function ForgotPasswordForm() {
               type="email"
               required
               autoComplete="email"
-              className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+              className="w-full rounded-md border border-border-400 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
               placeholder="you@example.com"
             />
           </div>

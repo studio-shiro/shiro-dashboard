@@ -41,7 +41,9 @@ export function LogoUploadModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(56,58,61,0.4)]"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className="relative flex w-[500px] flex-col gap-4 rounded-[12px] bg-white p-9 shadow-sm">
         {/* Header */}
@@ -65,8 +67,11 @@ export function LogoUploadModal({
               <img
                 src={objectUrl}
                 alt="Preview del logo"
-                className="size-full object-cover"
-                style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
+                className="size-full object-contain"
+                style={{
+                  transform: `scale(${zoom})`,
+                  transformOrigin: "center",
+                }}
                 draggable={false}
               />
             )}

@@ -51,7 +51,7 @@ export default function ResetPasswordForm() {
             required
             minLength={8}
             autoComplete="new-password"
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+            className="w-full rounded-md border border-border-400 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
             placeholder="Mínimo 8 caracteres"
           />
         </div>
@@ -69,7 +69,7 @@ export default function ResetPasswordForm() {
             type="password"
             required
             autoComplete="new-password"
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+            className="w-full rounded-md border border-border-400 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
             placeholder="••••••••"
           />
         </div>

@@ -4,47 +4,32 @@ import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import {
   ChevronRightIcon,
-  ChevronDownIcon,
-  CubeIcon,
+  PencilIcon,
+  PhotoIcon,
+  PlusCircleIcon,
+  DocumentDuplicateIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { FlagIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { cn } from "@/lib/utils";
 import { RowActionsMenu } from "./RowActionsMenu";
 import formatCurrency from "@/helpers/formatCurrency";
 import type { ProductTableRow } from "@/types/database";
+import { PRODUCT_COLUMNS } from "@/lib/product-column-registry";
+import Image from "next/image";
 
-// ─── Column visibility constants ─────────────────────────────────────────────
+// ─── Column visibility constants (derived from registry) ─────────────────────
+export const FIXED_COLUMN_IDS: readonly string[] = PRODUCT_COLUMNS.filter(
+  (c) => c.required,
+).map((c) => c.key);
 
-export const FIXED_COLUMN_IDS = [
-  "producto",
-  "costo",
-  "precio",
-  "acciones",
-] as const;
+export const OPTIONAL_COLUMN_IDS: readonly string[] = PRODUCT_COLUMNS.filter(
+  (c) => !c.required,
+).map((c) => c.key);
 
-export const OPTIONAL_COLUMN_IDS = [
-  "sku",
-  "imagen",
-  "marca",
-  "categoria",
-  "vencimientos",
-  "stock",
-] as const;
-
-export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
-  producto: true,
-  sku: true,
-  imagen: true,
-  marca: true,
-  categoria: true,
-  vencimientos: true,
-  costo: true,
-  precio: true,
-  stock: true,
-  acciones: true,
-};
-
-// ─── Column definitions ───────────────────────────────────────────────────────
+export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> =
+  Object.fromEntries(PRODUCT_COLUMNS.map((c) => [c.key, c.defaultEnabled]));
 
 const columnHelper = createColumnHelper<ProductTableRow>();
 
@@ -53,12 +38,14 @@ export function buildColumns(
   pendingIds: Set<string>,
   onToggle: (product: ProductTableRow) => void,
   onDelete: (id: string) => void,
+  onDuplicate: (id: string) => void,
   expandedRows: Set<string>,
   onToggleExpand: (id: string) => void,
+  columnVisibility: Record<string, boolean>,
 ) {
   return [
     columnHelper.accessor("name", {
-      id: "producto",
+      id: "product",
       header: "Producto",
       enableSorting: true,
       cell: ({ row }) => {
@@ -78,11 +65,12 @@ export function buildColumns(
                 onClick={() => onToggleExpand(row.original.id)}
                 className="shrink-0 text-text-400 transition-colors hover:text-text-500"
               >
-                {isExpanded ? (
-                  <ChevronDownIcon className="size-6" />
-                ) : (
-                  <ChevronRightIcon className="size-6" />
-                )}
+                <ChevronRightIcon
+                  className={cn(
+                    "size-6 transition-transform duration-200",
+                    isExpanded && "rotate-90",
+                  )}
+                />
               </button>
             )}
           </div>
@@ -100,30 +88,31 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("image_url", {
-      id: "imagen",
+      id: "image",
       header: "Imagen",
       enableSorting: false,
       cell: ({ getValue }) => {
         const url = getValue();
         return url ? (
           <div className="h-15 w-15 overflow-hidden rounded-md border border-border-100">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={url}
               alt="Producto"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
+              height={60}
+              width={60}
             />
           </div>
         ) : (
-          <div className="flex h-15 w-15 items-center justify-center rounded-md border border-border-100 bg-background-300">
-            <CubeIcon className="size-5 text-text-300" />
+          <div className="flex h-16 w-16 items-center justify-center">
+            <PhotoIcon className="size-14 text-text-300" />
           </div>
         );
       },
     }),
 
     columnHelper.accessor((row) => row.brand?.name ?? null, {
-      id: "marca",
+      id: "brand",
       header: "Marca",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -134,7 +123,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor((row) => row.category?.name ?? null, {
-      id: "categoria",
+      id: "category",
       header: "Categoría",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -145,7 +134,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("batch_count", {
-      id: "vencimientos",
+      id: "batches",
       header: "Vencimientos",
       enableSorting: false,
       cell: ({ row }) => {
@@ -189,11 +178,12 @@ export function buildColumns(
                 onClick={() => onToggleExpand(row.original.id)}
                 className="shrink-0 text-text-400 transition-colors hover:text-text-500"
               >
-                {isExpanded ? (
-                  <ChevronDownIcon className="size-6" />
-                ) : (
-                  <ChevronRightIcon className="size-6" />
-                )}
+                <ChevronRightIcon
+                  className={cn(
+                    "size-6 transition-transform duration-200",
+                    isExpanded && "rotate-90",
+                  )}
+                />
               </button>
             )}
           </div>
@@ -202,7 +192,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("cost_price", {
-      id: "costo",
+      id: "cost",
       header: "Costo por Unidad",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -213,7 +203,7 @@ export function buildColumns(
     }),
 
     columnHelper.accessor("price", {
-      id: "precio",
+      id: "price",
       header: "Precio Final por Unidad",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -235,13 +225,14 @@ export function buildColumns(
     }),
 
     columnHelper.display({
-      id: "acciones",
+      id: "actions",
       header: "Acciones",
       cell: ({ row }) => {
         const product = row.original;
         const isActive =
           product.id in localActive ? localActive[product.id] : product.active;
         const isPending = pendingIds.has(product.id);
+        const showBatch = columnVisibility.batches !== false;
 
         return (
           <div className="flex items-center gap-2">
@@ -251,8 +242,33 @@ export function buildColumns(
               disabled={isPending}
             />
             <RowActionsMenu
-              productId={product.id}
-              onDelete={() => onDelete(product.id)}
+              actions={[
+                {
+                  label: "Editar Producto",
+                  icon: PencilIcon,
+                  href: `/products/${product.id}/edit`,
+                },
+                ...(showBatch
+                  ? [
+                      {
+                        label: "Agregar Lote",
+                        icon: PlusCircleIcon,
+                        href: `/products/${product.id}/batches/new`,
+                      } as const,
+                    ]
+                  : []),
+                {
+                  label: "Duplicar Producto",
+                  icon: DocumentDuplicateIcon,
+                  onClick: () => onDuplicate(product.id),
+                },
+                {
+                  label: "Eliminar Producto",
+                  icon: TrashIcon,
+                  variant: "danger" as const,
+                  onClick: () => onDelete(product.id),
+                },
+              ]}
             />
           </div>
         );

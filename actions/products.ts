@@ -1,6 +1,11 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
-import { productSchema, updateProductSchema } from "@/lib/validations/products";
+import {
+  productSchema,
+  updateProductSchema,
+  wizardProductSchema,
+} from "@/lib/validations/products";
+import type { WizardProduct } from "@/store/productWizard";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { ProductTableRow, BatchForTable } from "@/types/database";
@@ -143,4 +148,161 @@ export async function deleteProductAction(id: string) {
 
   revalidatePath("/products");
   return { success: true };
+}
+
+export async function createProductsBulkAction(
+  products: WizardProduct[],
+): Promise<{ created?: number; error?: string }> {
+  if (!products.length) return { error: "No hay productos para crear." };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const businessId: string = user.user_metadata.business_id;
+  let created = 0;
+  const errors: string[] = [];
+
+  // Pre-fetch all brands and categories so we can resolve names → IDs
+  const [{ data: allBrands }, { data: allCategories }] = await Promise.all([
+    supabase.from("brands").select("id, name").eq("business_id", businessId),
+    supabase.from("categories").select("id, name").eq("business_id", businessId),
+  ]);
+
+  const brandMap = new Map<string, string>();
+  for (const b of allBrands ?? []) brandMap.set(b.name.toLowerCase(), b.id);
+
+  const categoryMap = new Map<string, string>();
+  for (const c of allCategories ?? []) categoryMap.set(c.name.toLowerCase(), c.id);
+
+  // Create any brands/categories that appear in the import but don't exist yet
+  const newBrandNames = [
+    ...new Set(
+      products
+        .map((p) => p.brand_name)
+        .filter((n): n is string => !!n && !brandMap.has(n.toLowerCase())),
+    ),
+  ];
+  if (newBrandNames.length) {
+    const { data: created } = await supabase
+      .from("brands")
+      .insert(newBrandNames.map((name) => ({ name, business_id: businessId })))
+      .select("id, name");
+    for (const b of created ?? []) brandMap.set(b.name.toLowerCase(), b.id);
+  }
+
+  const newCategoryNames = [
+    ...new Set(
+      products
+        .map((p) => p.category_name)
+        .filter((n): n is string => !!n && !categoryMap.has(n.toLowerCase())),
+    ),
+  ];
+  if (newCategoryNames.length) {
+    const { data: created } = await supabase
+      .from("categories")
+      .insert(
+        newCategoryNames.map((name) => ({ name, business_id: businessId })),
+      )
+      .select("id, name");
+    for (const c of created ?? []) categoryMap.set(c.name.toLowerCase(), c.id);
+  }
+
+  for (const item of products) {
+    // Resolve brand_id and category_id from names when IDs aren't already set
+    const resolvedBrandId =
+      item.brand_id ??
+      (item.brand_name ? (brandMap.get(item.brand_name.toLowerCase()) ?? null) : null);
+    const resolvedCategoryId =
+      item.category_id ??
+      (item.category_name ? (categoryMap.get(item.category_name.toLowerCase()) ?? null) : null);
+
+    const parsed = wizardProductSchema.safeParse({
+      name: item.name,
+      reference: item.reference,
+      description: item.description,
+      price: item.price,
+      cost_price: item.cost_price,
+      category_id: resolvedCategoryId,
+      brand_id: resolvedBrandId,
+      barcode: item.barcode,
+      image_url: item.image_url,
+      tracks_batches: item.tracks_batches,
+      stock_quantity: item.stock_quantity,
+    });
+
+    if (!parsed.success) {
+      errors.push(`"${item.name || item.barcode}": datos inválidos.`);
+      continue;
+    }
+
+    const { stock_quantity, reference, ...productData } = parsed.data;
+    const dbBarcode = item.barcode.startsWith("manual-") ? null : item.barcode;
+
+    const { data: newProduct, error: productError } = await supabase
+      .from("products")
+      .insert({
+        ...productData,
+        barcode: dbBarcode,
+        reference: reference ?? "",
+        image_url: item.image_url ?? null,
+        business_id: businessId,
+        active: true,
+      })
+      .select("id")
+      .single();
+
+    if (productError || !newProduct) {
+      errors.push(`"${item.name || item.barcode}": ${productError?.message ?? "error desconocido"}.`);
+      continue;
+    }
+
+    if (stock_quantity > 0) {
+      await supabase.from("stock").insert({
+        product_id: newProduct.id,
+        business_id: businessId,
+        quantity: stock_quantity,
+        alert_threshold: 0,
+      });
+    }
+
+    if (item.tracks_batches && (item.lot_number || item.expiration_date)) {
+      await supabase.from("product_batches").insert({
+        product_id: newProduct.id,
+        business_id: businessId,
+        lot_number: item.lot_number,
+        quantity: stock_quantity,
+        expiration_date: item.expiration_date,
+        received_at: new Date().toISOString(),
+      });
+    }
+
+    // Per CLAUDE.md: manual barcode entries enrich the global product_catalog
+    if (item.source === "unknown") {
+      await supabase.from("product_catalog").upsert(
+        {
+          barcode: item.barcode,
+          name: parsed.data.name,
+          description: parsed.data.description ?? null,
+          image_url: parsed.data.image_url ?? null,
+          brand: item.brand_name ?? null,
+          category: item.category_name ?? null,
+          source: "manual",
+        },
+        { onConflict: "barcode" },
+      );
+    }
+
+    created++;
+  }
+
+  revalidatePath("/products");
+
+  if (created === 0) {
+    return { error: errors.length ? errors.join(" ") : "No se pudo crear ningún producto." };
+  }
+
+  return { created };
 }

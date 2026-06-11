@@ -4,19 +4,7 @@ import { useEffect, useRef } from "react";
 import { LockClosedIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { FIXED_COLUMN_IDS, OPTIONAL_COLUMN_IDS } from "./ProductsTable";
-
-const COLUMN_LABELS: Record<string, string> = {
-  producto: "Producto",
-  sku: "SKU",
-  imagen: "Imagen",
-  marca: "Marca",
-  categoria: "Categoría",
-  vencimientos: "Vencimientos",
-  costo: "Costo por Unidad",
-  precio: "Precio Final por Unidad",
-  stock: "Stock",
-  acciones: "Acciones",
-};
+import { COLUMN_MAP } from "@/lib/product-column-registry";
 
 interface EditColumnsPopoverProps {
   anchorRef: React.RefObject<HTMLButtonElement | null>;
@@ -87,7 +75,7 @@ export function EditColumnsPopover({
             className="flex items-center justify-between gap-3 px-4 py-2 opacity-50"
           >
             <span className="body-md-regular text-text-500">
-              {COLUMN_LABELS[id]}
+              {COLUMN_MAP[id]?.label ?? id}
             </span>
             <LockClosedIcon className="size-3.5 shrink-0 text-text-400" />
           </li>
@@ -110,7 +98,7 @@ export function EditColumnsPopover({
                   visible ? "text-text-500" : "text-text-400",
                 )}
               >
-                {COLUMN_LABELS[id]}
+                {COLUMN_MAP[id]?.label ?? id}
               </span>
               <button
                 type="button"

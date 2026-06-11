@@ -1,40 +1,47 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useTransition, useEffect } from "react";
 import type { ProductTableRow } from "@/types/database";
 import { exportProductsToExcel } from "@/lib/exportProducts";
 import { ProductsPageHeader } from "./ProductsPageHeader";
-import {
-  FeedbackBanner,
-  type FeedbackBannerState,
-} from "@/components/shared/FeedbackBanner";
+import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import {
   ProductsTable,
-  DEFAULT_COLUMN_VISIBILITY,
   FIXED_COLUMN_IDS,
 } from "./ProductsTable";
-
-const LOCALSTORAGE_KEY = "shiro-products-col-visibility";
+import { saveProductColumnsAction } from "@/actions/product-columns";
+import { useFeedbackBanner } from "@/hooks/use-feedback-banner";
 
 interface ProductsViewProps {
   products: ProductTableRow[];
+  createdCount?: number;
+  uploadError?: boolean;
+  initialColumnVisibility: Record<string, boolean>;
 }
 
-export function ProductsView({ products }: ProductsViewProps) {
+export function ProductsView({ products, createdCount, uploadError, initialColumnVisibility }: ProductsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [banner, setBanner] = useState<FeedbackBannerState>(null);
-  const [columnVisibility, setColumnVisibility] = useState<
-    Record<string, boolean>
-  >(DEFAULT_COLUMN_VISIBILITY);
+  const { banner, showBanner, closeBanner } = useFeedbackBanner();
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [, startTransition] = useTransition();
 
-  // Load persisted column visibility from localStorage after mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(LOCALSTORAGE_KEY);
-      if (stored)
-        setColumnVisibility(JSON.parse(stored) as Record<string, boolean>);
-    } catch {}
+    if (createdCount !== undefined) {
+      showBanner(
+        {
+          type: "success",
+          message: `${createdCount === 1 ? "Producto registrado" : `${createdCount} productos registrados`} correctamente.`,
+        },
+        3000,
+      );
+    } else if (uploadError) {
+      showBanner({
+        type: "error",
+        message: "No se pudieron guardar los productos. Intentá nuevamente.",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredProducts = useMemo(() => {
@@ -52,33 +59,23 @@ export function ProductsView({ products }: ProductsViewProps) {
   const isEmpty = products.length === 0;
 
   function handleColumnVisibilityChange(next: Record<string, boolean>) {
-    // Fixed columns always remain visible
     const safe = { ...next };
-    FIXED_COLUMN_IDS.forEach((id) => {
-      safe[id] = true;
-    });
+    FIXED_COLUMN_IDS.forEach((id) => { safe[id] = true; });
     setColumnVisibility(safe);
-    try {
-      localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(safe));
-    } catch {}
+    const enabledKeys = Object.entries(safe).filter(([, v]) => v).map(([k]) => k);
+    startTransition(() => { void saveProductColumnsAction(enabledKeys); });
   }
-
-  const showSuccessBanner = (message: string) =>
-    setBanner({ type: "success", message });
-
-  const showErrorBanner = (message: string) =>
-    setBanner({ type: "error", message });
-  const closeBanner = () => setBanner(null);
 
   async function handleDownload() {
     setIsDownloading(true);
     try {
       exportProductsToExcel(filteredProducts, columnVisibility);
-      showSuccessBanner("Documento descargado correctamente");
+      showBanner({ type: "success", message: "Documento descargado correctamente" }, 3000);
     } catch {
-      showErrorBanner(
-        "El documento no se descargó correctamente. Vuelva a intentar nuevamente.",
-      );
+      showBanner({
+        type: "error",
+        message: "El documento no se descargó correctamente. Vuelva a intentar nuevamente.",
+      });
     } finally {
       setIsDownloading(false);
     }
@@ -104,7 +101,7 @@ export function ProductsView({ products }: ProductsViewProps) {
         originalCount={products.length}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={handleColumnVisibilityChange}
-        onActionError={showErrorBanner}
+        onActionError={(msg) => showBanner({ type: "error", message: msg })}
       />
     </div>
   );

@@ -62,7 +62,7 @@ export default function BusinessList({ businesses }: Props) {
                 <div className="mt-1">
                   {owner ? (
                     <p className="body-sm-regular text-text-400">
-                      <span className="text-text-300">Dueño:</span>{" "}
+                      <span className="text-text-300">Administrador:</span>{" "}
                       {owner.full_name ? `${owner.full_name} — ` : ""}
                       {owner.email}
                     </p>
@@ -72,7 +72,7 @@ export default function BusinessList({ businesses }: Props) {
                     </p>
                   ) : (
                     <p className="body-sm-regular text-danger-300">
-                      Sin dueño asignado
+                      Sin Administrador asignado
                     </p>
                   )}
                 </div>

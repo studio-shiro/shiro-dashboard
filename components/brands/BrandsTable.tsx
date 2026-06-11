@@ -90,7 +90,7 @@ export function BrandsTable({
               <img
                 src={logo_url}
                 alt={name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             </div>
           ) : (
@@ -130,13 +130,11 @@ export function BrandsTable({
         id: "productos",
         header: "Productos",
         enableSorting: true,
-        cell: ({ getValue }) => (
-          <Tag variant="neutral">{getValue()}</Tag>
-        ),
+        cell: ({ getValue }) => <Tag variant="neutral">{getValue()}</Tag>,
       }),
 
       columnHelper.display({
-        id: "acciones",
+        id: "actions",
         header: "",
         cell: ({ row }) => {
           const brand = row.original;

@@ -146,7 +146,7 @@ export function BrandFormModal({
                   <img
                     src={logoPreviewUrl}
                     alt="Logo preview"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                   />
                 ) : (
                   <PhotoIcon className="size-6 text-text-300" />

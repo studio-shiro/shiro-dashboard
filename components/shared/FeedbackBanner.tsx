@@ -20,34 +20,34 @@ interface FeedbackBannerProps {
 export function FeedbackBanner({ banner, onClose }: FeedbackBannerProps) {
   const isSuccess = banner.type === "success";
 
+  const color = isSuccess ? "#006922" : "#cd2b31";
+  const bg = isSuccess ? "#f2f6f2" : "#faf2f2";
+
   return (
     <div
       role="alert"
-      className={cn(
-        "fixed right-6 top-4 z-50 flex w-full max-w-[360px] items-start gap-3 rounded-lg border px-4 py-3",
-        isSuccess
-          ? "border-green-200 bg-green-50 text-green-800"
-          : "border-red-200 bg-red-50 text-red-800",
-      )}
+      className="fixed right-6 top-4 z-50 flex w-full max-w-[441px] items-center justify-between gap-4 rounded-lg px-3 py-4"
+      style={{ backgroundColor: bg, borderLeft: `5px solid ${color}` }}
     >
-      {isSuccess ? (
-        <CheckCircleIcon className="mt-px size-4 shrink-0 text-green-500" />
-      ) : (
-        <ExclamationTriangleIcon className="mt-px size-4 shrink-0 text-red-500" />
-      )}
-
-      <p className="flex-1 body-md-regular leading-snug">{banner.message}</p>
+      <div className="flex items-center gap-2">
+        {isSuccess ? (
+          <CheckCircleIcon className="size-6 shrink-0" style={{ color }} />
+        ) : (
+          <ExclamationTriangleIcon className="size-6 shrink-0" style={{ color }} />
+        )}
+        <p className="body-md-regular leading-snug" style={{ color }}>
+          {banner.message}
+        </p>
+      </div>
 
       <button
         type="button"
         onClick={onClose}
         aria-label="Cerrar"
-        className={cn(
-          "mt-px shrink-0 transition-opacity hover:opacity-60",
-          isSuccess ? "text-green-600" : "text-red-600",
-        )}
+        className="shrink-0 transition-opacity hover:opacity-60"
+        style={{ color }}
       >
-        <XMarkIcon className="size-4" />
+        <XMarkIcon className="size-6" />
       </button>
     </div>
   );

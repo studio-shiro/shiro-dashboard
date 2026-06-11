@@ -21,9 +21,14 @@ export function ToggleSwitch({
       onClick={onChange}
       disabled={disabled}
       className={cn(
-        "relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent cursor-pointer",
-        checked ? "bg-accent" : "bg-accent-disabled",
-        disabled && "cursor-not-allowed opacity-50",
+        "relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors",
+        "focus-visible:outline-none focus-visible:shadow-[0_0_0_4px_#ffd2b4]",
+        // ON
+        checked && !disabled && "cursor-pointer bg-accent",
+        checked && disabled && "cursor-not-allowed bg-accent-disabled",
+        // OFF
+        !checked && !disabled && "cursor-pointer bg-accent-disabled",
+        !checked && disabled && "cursor-not-allowed bg-[#ffd2b4]",
       )}
     >
       <span
