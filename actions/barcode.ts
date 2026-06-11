@@ -11,28 +11,51 @@ const EXTERNAL_API_ELIGIBLE: BusinessType[] = [
   "electronics",
 ];
 
-async function fetchOpenFoodFacts(
+// Open Food Facts docs require a custom User-Agent ("AppName/Version (contact)")
+// to avoid being flagged as a bot.
+
+const FACTS_API_USER_AGENT =
+  process.env.FACTS_API_USER_AGENT ||
+  "ShiroStudio/1.0 (alextraverso6@gmail.com)";
+const FACTS_API_FIELDS =
+  "product_name,product_name_es,product_name_en,generic_name,brands,categories,image_front_url,image_url";
+const EXTERNAL_API_TIMEOUT_MS = 8000;
+
+/**
+ * Open Food Facts and Open Beauty Facts share the same v3 API.
+ * Returns null when the product does not exist (HTTP 404); throws on
+ * real failures (rate limit, outage, timeout) so callers can distinguish
+ * "not found" from "could not look up".
+ */
+
+// TODO: Test complete flow
+/* Nutella example code 3017624010701 */
+async function fetchFactsApi(
+  baseUrl: string,
   barcode: string,
 ): Promise<Partial<BarcodeResult> | null> {
-  try {
-    const res = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${barcode}.json`,
-      { next: { revalidate: 86400 } },
-    );
-    if (!res.ok) return null;
-    const json = await res.json();
-    if (json.status !== 1 || !json.product) return null;
-    const p = json.product;
-    return {
-      name: p.product_name || p.product_name_en || undefined,
-      image_url: p.image_front_url || p.image_url || undefined,
-      brand: p.brands?.split(",")[0]?.trim() || undefined,
-      category: p.categories?.split(",")[0]?.trim() || undefined,
-      description: p.generic_name || undefined,
-    };
-  } catch {
-    return null;
+  const res = await fetch(
+    `${baseUrl}/api/v3/product/${barcode}?fields=${FACTS_API_FIELDS}`,
+    {
+      headers: { "User-Agent": FACTS_API_USER_AGENT },
+      signal: AbortSignal.timeout(EXTERNAL_API_TIMEOUT_MS),
+      next: { revalidate: 86400 },
+    },
+  );
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Facts API ${baseUrl} responded ${res.status}`);
   }
+  const json = await res.json();
+  if (json.status !== "success" || !json.product) return null;
+  const p = json.product;
+  return {
+    name: p.product_name || p.product_name_es || p.product_name_en || undefined,
+    image_url: p.image_front_url || p.image_url || undefined,
+    brand: p.brands?.split(",")[0]?.trim() || undefined,
+    category: p.categories?.split(",")[0]?.trim() || undefined,
+    description: p.generic_name || undefined,
+  };
 }
 
 async function fetchOpenLibrary(
@@ -41,7 +64,11 @@ async function fetchOpenLibrary(
   try {
     const res = await fetch(
       `https://openlibrary.org/api/books?bibkeys=ISBN:${barcode}&format=json&jscmd=data`,
-      { next: { revalidate: 86400 } },
+      {
+        headers: { "User-Agent": FACTS_API_USER_AGENT },
+        signal: AbortSignal.timeout(EXTERNAL_API_TIMEOUT_MS),
+        next: { revalidate: 86400 },
+      },
     );
     if (!res.ok) return null;
     const json = await res.json();
@@ -68,7 +95,19 @@ async function fetchExternalApi(
     businessType === "supermarket" ||
     businessType === "pharmacy_retail"
   ) {
-    return fetchOpenFoodFacts(barcode);
+    const food = await fetchFactsApi(
+      "https://world.openfoodfacts.org",
+      barcode,
+    );
+    if (food) return food;
+    // Per CLAUDE.md these business types also cover beauty/personal care:
+    // fall back to Open Beauty Facts. It is a secondary source, so its
+    // failures must not break a lookup OFF already answered.
+    try {
+      return await fetchFactsApi("https://world.openbeautyfacts.org", barcode);
+    } catch {
+      return null;
+    }
   }
   if (businessType === "bookstore") {
     return fetchOpenLibrary(barcode);
@@ -96,7 +135,9 @@ export async function lookupBarcodeAction(barcode: string): Promise<{
   // Step 1: Check local products table
   const { data: localProduct, error: localError } = await supabase
     .from("products")
-    .select("id, name, image_url, barcode, brand:brands(name), category:categories(name)")
+    .select(
+      "id, name, image_url, barcode, brand:brands(name), category:categories(name)",
+    )
     .eq("business_id", businessId)
     .eq("barcode", trimmed)
     .maybeSingle();
@@ -156,7 +197,15 @@ export async function lookupBarcodeAction(barcode: string): Promise<{
   const businessType = business?.business_type as BusinessType | null;
 
   if (businessType && EXTERNAL_API_ELIGIBLE.includes(businessType)) {
-    const external = await fetchExternalApi(trimmed, businessType);
+    let external: Partial<BarcodeResult> | null;
+    try {
+      external = await fetchExternalApi(trimmed, businessType);
+    } catch {
+      // Outage / rate limit / timeout — not the same as "product not found".
+      return {
+        error: "No se pudo consultar el catálogo externo. Intentá nuevamente.",
+      };
+    }
     if (external?.name) {
       // Upsert to product_catalog for future lookups
       await supabase.from("product_catalog").upsert(

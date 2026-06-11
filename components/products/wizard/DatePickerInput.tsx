@@ -86,7 +86,7 @@ export function DatePickerInput({
         type="button"
         onClick={handleOpen}
         className={cn(
-          "flex h-[30px] w-full items-center justify-between gap-1 overflow-hidden rounded-md border border-border-400 bg-white px-2 shadow-sm",
+          "flex h-[30px] w-full items-center justify-between gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white px-2 shadow-sm",
           open && "border-accent",
           className,
         )}
@@ -97,7 +97,7 @@ export function DatePickerInput({
             selected ? "text-text-500" : "text-text-300",
           )}
         >
-          {selected ? formatDisplay(selected) : "--/--/----"}
+          {selected ? formatDisplay(selected) : "00/00/0000"}
         </span>
         <CalendarDaysIcon className="size-5 shrink-0 text-text-400" />
       </button>

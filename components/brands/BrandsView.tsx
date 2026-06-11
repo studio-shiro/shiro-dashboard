@@ -2,13 +2,11 @@
 
 import { useState, useMemo } from "react";
 import type { BrandTableRow } from "@/types/database";
-import {
-  FeedbackBanner,
-  type FeedbackBannerState,
-} from "@/components/shared/FeedbackBanner";
+import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import { BrandsPageHeader } from "./BrandsPageHeader";
 import { BrandsTable } from "./BrandsTable";
 import { BrandFormModal } from "./BrandFormModal";
+import { useFeedbackBanner } from "@/hooks/use-feedback-banner";
 
 interface BrandsViewProps {
   brands: BrandTableRow[];
@@ -16,7 +14,7 @@ interface BrandsViewProps {
 
 export function BrandsView({ brands }: BrandsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [banner, setBanner] = useState<FeedbackBannerState>(null);
+  const { banner, showBanner, closeBanner } = useFeedbackBanner();
   const [modalState, setModalState] = useState<{
     open: boolean;
     brand: BrandTableRow | null;
@@ -33,11 +31,6 @@ export function BrandsView({ brands }: BrandsViewProps) {
   }, [brands, searchTerm]);
 
   const isEmpty = brands.length === 0;
-
-  const showSuccessBanner = (message: string) =>
-    setBanner({ type: "success", message });
-  const showErrorBanner = (message: string) =>
-    setBanner({ type: "error", message });
 
   function openCreateModal() {
     setModalState({ open: true, brand: null });
@@ -62,7 +55,7 @@ export function BrandsView({ brands }: BrandsViewProps) {
       />
 
       {banner && (
-        <FeedbackBanner banner={banner} onClose={() => setBanner(null)} />
+        <FeedbackBanner banner={banner} onClose={closeBanner} />
       )}
 
       <BrandsTable
@@ -70,8 +63,8 @@ export function BrandsView({ brands }: BrandsViewProps) {
         originalCount={brands.length}
         onEdit={openEditModal}
         onAdd={openCreateModal}
-        onActionError={showErrorBanner}
-        onActionSuccess={showSuccessBanner}
+        onActionError={(msg) => showBanner({ type: "error", message: msg })}
+        onActionSuccess={(msg) => showBanner({ type: "success", message: msg })}
       />
 
       {modalState.open && (
@@ -79,10 +72,10 @@ export function BrandsView({ brands }: BrandsViewProps) {
           brand={modalState.brand}
           onClose={closeModal}
           onSuccess={(message) => {
-            showSuccessBanner(message);
+            showBanner({ type: "success", message }, 3000);
             closeModal();
           }}
-          onError={showErrorBanner}
+          onError={(msg) => showBanner({ type: "error", message: msg })}
         />
       )}
     </div>

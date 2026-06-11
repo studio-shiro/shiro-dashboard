@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useEffect } from "react";
 import type { ProductTableRow } from "@/types/database";
 import { exportProductsToExcel } from "@/lib/exportProducts";
 import { ProductsPageHeader } from "./ProductsPageHeader";
-import {
-  FeedbackBanner,
-  type FeedbackBannerState,
-} from "@/components/shared/FeedbackBanner";
+import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import {
   ProductsTable,
   FIXED_COLUMN_IDS,
 } from "./ProductsTable";
 import { saveProductColumnsAction } from "@/actions/product-columns";
+import { useFeedbackBanner } from "@/hooks/use-feedback-banner";
 
 interface ProductsViewProps {
   products: ProductTableRow[];
@@ -23,24 +21,28 @@ interface ProductsViewProps {
 
 export function ProductsView({ products, createdCount, uploadError, initialColumnVisibility }: ProductsViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [banner, setBanner] = useState<FeedbackBannerState>(() => {
-    if (createdCount !== undefined) {
-      return {
-        type: "success",
-        message: `${createdCount === 1 ? "Producto registrado" : `${createdCount} productos registrados`} correctamente.`,
-      };
-    }
-    if (uploadError) {
-      return {
-        type: "error",
-        message: "No se pudieron guardar los productos. Intentá nuevamente.",
-      };
-    }
-    return null;
-  });
+  const { banner, showBanner, closeBanner } = useFeedbackBanner();
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(initialColumnVisibility);
   const [isDownloading, setIsDownloading] = useState(false);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (createdCount !== undefined) {
+      showBanner(
+        {
+          type: "success",
+          message: `${createdCount === 1 ? "Producto registrado" : `${createdCount} productos registrados`} correctamente.`,
+        },
+        3000,
+      );
+    } else if (uploadError) {
+      showBanner({
+        type: "error",
+        message: "No se pudieron guardar los productos. Intentá nuevamente.",
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm.trim()) return products;
@@ -64,22 +66,16 @@ export function ProductsView({ products, createdCount, uploadError, initialColum
     startTransition(() => { void saveProductColumnsAction(enabledKeys); });
   }
 
-  const showSuccessBanner = (message: string) =>
-    setBanner({ type: "success", message });
-
-  const showErrorBanner = (message: string) =>
-    setBanner({ type: "error", message });
-  const closeBanner = () => setBanner(null);
-
   async function handleDownload() {
     setIsDownloading(true);
     try {
       exportProductsToExcel(filteredProducts, columnVisibility);
-      showSuccessBanner("Documento descargado correctamente");
+      showBanner({ type: "success", message: "Documento descargado correctamente" }, 3000);
     } catch {
-      showErrorBanner(
-        "El documento no se descargó correctamente. Vuelva a intentar nuevamente.",
-      );
+      showBanner({
+        type: "error",
+        message: "El documento no se descargó correctamente. Vuelva a intentar nuevamente.",
+      });
     } finally {
       setIsDownloading(false);
     }
@@ -105,7 +101,7 @@ export function ProductsView({ products, createdCount, uploadError, initialColum
         originalCount={products.length}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={handleColumnVisibilityChange}
-        onActionError={showErrorBanner}
+        onActionError={(msg) => showBanner({ type: "error", message: msg })}
       />
     </div>
   );

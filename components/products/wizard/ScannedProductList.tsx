@@ -30,7 +30,7 @@ export function ScannedProductList({
                     <Image
                       src={item.image_url}
                       alt={item.name || item.barcode}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                       height={46}
                       width={46}
                     />
@@ -41,7 +41,7 @@ export function ScannedProductList({
               </div>
 
               {/* Name */}
-              <div className="w-[189px] shrink-0 px-2">
+              <div className="w-[390px] shrink-0 px-2">
                 <p className="body-md-semibold truncate text-text-500">
                   {item.name || "—"}
                 </p>

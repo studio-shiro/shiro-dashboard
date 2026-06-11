@@ -191,7 +191,7 @@ export default function Sidebar({
               src={currentLogoUrl}
               alt="Logo del negocio"
               fill
-              className="object-cover"
+              className="object-contain"
               sizes={collapsed ? "64px" : "100px"}
             />
             {/* Hover overlay */}

@@ -13,9 +13,9 @@ import { useProductWizardStore } from "@/store/productWizard";
 import { WizardProgressBar } from "@/components/products/wizard/WizardProgressBar";
 import { WizardBottomNav } from "@/components/products/wizard/WizardBottomNav";
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
-import type { FeedbackBannerState } from "@/components/shared/FeedbackBanner";
 import { downloadTemplate, parseExcelFile } from "@/lib/excel";
 import { getProductColumnsAction } from "@/actions/product-columns";
+import { useFeedbackBanner } from "@/hooks/use-feedback-banner";
 import { cn } from "@/lib/utils";
 
 const MAX_SIZE_MB = 5;
@@ -26,7 +26,7 @@ export default function ExcelUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
-  const [banner, setBanner] = useState<FeedbackBannerState>(null);
+  const { banner, showBanner, closeBanner } = useFeedbackBanner();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,15 +36,15 @@ export default function ExcelUploadPage() {
   function handleFile(file: File | undefined) {
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".xlsx")) {
-      setBanner({ type: "error", message: "Solo se aceptan archivos .xlsx (Excel)." });
+      showBanner({ type: "error", message: "Solo se aceptan archivos .xlsx (Excel)." });
       return;
     }
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      setBanner({ type: "error", message: `El archivo supera el límite de ${MAX_SIZE_MB}MB.` });
+      showBanner({ type: "error", message: `El archivo supera el límite de ${MAX_SIZE_MB}MB.` });
       return;
     }
     setSelectedFile(file);
-    setBanner(null);
+    closeBanner();
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -69,9 +69,9 @@ export default function ExcelUploadPage() {
     try {
       const visibility = await getProductColumnsAction();
       downloadTemplate(visibility);
-      setBanner({ type: "success", message: "Plantilla descargada correctamente." });
+      showBanner({ type: "success", message: "Plantilla descargada correctamente." }, 3000);
     } catch {
-      setBanner({ type: "error", message: "La plantilla no se pudo descargar." });
+      showBanner({ type: "error", message: "La plantilla no se pudo descargar." });
     }
   }
 
@@ -81,7 +81,7 @@ export default function ExcelUploadPage() {
     try {
       const products = await parseExcelFile(selectedFile);
       if (products.length === 0) {
-        setBanner({ type: "error", message: "El archivo no contiene productos." });
+        showBanner({ type: "error", message: "El archivo no contiene productos." });
         return;
       }
       reset();
@@ -91,7 +91,7 @@ export default function ExcelUploadPage() {
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "El archivo no se subió correctamente. Reintentalo más tarde.";
-      setBanner({ type: "error", message: msg });
+      showBanner({ type: "error", message: msg });
     } finally {
       setIsParsing(false);
     }
@@ -99,7 +99,7 @@ export default function ExcelUploadPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-2.5">
-      {banner && <FeedbackBanner banner={banner} onClose={() => setBanner(null)} />}
+      {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}
 
       {/* Content */}
       <div className="flex flex-1 items-center justify-center">

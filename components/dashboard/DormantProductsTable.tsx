@@ -40,7 +40,7 @@ function ProductImage({ url }: { url: string | null }) {
       <img
         src={url}
         alt="Producto"
-        className="size-[70px] rounded-[10px] border border-border-100 object-cover"
+        className="size-[70px] rounded-[10px] border border-border-100 object-contain"
       />
     );
   }
@@ -170,7 +170,9 @@ const COLUMNS = [
               <div className="flex max-w-[214px] items-start gap-2 rounded-lg bg-info-100 px-2.5 py-2 shadow-lg">
                 <SparklesIcon className="mt-px size-4 shrink-0 fill-info-300 text-info-300" />
                 <p className="body-sm-regular text-text-400">
-                  <span className="body-sm-semibold">IA sugiere activar 2x1</span>{" "}
+                  <span className="body-sm-semibold">
+                    IA sugiere activar 2x1
+                  </span>{" "}
                   para aumentar la rotación y mover las ventas de este producto.
                 </p>
               </div>

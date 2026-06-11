@@ -18,6 +18,7 @@ import {
 import type { WizardProduct } from "@/store/productWizard";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/shared/Pagination";
+import Image from "next/image";
 
 interface AddedProductsPanelProps {
   items: WizardProduct[];
@@ -142,7 +143,7 @@ const columns = [
               <img
                 src={item.image_url}
                 alt={item.name}
-                className="size-full object-cover"
+                className="size-full object-contain"
               />
             </div>
           ) : (
@@ -320,8 +321,8 @@ export function AddedProductsPanel({
   onDelete,
   editingBarcode,
 }: AddedProductsPanelProps) {
-  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
-    () => (items.length === 1 ? new Set([items[0].barcode]) : new Set()),
+  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(() =>
+    items.length === 1 ? new Set([items[0].barcode]) : new Set(),
   );
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,

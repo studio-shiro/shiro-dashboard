@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   XMarkIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
   PhotoIcon,
   ArrowUpTrayIcon,
@@ -22,7 +23,7 @@ const COL_WIDTHS: Record<string, string> = {
   cost: "1.1fr",
   price: "1.1fr",
   stock: "1fr",
-  _delete: "40px",
+  _delete: "32px",
 };
 
 const ORDERED_COLS = [
@@ -50,7 +51,29 @@ const COL_HEADERS: Record<string, string> = {
 };
 
 const inputCls =
-  "w-full h-[30px] rounded-md border border-border-400 bg-white px-2 body-md-regular text-text-500 shadow-sm focus:border-accent focus:outline-none";
+  "w-full h-[30px] rounded-[6px] border border-solid border-border-400 bg-white px-2 body-md-regular text-text-500 placeholder:text-text-500 shadow-sm focus:border-accent focus:outline-none";
+
+function getPageItems(current: number, count: number): (number | "ellipsis")[] {
+  if (count <= 4) return Array.from({ length: count }, (_, i) => i);
+  const pages = new Set<number>([0, count - 1, current - 1, current, current + 1]);
+  if (current <= 2) {
+    pages.add(1);
+    pages.add(2);
+  }
+  if (current >= count - 3) {
+    pages.add(count - 2);
+    pages.add(count - 3);
+  }
+  const sorted = [...pages]
+    .filter((p) => p >= 0 && p < count)
+    .sort((a, b) => a - b);
+  const items: (number | "ellipsis")[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) items.push("ellipsis");
+    items.push(sorted[i]);
+  }
+  return items;
+}
 
 /**
  * There is no per-row switch for tracks_batches: it is derived from the batch
@@ -77,7 +100,6 @@ interface ProductDetailsTableProps {
   pageIndex: number;
   pageCount: number;
   onPageChange: (page: number) => void;
-  totalCount: number;
   columnVisibility: Record<string, boolean>;
 }
 
@@ -89,11 +111,12 @@ export function ProductDetailsTable({
   pageIndex,
   pageCount,
   onPageChange,
-  totalCount,
   columnVisibility,
 }: ProductDetailsTableProps) {
+  // Per Figma: the first product always starts expanded so the user discovers
+  // the batch info; the rest stay collapsed until opened manually.
   const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
-    new Set(),
+    () => new Set(items[0] ? [items[0].barcode] : []),
   );
   const [localPreviews, setLocalPreviews] = useState<Map<string, string>>(
     new Map(),
@@ -134,22 +157,30 @@ export function ProductDetailsTable({
     onFilePicked(barcode, file);
   }
 
+  const headerCols = visibleCols.filter((col) => col !== "_delete");
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* Table */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-lg">
-        {/* Header — outer border matches Figma _Actions container */}
+      <div className="overflow-hidden rounded-[10px] bg-white shadow-md">
+        {/* Header — the last header (Stock) spans through the delete column,
+            so there is no separator before the X (matches Figma) */}
         <div
-          className="grid border border-border-300 bg-background-300"
+          className="grid border-b border-border-200 bg-background-300"
           style={{ gridTemplateColumns: gridTemplate }}
         >
-          {visibleCols.map((col, i) => (
+          {headerCols.map((col, i) => (
             <div
               key={col}
               className={cn(
                 "body-md-semibold p-2 text-text-400",
-                i < visibleCols.length - 1 && "border-r border-border-200",
+                i < headerCols.length - 1 && "border-r border-border-200",
               )}
+              style={
+                i === headerCols.length - 1
+                  ? { gridColumn: "span 2" }
+                  : undefined
+              }
             >
               {COL_HEADERS[col]}
             </div>
@@ -162,11 +193,8 @@ export function ProductDetailsTable({
           const previewUrl = localPreviews.get(item.barcode) ?? item.image_url;
 
           return (
-            <div
-              key={item.barcode}
-              className="border-b border-border-100 last:border-0"
-            >
-              {/* Main data row */}
+            <div key={item.barcode}>
+              {/* Main data row — no separator between data rows (matches Figma) */}
               <div
                 className="grid items-center"
                 style={{ gridTemplateColumns: gridTemplate }}
@@ -188,6 +216,7 @@ export function ProductDetailsTable({
                           placeholder="Nombre del producto"
                           className={cn(
                             inputCls,
+                            "px-4",
                             !item.name && "border-danger-300",
                           )}
                         />
@@ -195,11 +224,11 @@ export function ProductDetailsTable({
                           <button
                             type="button"
                             onClick={() => toggleExpand(item.barcode)}
-                            className="shrink-0 text-text-400 transition-colors hover:text-text-500"
+                            className="shrink-0 text-text-500"
                           >
                             <ChevronRightIcon
                               className={cn(
-                                "size-5 transition-transform duration-200",
+                                "size-6 transition-transform duration-200",
                                 isExpanded && "rotate-90",
                               )}
                             />
@@ -241,7 +270,7 @@ export function ProductDetailsTable({
                           onClick={() =>
                             fileInputRefs.current.get(item.barcode)?.click()
                           }
-                          className="group relative size-16"
+                          className="group relative size-[70px]"
                           title="Cambiar imagen"
                         >
                           {previewUrl ? (
@@ -250,15 +279,15 @@ export function ProductDetailsTable({
                               <img
                                 src={previewUrl}
                                 alt={item.name}
-                                className="size-full object-cover"
+                                className="size-full object-contain"
                               />
                             </div>
                           ) : (
-                            <PhotoIcon className="size-full text-text-300" />
+                            <PhotoIcon className="mx-auto size-16 text-text-300" />
                           )}
                           <span
                             className={cn(
-                              "absolute left-1/2 flex h-[22px] -translate-x-1/2 items-center gap-0.5 whitespace-nowrap rounded-md border border-border-400 bg-white px-2 shadow-sm transition-colors group-hover:bg-background-300",
+                              "absolute left-1/2 flex h-[22px] w-[72px] -translate-x-1/2 items-center justify-center gap-0.5 whitespace-nowrap rounded-md border border-border-400 bg-white shadow-sm transition-colors group-hover:bg-background-300",
                               previewUrl
                                 ? "top-1/2 -translate-y-1/2"
                                 : "bottom-0",
@@ -328,8 +357,8 @@ export function ProductDetailsTable({
                   if (col === "cost")
                     return (
                       <div key="cost" className="p-3">
-                        <div className="flex h-[30px] w-full items-center overflow-hidden rounded-md border border-border-400 bg-white pl-1 pr-2 shadow-sm focus-within:border-accent">
-                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-400" />
+                        <div className="flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white pl-1 pr-4 shadow-sm focus-within:border-accent">
+                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
                           <input
                             type="number"
                             min="0"
@@ -343,7 +372,7 @@ export function ProductDetailsTable({
                               })
                             }
                             placeholder="-"
-                            className="w-full bg-transparent body-md-regular text-text-500 focus:outline-none"
+                            className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -353,8 +382,8 @@ export function ProductDetailsTable({
                   if (col === "price")
                     return (
                       <div key="price" className="p-3">
-                        <div className="flex h-[30px] w-full items-center overflow-hidden rounded-md border border-border-400 bg-white pl-1 pr-2 shadow-sm focus-within:border-accent">
-                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-400" />
+                        <div className="flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white pl-1 pr-4 shadow-sm focus-within:border-accent">
+                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
                           <input
                             type="number"
                             min="0"
@@ -368,7 +397,7 @@ export function ProductDetailsTable({
                               })
                             }
                             placeholder="-"
-                            className="w-full bg-transparent body-md-regular text-text-500 focus:outline-none"
+                            className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none"
                           />
                         </div>
                       </div>
@@ -388,7 +417,7 @@ export function ProductDetailsTable({
                               stock_quantity: Number(e.target.value) || 0,
                             })
                           }
-                          className={inputCls}
+                          className={cn(inputCls, "px-4")}
                         />
                       </div>
                     );
@@ -398,14 +427,14 @@ export function ProductDetailsTable({
                     return (
                       <div
                         key="_delete"
-                        className="flex items-center justify-center pr-2"
+                        className="flex items-center justify-end pr-2"
                       >
                         <button
                           type="button"
                           onClick={() => onDelete(item)}
-                          className="text-text-300 transition-colors hover:text-danger-300"
+                          className="text-text-500 transition-colors hover:text-danger-300"
                         >
-                          <XMarkIcon className="size-5" />
+                          <XMarkIcon className="size-6" />
                         </button>
                       </div>
                     );
@@ -424,63 +453,69 @@ export function ProductDetailsTable({
                       "EAN-13",
                       "Fecha de Elaboración",
                       "Fecha de Vencimiento",
-                    ].map((label) => (
+                    ].map((label, i) => (
                       <div
                         key={label}
-                        className="body-md-semibold p-2 pl-3 text-text-400"
+                        className={cn(
+                          "body-md-semibold p-2 text-text-400",
+                          i === 0 && "pl-3",
+                        )}
                       >
                         {label}
                       </div>
                     ))}
                   </div>
-                  {/* Sub-data row */}
-                  <div className="grid grid-cols-4 gap-3 border-b border-border-200 bg-background-600 px-3 py-3">
-                    <input
-                      type="text"
-                      value={item.lot_number ?? ""}
-                      onChange={(e) =>
-                        onUpdate(
-                          item.barcode,
-                          batchUpdates(item, {
-                            lot_number: e.target.value || null,
-                          }),
-                        )
-                      }
-                      placeholder="-"
-                      className={inputCls}
-                    />
-                    <input
-                      type="text"
-                      value={item.batch_barcode ?? ""}
-                      onChange={(e) =>
-                        onUpdate(
-                          item.barcode,
-                          batchUpdates(item, {
-                            batch_barcode: e.target.value || null,
-                          }),
-                        )
-                      }
-                      placeholder="-"
-                      className={inputCls}
-                    />
-                    <DatePickerInput
-                      value={item.manufacture_date ?? null}
-                      onChange={(v) =>
-                        onUpdate(
-                          item.barcode,
-                          batchUpdates(item, { manufacture_date: v }),
-                        )
-                      }
-                    />
-                    <DatePickerInput
-                      value={item.expiration_date ?? null}
-                      onChange={(v) =>
-                        onUpdate(
-                          item.barcode,
-                          batchUpdates(item, { expiration_date: v }),
-                        )
-                      }
-                    />
+                  {/* Sub-data row — each cell owns its padding; inputs have Figma-exact widths */}
+                  <div className="grid grid-cols-4 border-b border-border-200 bg-background-600">
+                    {/* Nro de Lote — 246px input (measured from Figma) */}
+                    <div className="p-3">
+                      <input
+                        type="text"
+                        value={item.lot_number ?? ""}
+                        onChange={(e) =>
+                          onUpdate(
+                            item.barcode,
+                            batchUpdates(item, {
+                              lot_number: e.target.value || null,
+                            }),
+                          )
+                        }
+                        placeholder="-"
+                        className={cn(inputCls, "w-[246px]")}
+                      />
+                    </div>
+                    {/* EAN-13 — read-only text, value comes from the barcode scan */}
+                    <div className="flex items-center p-3">
+                      <span className="body-md-regular text-text-500">
+                        {item.batch_barcode ?? ""}
+                      </span>
+                    </div>
+                    {/* Fecha de Elaboración — 161px date picker (measured from Figma) */}
+                    <div className="p-3">
+                      <DatePickerInput
+                        value={item.manufacture_date ?? null}
+                        onChange={(v) =>
+                          onUpdate(
+                            item.barcode,
+                            batchUpdates(item, { manufacture_date: v }),
+                          )
+                        }
+                        className="w-[161px]"
+                      />
+                    </div>
+                    {/* Fecha de Vencimiento — 161px date picker (measured from Figma) */}
+                    <div className="p-3">
+                      <DatePickerInput
+                        value={item.expiration_date ?? null}
+                        onChange={(v) =>
+                          onUpdate(
+                            item.barcode,
+                            batchUpdates(item, { expiration_date: v }),
+                          )
+                        }
+                        className="w-[161px]"
+                      />
+                    </div>
                   </div>
                 </>
               )}
@@ -491,42 +526,47 @@ export function ProductDetailsTable({
 
       {/* Pagination */}
       {pageCount > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-1 p-2">
           <button
             type="button"
             onClick={() => onPageChange(Math.max(0, pageIndex - 1))}
             disabled={pageIndex === 0}
-            className="rounded px-2 py-1 body-sm-regular text-text-400 hover:text-text-500 disabled:opacity-50"
+            className="text-text-500 disabled:opacity-30"
           >
-            ‹
+            <ChevronLeftIcon className="size-[22px]" />
           </button>
-          {Array.from({ length: pageCount }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onPageChange(i)}
-              className={cn(
-                "size-7 rounded-md body-sm-semibold",
-                i === pageIndex
-                  ? "bg-accent text-white"
-                  : "text-text-400 hover:bg-background-300",
-              )}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <span className="body-sm-regular text-text-400">...</span>
+          {getPageItems(pageIndex, pageCount).map((page, i) =>
+            page === "ellipsis" ? (
+              <span
+                key={`ellipsis-${i}`}
+                className="flex h-[38px] w-8 items-center justify-center body-md-medium text-text-400"
+              >
+                ...
+              </span>
+            ) : (
+              <button
+                key={page}
+                type="button"
+                onClick={() => onPageChange(page)}
+                className={cn(
+                  "flex h-[38px] items-center justify-center rounded-[4px]",
+                  page === pageIndex
+                    ? "w-[38px] bg-accent/15 body-md-semibold text-accent"
+                    : "w-8 body-md-medium text-text-400 hover:bg-background-300",
+                )}
+              >
+                {page + 1}
+              </button>
+            ),
+          )}
           <button
             type="button"
             onClick={() => onPageChange(Math.min(pageCount - 1, pageIndex + 1))}
             disabled={pageIndex === pageCount - 1}
-            className="rounded px-2 py-1 body-sm-regular text-text-400 hover:text-text-500 disabled:opacity-50"
+            className="text-text-500 disabled:opacity-30"
           >
-            ›
+            <ChevronRightIcon className="size-[22px]" />
           </button>
-          <span className="body-sm-regular text-text-400">
-            de {totalCount} productos
-          </span>
         </div>
       )}
     </div>

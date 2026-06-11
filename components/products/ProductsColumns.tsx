@@ -98,7 +98,7 @@ export function buildColumns(
             <Image
               src={url}
               alt="Producto"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
               height={60}
               width={60}
             />

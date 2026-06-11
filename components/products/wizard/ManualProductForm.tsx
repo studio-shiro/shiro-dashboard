@@ -390,7 +390,7 @@ export function ManualProductForm({
                           alt="Preview"
                           width={70}
                           height={70}
-                          className="size-full object-cover"
+                          className="size-full object-contain"
                         />
                         <div className="absolute inset-0 flex items-center justify-center rounded-md bg-black/30 opacity-0 transition-opacity group-hover:opacity-100">
                           <ArrowUpTrayIcon className="size-4 text-white" />

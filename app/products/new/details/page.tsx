@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFeedbackBanner } from "@/hooks/use-feedback-banner";
 import { useRouter } from "next/navigation";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { createClient } from "@/lib/supabase/client";
@@ -14,7 +15,6 @@ import { ProductDetailsTable } from "@/components/products/wizard/ProductDetails
 import { ManualProductForm } from "@/components/products/wizard/ManualProductForm";
 import { AddedProductsPanel } from "@/components/products/wizard/AddedProductsPanel";
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
-import type { FeedbackBannerState } from "@/components/shared/FeedbackBanner";
 import { DEFAULT_COLUMN_VISIBILITY } from "@/components/products/ProductsColumns";
 import { getProductColumnsAction } from "@/actions/product-columns";
 
@@ -33,13 +33,12 @@ export default function DetailsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [editTarget, setEditTarget] = useState<WizardProduct | null>(null);
-  const [banner, setBanner] = useState<FeedbackBannerState>(null);
+  const { banner, showBanner, closeBanner } = useFeedbackBanner();
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
   const [isUploading, setIsUploading] = useState(false);
   const pendingFiles = useRef<Map<string, File>>(new Map());
-  const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Guard
   useEffect(() => {
@@ -57,18 +56,6 @@ export default function DetailsPage() {
     void getProductColumnsAction().then(setColumnVisibility);
   }, []);
 
-  // Cleanup banner timer on unmount
-  useEffect(() => {
-    return () => {
-      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
-    };
-  }, []);
-
-  function showBanner(b: NonNullable<FeedbackBannerState>) {
-    if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
-    setBanner(b);
-    bannerTimerRef.current = setTimeout(() => setBanner(null), 2000);
-  }
 
   const pageCount = Math.ceil(scannedItems.length / PAGE_SIZE);
   const pageItems = scannedItems.slice(
@@ -113,10 +100,7 @@ export default function DetailsPage() {
       // If we were editing this item, cancel edit
       if (editTarget?.barcode === deleteTarget.barcode) setEditTarget(null);
       setDeleteTarget(null);
-      showBanner({
-        type: "success",
-        message: "Producto eliminado correctamente.",
-      });
+      showBanner({ type: "success", message: "Producto eliminado correctamente." }, 3000);
 
       // Scan/excel: fix pagination
       if (method !== "manual") {
@@ -126,10 +110,7 @@ export default function DetailsPage() {
       }
     } catch {
       setDeleteTarget(null);
-      showBanner({
-        type: "error",
-        message: "El producto no se pudo eliminar.",
-      });
+      showBanner({ type: "error", message: "El producto no se pudo eliminar." });
     }
   }
 
@@ -151,10 +132,7 @@ export default function DetailsPage() {
         onAdd={(product) => addItem(product)}
         onUpdate={(barcode, updates) => {
           updateItem(barcode, updates);
-          showBanner({
-            type: "success",
-            message: "Producto actualizado correctamente.",
-          });
+          showBanner({ type: "success", message: "Producto actualizado correctamente." }, 3000);
         }}
         onCancelEdit={() => setEditTarget(null)}
         onFilePicked={handleFilePicked}
@@ -204,7 +182,7 @@ export default function DetailsPage() {
         )}
 
         {banner && (
-          <FeedbackBanner banner={banner} onClose={() => setBanner(null)} />
+          <FeedbackBanner banner={banner} onClose={closeBanner} />
         )}
 
         <WizardProgressBar steps={["complete", "current"]} />
@@ -231,8 +209,8 @@ export default function DetailsPage() {
   // ── Scan / Excel layout ────────────────────────────────────────
   return (
     <div className="flex flex-1 flex-col gap-2.5">
-      {/* Content */}
-      <div className="flex flex-1 flex-col gap-4 overflow-hidden">
+      {/* Content — 24px heading→table gap (matches Figma) */}
+      <div className="flex flex-1 flex-col gap-6 overflow-hidden">
         <div className="flex items-end justify-between pt-4">
           <div className="flex flex-col gap-1">
             <h1 className="heading-xl text-text-500">
@@ -243,20 +221,10 @@ export default function DetailsPage() {
               tu inventario.
             </p>
           </div>
-          {method === "scan" && (
-            <button
-              type="button"
-              onClick={addEmptyItem}
-              className="flex shrink-0 items-center gap-2 rounded-md border border-accent bg-background-300 px-4 py-2 body-sm-semibold text-accent shadow-sm hover:bg-accent/5"
-            >
-              <PlusIcon className="size-5" />
-              Agregar Producto
-            </button>
-          )}
         </div>
 
         {banner && (
-          <FeedbackBanner banner={banner} onClose={() => setBanner(null)} />
+          <FeedbackBanner banner={banner} onClose={closeBanner} />
         )}
 
         <ProductDetailsTable
@@ -267,7 +235,6 @@ export default function DetailsPage() {
           pageIndex={pageIndex}
           pageCount={pageCount}
           onPageChange={setPageIndex}
-          totalCount={scannedItems.length}
           columnVisibility={columnVisibility}
         />
       </div>

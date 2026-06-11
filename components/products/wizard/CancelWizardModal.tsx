@@ -1,3 +1,4 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import Button from "@/components/shared/Button";
 
 interface CancelWizardModalProps {
@@ -11,7 +12,14 @@ export function CancelWizardModal({
 }: CancelWizardModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="flex w-full max-w-lg flex-col gap-5 rounded-xl bg-white p-7 shadow-xl">
+      <div className="relative flex w-full max-w-[500px] flex-col gap-5 rounded-xl bg-white p-9 shadow-xl">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-3 top-3 text-text-400 transition-colors hover:text-text-500"
+        >
+          <XMarkIcon className="size-6" />
+        </button>
         <div className="flex flex-col gap-2">
           <p className="heading-lg text-text-500">
             ¿Cancelar la carga de productos?

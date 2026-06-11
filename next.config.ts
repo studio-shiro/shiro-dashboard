@@ -4,13 +4,19 @@ import path from "path";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
+      // Supabase Storage
       {
         protocol: "https",
         hostname: "eyipyttwyaongflydfbt.supabase.co",
       },
+      // External product catalog APIs — domains vary per product/supplier
       {
         protocol: "https",
-        hostname: "**.mlstatic.com",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },

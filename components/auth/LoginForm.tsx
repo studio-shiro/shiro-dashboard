@@ -59,7 +59,10 @@ export default function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-zinc-700 mb-1"
+          >
             Email
           </label>
           <input
@@ -68,14 +71,17 @@ export default function LoginForm() {
             type="email"
             required
             autoComplete="email"
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+            className="w-full rounded-md border border-border-400 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-zinc-700"
+            >
               Password
             </label>
             <Link
@@ -91,7 +97,7 @@ export default function LoginForm() {
             type="password"
             required
             autoComplete="current-password"
-            className="w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
+            className="w-full rounded-md border border-border-400 px-3 py-2 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
             placeholder="••••••••"
           />
         </div>
