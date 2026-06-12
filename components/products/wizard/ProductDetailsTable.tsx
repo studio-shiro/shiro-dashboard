@@ -13,6 +13,7 @@ import type { WizardProduct } from "@/store/productWizard";
 import { cn } from "@/lib/utils";
 import { FIXED_COLUMN_IDS } from "@/components/products/ProductsColumns";
 import { DatePickerInput } from "@/components/products/wizard/DatePickerInput";
+import { FormInput } from "@/components/shared/FormInput";
 
 const COL_WIDTHS: Record<string, string> = {
   product: "2fr",
@@ -50,8 +51,6 @@ const COL_HEADERS: Record<string, string> = {
   _delete: "",
 };
 
-export const inputCls =
-  "w-full h-[30px] rounded-[6px] border border-solid border-border-400 bg-white px-2 body-md-regular text-text-500 placeholder:text-text-500 shadow-sm focus:border-accent focus:outline-none";
 
 function getPageItems(current: number, count: number): (number | "ellipsis")[] {
   if (count <= 4) return Array.from({ length: count }, (_, i) => i);
@@ -207,18 +206,14 @@ export function ProductDetailsTable({
                         key="product"
                         className="flex items-center gap-2 p-3"
                       >
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.name}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, { name: e.target.value })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { name: v })
                           }
                           placeholder="Nombre del producto"
-                          className={cn(
-                            inputCls,
-                            "px-4",
-                            !item.name && "border-danger-300",
-                          )}
+                          error={!item.name}
                         />
                         {batchesEnabled && (
                           <button
@@ -241,16 +236,13 @@ export function ProductDetailsTable({
                   if (col === "sku")
                     return (
                       <div key="sku" className="p-3">
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.reference}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, {
-                              reference: e.target.value,
-                            })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { reference: v })
                           }
                           placeholder="-"
-                          className={inputCls}
                         />
                       </div>
                     );
@@ -321,16 +313,13 @@ export function ProductDetailsTable({
                   if (col === "brand")
                     return (
                       <div key="brand" className="p-3">
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.brand_name ?? ""}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, {
-                              brand_name: e.target.value,
-                            })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { brand_name: v })
                           }
                           placeholder="-"
-                          className={inputCls}
                         />
                       </div>
                     );
@@ -339,16 +328,13 @@ export function ProductDetailsTable({
                   if (col === "category")
                     return (
                       <div key="category" className="p-3">
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.category_name ?? ""}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, {
-                              category_name: e.target.value,
-                            })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { category_name: v })
                           }
                           placeholder="-"
-                          className={inputCls}
                         />
                       </div>
                     );
@@ -357,24 +343,22 @@ export function ProductDetailsTable({
                   if (col === "cost")
                     return (
                       <div key="cost" className="p-3">
-                        <div className="flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white pl-1 pr-4 shadow-sm focus-within:border-accent">
-                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.cost_price ?? ""}
-                            onChange={(e) =>
-                              onUpdate(item.barcode, {
-                                cost_price: e.target.value
-                                  ? Number(e.target.value)
-                                  : null,
-                              })
-                            }
-                            placeholder="-"
-                            className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none"
-                          />
-                        </div>
+                        <FormInput
+                          variant="table"
+                          type="number"
+                          value={item.cost_price ?? ""}
+                          onChange={(v) =>
+                            onUpdate(item.barcode, {
+                              cost_price: v ? Number(v) : null,
+                            })
+                          }
+                          placeholder="-"
+                          min={0}
+                          step="0.01"
+                          adornStart={
+                            <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
+                          }
+                        />
                       </div>
                     );
 
@@ -382,24 +366,22 @@ export function ProductDetailsTable({
                   if (col === "price")
                     return (
                       <div key="price" className="p-3">
-                        <div className="flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white pl-1 pr-4 shadow-sm focus-within:border-accent">
-                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.price ?? ""}
-                            onChange={(e) =>
-                              onUpdate(item.barcode, {
-                                price: e.target.value
-                                  ? Number(e.target.value)
-                                  : null,
-                              })
-                            }
-                            placeholder="-"
-                            className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none"
-                          />
-                        </div>
+                        <FormInput
+                          variant="table"
+                          type="number"
+                          value={item.price ?? ""}
+                          onChange={(v) =>
+                            onUpdate(item.barcode, {
+                              price: v ? Number(v) : null,
+                            })
+                          }
+                          placeholder="-"
+                          min={0}
+                          step="0.01"
+                          adornStart={
+                            <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
+                          }
+                        />
                       </div>
                     );
 
@@ -407,17 +389,17 @@ export function ProductDetailsTable({
                   if (col === "stock")
                     return (
                       <div key="stock" className="p-3">
-                        <input
+                        <FormInput
+                          variant="table"
                           type="number"
-                          min="0"
-                          step="1"
                           value={item.stock_quantity}
-                          onChange={(e) =>
+                          onChange={(v) =>
                             onUpdate(item.barcode, {
-                              stock_quantity: Number(e.target.value) || 0,
+                              stock_quantity: Number(v) || 0,
                             })
                           }
-                          className={cn(inputCls, "px-4")}
+                          min={0}
+                          step={1}
                         />
                       </div>
                     );
@@ -469,19 +451,17 @@ export function ProductDetailsTable({
                   <div className="grid grid-cols-4 border-b border-border-200 bg-background-600">
                     {/* Nro de Lote — 246px input (measured from Figma) */}
                     <div className="p-3">
-                      <input
-                        type="text"
+                      <FormInput
+                        variant="table"
                         value={item.lot_number ?? ""}
-                        onChange={(e) =>
+                        onChange={(v) =>
                           onUpdate(
                             item.barcode,
-                            batchUpdates(item, {
-                              lot_number: e.target.value || null,
-                            }),
+                            batchUpdates(item, { lot_number: v || null }),
                           )
                         }
                         placeholder="-"
-                        className={cn(inputCls, "w-[246px]")}
+                        className="w-[246px]"
                       />
                     </div>
                     {/* EAN-13 — read-only text, value comes from the barcode scan */}

@@ -20,10 +20,8 @@ import type { WizardProduct } from "@/store/productWizard";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/shared/Pagination";
 import { DatePickerInput } from "@/components/products/wizard/DatePickerInput";
-import {
-  inputCls,
-  batchUpdates,
-} from "@/components/products/wizard/ProductDetailsTable";
+import { batchUpdates } from "@/components/products/wizard/ProductDetailsTable";
+import { FormInput } from "@/components/shared/FormInput";
 import Image from "next/image";
 
 interface AddedProductsPanelProps {
@@ -506,43 +504,35 @@ export function AddedProductsPanel({
                               EAN-13 is editable here: it's manually entered. */}
                         <div className="grid grid-cols-4 border-t border-border-200 bg-background-600">
                           <div className="p-3">
-                            <input
-                              type="text"
+                            <FormInput
+                              variant="table"
                               value={item.lot_number ?? ""}
                               disabled={isRowEditing}
-                              onChange={(e) =>
+                              onChange={(v) =>
                                 onUpdate(
                                   item.barcode,
                                   batchUpdates(item, {
-                                    lot_number: e.target.value || null,
+                                    lot_number: v || null,
                                   }),
                                 )
                               }
                               placeholder="-"
-                              className={cn(
-                                inputCls,
-                                isRowEditing && "opacity-50",
-                              )}
                             />
                           </div>
                           <div className="p-3">
-                            <input
-                              type="text"
+                            <FormInput
+                              variant="table"
                               value={item.batch_barcode ?? ""}
                               disabled={isRowEditing}
-                              onChange={(e) =>
+                              onChange={(v) =>
                                 onUpdate(
                                   item.barcode,
                                   batchUpdates(item, {
-                                    batch_barcode: e.target.value || null,
+                                    batch_barcode: v || null,
                                   }),
                                 )
                               }
                               placeholder="-"
-                              className={cn(
-                                inputCls,
-                                isRowEditing && "opacity-50",
-                              )}
                             />
                           </div>
                           <div

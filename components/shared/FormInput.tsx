@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface FormInputProps {
-  label: string;
+  label?: string;
   required?: boolean;
   type?: "text" | "number";
   value: string | number;
@@ -17,6 +17,7 @@ interface FormInputProps {
   disabled?: boolean;
   error?: boolean;
   className?: string;
+  variant?: "form" | "table";
 }
 
 export function FormInput({
@@ -33,8 +34,43 @@ export function FormInput({
   disabled,
   error,
   className,
+  variant = "form",
 }: FormInputProps) {
   const [focused, setFocused] = useState(false);
+
+  if (variant === "table") {
+    return (
+      <div
+        className={cn(
+          "flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid shadow-sm",
+          adornStart ? "pl-1 pr-4" : "px-2",
+          error ? "border-danger-300" : "border-border-400",
+          disabled
+            ? "cursor-not-allowed bg-[#f8f8f8] opacity-50"
+            : "bg-white focus-within:border-accent",
+          className,
+        )}
+      >
+        {adornStart && (
+          <span className="shrink-0 text-text-400">{adornStart}</span>
+        )}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          min={min}
+          step={step}
+          placeholder={placeholder}
+          className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none disabled:cursor-not-allowed"
+        />
+        {adornEnd && (
+          <span className="ml-2 shrink-0 text-text-400">{adornEnd}</span>
+        )}
+      </div>
+    );
+  }
+
   const filled = value !== "" && value !== null && value !== undefined;
 
   return (
