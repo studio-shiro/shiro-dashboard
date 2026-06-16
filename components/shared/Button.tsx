@@ -60,8 +60,13 @@ const sizeStyles: Record<NonNullable<SharedProps["size"]>, string> = {
 };
 
 export default function Button(props: ButtonProps) {
-  const { children, variant = "primary", size = "md", icon: Icon, className } =
-    props;
+  const {
+    children,
+    variant = "primary",
+    size = "md",
+    icon: Icon,
+    className,
+  } = props;
 
   const classes = cn(
     "inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed",

@@ -232,11 +232,11 @@ export default function DetailsPage() {
   // ── Scan / Excel layout ────────────────────────────────────────
   return (
     <div className="flex flex-1 flex-col gap-2.5">
-      {/* Content — 24px heading→table gap (matches Figma) */}
-      <div className="flex flex-1 flex-col gap-6 overflow-hidden">
-        <div className="flex items-end justify-between pt-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="heading-xl text-text-500">
+      {/* Content — 24px heading→table gap */}
+      <div className="flex flex-1 flex-col items-center gap-6 overflow-hidden">
+        <div className="flex w-full max-w-[1600px] text-left items-start justify-start pt-4">
+          <div className="flex w-full flex-col gap-1">
+            <h1 className="heading-xl w-full text-text-500">
               Edita tu Producto Nuevo
             </h1>
             <p className="body-md-regular text-text-400">
@@ -257,6 +257,7 @@ export default function DetailsPage() {
           pageCount={pageCount}
           onPageChange={setPageIndex}
           columnVisibility={columnVisibility}
+          allowBarcodeEdit={method === "excel"}
         />
       </div>
 

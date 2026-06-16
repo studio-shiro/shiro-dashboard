@@ -32,7 +32,7 @@ const TOOLTIP_TEXT: Record<ScanTooltipVariant, string> = {
   danger:
     "Código inválido. Revisá los números ingresados e intentá nuevamente.",
   warning:
-    'Para continuar, completá el código del producto y presioná “Enter” o eliminá este registro.',
+    "Para continuar, completá el código del producto y presioná “Enter” o eliminá este registro.",
   duplicate: "El producto ya fue ingresado.",
 };
 
@@ -91,11 +91,10 @@ export function BarcodeInput({
   useImperativeHandle(ref, () => ({ clear: resetDigits }), [resetDigits]);
 
   function isComplete(currentDigits: string[]) {
-    return (
-      Array.from({ length: format.length }, (_, i) => currentDigits[i]).every(
-        Boolean,
-      )
-    );
+    return Array.from(
+      { length: format.length },
+      (_, i) => currentDigits[i],
+    ).every(Boolean);
   }
 
   /** Restart the "press Enter" reminder when the code is fully typed. */

@@ -406,6 +406,41 @@
 }
 
 /* ============================================================
+   SCROLLBAR — themed thin scrollbar for scrollable lists
+   Source: Figma — pill track (background-600) + pill thumb (text-300)
+============================================================ */
+.scrollbar-themed {
+  /* scrollbar-width: thin; */
+  scrollbar-color: var(--color-text-300) var(--color-background-600);
+}
+.scrollbar-themed::-webkit-scrollbar {
+  width: 12px;
+}
+.scrollbar-themed::-webkit-scrollbar-track {
+  background: var(--color-background-600);
+  border-radius: 999px;
+}
+.scrollbar-themed::-webkit-scrollbar-thumb {
+  background: var(--color-text-300);
+  border-radius: 999px;
+}
+.scrollbar-themed::-webkit-scrollbar-thumb:hover,
+.scrollbar-themed::-webkit-scrollbar-thumb:active {
+  background: var(--color-text-300) !important;
+}
+.scrollbar-themed::-webkit-scrollbar-button,
+.scrollbar-themed::-webkit-scrollbar-button:single-button,
+.scrollbar-themed::-webkit-scrollbar-button:vertical:start,
+.scrollbar-themed::-webkit-scrollbar-button:vertical:end,
+.scrollbar-themed::-webkit-scrollbar-button:horizontal:start,
+.scrollbar-themed::-webkit-scrollbar-button:horizontal:end {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* ============================================================
    ANIMATIONS
 ============================================================ */
 

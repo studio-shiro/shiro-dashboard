@@ -22,7 +22,6 @@ import { Pagination } from "@/components/shared/Pagination";
 import { DatePickerInput } from "@/components/products/wizard/DatePickerInput";
 import { batchUpdates } from "@/components/products/wizard/ProductDetailsTable";
 import { FormInput } from "@/components/shared/FormInput";
-import Image from "next/image";
 
 interface AddedProductsPanelProps {
   items: WizardProduct[];

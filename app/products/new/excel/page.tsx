@@ -22,12 +22,12 @@ export default function ExcelDisclaimerPage() {
     <div className="flex flex-1 flex-col gap-2.5">
       {/* Content */}
       <div className="flex flex-1 items-center justify-center">
-        <div className="w-full max-w-[600px] rounded-2xl bg-info-200 px-9 py-12 shadow-lg">
-          <div className="flex flex-col items-center gap-8 text-center">
+        <div className="w-[640px] rounded-2xl bg-info-200 px-9 py-12 shadow-lg">
+          <div className="max-w-xl flex flex-col items-center gap-[30px] text-center">
             <p className="font-body text-xl font-bold uppercase tracking-wide text-text-500">
               Importante
             </p>
-            <div className="flex flex-col gap-5 body-lg-regular text-base leading-snug text-text-500">
+            <div className="flex flex-col gap-5 body-lg-regular leading-snug text-text-500">
               <p>
                 Antes de importar tu archivo, verificá que los nombres de las
                 columnas de tu planilla{" "}

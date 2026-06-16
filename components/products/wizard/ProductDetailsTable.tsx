@@ -51,10 +51,15 @@ const COL_HEADERS: Record<string, string> = {
   _delete: "",
 };
 
-
 function getPageItems(current: number, count: number): (number | "ellipsis")[] {
   if (count <= 4) return Array.from({ length: count }, (_, i) => i);
-  const pages = new Set<number>([0, count - 1, current - 1, current, current + 1]);
+  const pages = new Set<number>([
+    0,
+    count - 1,
+    current - 1,
+    current,
+    current + 1,
+  ]);
   if (current <= 2) {
     pages.add(1);
     pages.add(2);
@@ -100,6 +105,7 @@ interface ProductDetailsTableProps {
   pageCount: number;
   onPageChange: (page: number) => void;
   columnVisibility: Record<string, boolean>;
+  allowBarcodeEdit?: boolean;
 }
 
 export function ProductDetailsTable({
@@ -111,6 +117,7 @@ export function ProductDetailsTable({
   pageCount,
   onPageChange,
   columnVisibility,
+  allowBarcodeEdit = false,
 }: ProductDetailsTableProps) {
   // Per Figma: the first product always starts expanded so the user discovers
   // the batch info; the rest stay collapsed until opened manually.
@@ -159,7 +166,7 @@ export function ProductDetailsTable({
   const headerCols = visibleCols.filter((col) => col !== "_delete");
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex w-full max-w-[1600px] flex-col gap-3">
       {/* Table */}
       <div className="overflow-hidden rounded-[10px] bg-white shadow-md">
         {/* Header — the last header (Stock) spans through the delete column,
@@ -193,7 +200,7 @@ export function ProductDetailsTable({
 
           return (
             <div key={item.barcode}>
-              {/* Main data row — no separator between data rows (matches Figma) */}
+              {/* Main data row — no separator between data rows */}
               <div
                 className="grid items-center"
                 style={{ gridTemplateColumns: gridTemplate }}
@@ -209,9 +216,7 @@ export function ProductDetailsTable({
                         <FormInput
                           variant="table"
                           value={item.name}
-                          onChange={(v) =>
-                            onUpdate(item.barcode, { name: v })
-                          }
+                          onChange={(v) => onUpdate(item.barcode, { name: v })}
                           placeholder="Nombre del producto"
                           error={!item.name}
                         />
@@ -464,11 +469,25 @@ export function ProductDetailsTable({
                         className="w-[246px]"
                       />
                     </div>
-                    {/* EAN-13 — read-only text, value comes from the barcode scan */}
-                    <div className="flex items-center p-3">
-                      <span className="body-md-regular text-text-500">
-                        {item.batch_barcode ?? ""}
-                      </span>
+                    {/* EAN-13 — read-only when scanned; editable when sourced from Excel */}
+                    <div className="p-3">
+                      {allowBarcodeEdit ? (
+                        <FormInput
+                          variant="table"
+                          value={item.batch_barcode ?? ""}
+                          onChange={(v) =>
+                            onUpdate(
+                              item.barcode,
+                              batchUpdates(item, { batch_barcode: v || null }),
+                            )
+                          }
+                          placeholder="-"
+                        />
+                      ) : (
+                        <span className="body-md-regular text-text-500">
+                          {item.batch_barcode ?? ""}
+                        </span>
+                      )}
                     </div>
                     {/* Fecha de Elaboración — 161px date picker (measured from Figma) */}
                     <div className="p-3">
