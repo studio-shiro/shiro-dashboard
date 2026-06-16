@@ -19,13 +19,14 @@ import {
   type ScanTooltipVariant,
 } from "@/components/products/wizard/ScanTooltip";
 
+// Width/gap per Figma spec — each row sums to ~460px (the fixed column
+// width in app/products/new/scan/page.tsx) regardless of digit count.
 const FORMATS = [
-  { label: "EAN-8", length: 8, exact: true },
-  { label: "EAN-13", length: 13, exact: true },
-  { label: "CODE-128", length: 20, exact: false },
+  { label: "EAN-13", length: 13, cellWidth: 28, gap: 8 },
+  { label: "ITF-14", length: 14, cellWidth: 28, gap: 5.3 },
+  { label: "EAN-8", length: 8, cellWidth: 46, gap: 13.2 },
+  { label: "UPC", length: 12, cellWidth: 32, gap: 6.9 },
 ];
-
-const MIN_CODE_LENGTH = 4;
 
 const TOOLTIP_TEXT: Record<ScanTooltipVariant, string> = {
   info: "Presioná Enter para ingresar el producto",
@@ -58,7 +59,7 @@ export function BarcodeInput({
   onDigitsChange,
   ref,
 }: BarcodeInputProps) {
-  const [formatIndex, setFormatIndex] = useState(1); // EAN-13 default
+  const [formatIndex, setFormatIndex] = useState(0); // EAN-13 default
   const [digits, setDigits] = useState<string[]>([]);
   const [internalTooltip, setInternalTooltip] = useState<
     "info" | "danger" | null
@@ -115,10 +116,9 @@ export function BarcodeInput({
       const code = currentDigits.slice(0, format.length).join("");
       if (code.length === 0) return;
 
-      const validLength = format.exact
-        ? code.length === format.length &&
-          currentDigits.slice(0, format.length).every(Boolean)
-        : code.length >= MIN_CODE_LENGTH;
+      const validLength =
+        code.length === format.length &&
+        currentDigits.slice(0, format.length).every(Boolean);
 
       if (!validLength) {
         setInternalTooltip("danger");
@@ -180,6 +180,24 @@ export function BarcodeInput({
 
   const activeTooltip = tooltip ?? internalTooltip;
 
+  const borderClass =
+    activeTooltip === "danger"
+      ? "border-danger-300"
+      : activeTooltip === "warning"
+        ? "border-warning-300"
+        : "border-border-400";
+
+  // No focus styling while an error/warning is active — the red/orange
+  // border must stay put instead of being replaced by the accent focus ring
+  // (outline-none always applies so the browser's default outline never shows).
+  const focusClass =
+    activeTooltip === "danger" || activeTooltip === "warning"
+      ? "focus:outline-none"
+      : "focus:border-accent focus:outline-none";
+
+  const tooltipAlignClass =
+    activeTooltip === "duplicate" ? "top-1/2 -translate-y-1/2" : "top-0";
+
   return (
     <div className="flex w-full flex-col gap-3">
       {/* Format selector */}
@@ -204,8 +222,12 @@ export function BarcodeInput({
         </div>
       </div>
 
-      {/* Digit cells — flex-1 so all cells share the fixed 390px container equally */}
-      <div className="relative flex gap-1.5" onPaste={handlePaste}>
+      {/* Digit cells — width/gap come from the active format (Figma spec) */}
+      <div
+        className="relative flex"
+        style={{ gap: `${format.gap}px` }}
+        onPaste={handlePaste}
+      >
         {cells.map((_, i) => (
           <input
             key={`${format.label}-${i}`}
@@ -219,16 +241,23 @@ export function BarcodeInput({
             disabled={disabled}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
+            style={{ width: `${format.cellWidth}px` }}
             className={cn(
-              "h-11 min-w-0 flex-1 rounded-md border border-border-400 bg-white text-center body-md-semibold text-text-500",
-              "focus:border-accent focus:outline-none",
+              "h-11 shrink-0 rounded-md border bg-white text-center body-md-semibold text-text-500",
+              borderClass,
+              focusClass,
               "disabled:opacity-50",
             )}
           />
         ))}
 
         {activeTooltip && (
-          <div className="absolute left-full top-1/2 z-10 ml-2.5 -translate-y-1/2">
+          <div
+            className={cn(
+              "absolute left-full z-10 ml-[19px]",
+              tooltipAlignClass,
+            )}
+          >
             <ScanTooltip variant={activeTooltip}>
               {TOOLTIP_TEXT[activeTooltip]}
             </ScanTooltip>

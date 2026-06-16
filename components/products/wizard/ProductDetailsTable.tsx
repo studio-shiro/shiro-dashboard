@@ -101,6 +101,8 @@ interface ProductDetailsTableProps {
   onUpdate: (barcode: string, updates: Partial<WizardProduct>) => void;
   onDelete: (item: WizardProduct) => void;
   onFilePicked: (barcode: string, file: File) => void;
+  expandedBarcodes: Set<string>;
+  onToggleExpand: (barcode: string) => void;
   pageIndex: number;
   pageCount: number;
   onPageChange: (page: number) => void;
@@ -113,17 +115,14 @@ export function ProductDetailsTable({
   onUpdate,
   onDelete,
   onFilePicked,
+  expandedBarcodes,
+  onToggleExpand,
   pageIndex,
   pageCount,
   onPageChange,
   columnVisibility,
   allowBarcodeEdit = false,
 }: ProductDetailsTableProps) {
-  // Per Figma: the first product always starts expanded so the user discovers
-  // the batch info; the rest stay collapsed until opened manually.
-  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
-    () => new Set(items[0] ? [items[0].barcode] : []),
-  );
   const [localPreviews, setLocalPreviews] = useState<Map<string, string>>(
     new Map(),
   );
@@ -146,15 +145,6 @@ export function ProductDetailsTable({
   });
 
   const gridTemplate = visibleCols.map((c) => COL_WIDTHS[c]).join(" ");
-
-  function toggleExpand(barcode: string) {
-    setExpandedBarcodes((prev) => {
-      const next = new Set(prev);
-      if (next.has(barcode)) next.delete(barcode);
-      else next.add(barcode);
-      return next;
-    });
-  }
 
   function handleImageChange(barcode: string, file: File) {
     const localUrl = URL.createObjectURL(file);
@@ -223,7 +213,7 @@ export function ProductDetailsTable({
                         {batchesEnabled && (
                           <button
                             type="button"
-                            onClick={() => toggleExpand(item.barcode)}
+                            onClick={() => onToggleExpand(item.barcode)}
                             className="shrink-0 text-text-500"
                           >
                             <ChevronRightIcon
@@ -351,13 +341,14 @@ export function ProductDetailsTable({
                         <FormInput
                           variant="table"
                           type="number"
+                          currency
                           value={item.cost_price ?? ""}
                           onChange={(v) =>
                             onUpdate(item.barcode, {
                               cost_price: v ? Number(v) : null,
                             })
                           }
-                          placeholder="-"
+                          placeholder="0"
                           min={0}
                           step="0.01"
                           adornStart={
@@ -374,13 +365,14 @@ export function ProductDetailsTable({
                         <FormInput
                           variant="table"
                           type="number"
+                          currency
                           value={item.price ?? ""}
                           onChange={(v) =>
                             onUpdate(item.barcode, {
                               price: v ? Number(v) : null,
                             })
                           }
-                          placeholder="-"
+                          placeholder="0"
                           min={0}
                           step="0.01"
                           adornStart={

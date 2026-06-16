@@ -17,8 +17,9 @@ import { AddedProductsPanel } from "@/components/products/wizard/AddedProductsPa
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import { DEFAULT_COLUMN_VISIBILITY } from "@/components/products/ProductsColumns";
 import { getProductColumnsAction } from "@/actions/product-columns";
+import { paginateByCapacity } from "@/lib/wizard-pagination";
 
-const PAGE_SIZE = 5;
+const PAGE_CAPACITY = 5;
 
 export default function DetailsPage() {
   const router = useRouter();
@@ -33,6 +34,11 @@ export default function DetailsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [editTarget, setEditTarget] = useState<WizardProduct | null>(null);
+  // Per Figma: the first product always starts expanded so the user
+  // discovers the batch info; the rest stay collapsed until opened manually.
+  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
+    () => new Set(scannedItems[0] ? [scannedItems[0].barcode] : []),
+  );
   const { banner, showBanner, closeBanner } = useFeedbackBanner();
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
@@ -56,11 +62,28 @@ export default function DetailsPage() {
     void getProductColumnsAction().then(setColumnVisibility);
   }, []);
 
-  const pageCount = Math.ceil(scannedItems.length / PAGE_SIZE);
-  const pageItems = scannedItems.slice(
-    pageIndex * PAGE_SIZE,
-    pageIndex * PAGE_SIZE + PAGE_SIZE,
+  const pages = paginateByCapacity(
+    scannedItems,
+    expandedBarcodes,
+    PAGE_CAPACITY,
   );
+  const pageCount = pages.length;
+  const pageItems = pages[pageIndex] ?? [];
+
+  // Keeps pageIndex valid after anything that can shrink the page count —
+  // deleting an item or collapsing rows that previously forced a split.
+  useEffect(() => {
+    setPageIndex((prev) => Math.min(prev, Math.max(0, pageCount - 1)));
+  }, [pageCount]);
+
+  function toggleExpand(barcode: string) {
+    setExpandedBarcodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(barcode)) next.delete(barcode);
+      else next.add(barcode);
+      return next;
+    });
+  }
 
   function handleFilePicked(barcode: string, file: File) {
     pendingFiles.current.set(barcode, file);
@@ -103,13 +126,6 @@ export default function DetailsPage() {
         { type: "success", message: "Producto eliminado correctamente." },
         3000,
       );
-
-      // Scan/excel: fix pagination
-      if (method !== "manual") {
-        const newCount = scannedItems.length - 1;
-        const maxPage = Math.ceil(newCount / PAGE_SIZE) - 1;
-        if (pageIndex > maxPage) setPageIndex(Math.max(0, maxPage));
-      }
     } catch {
       setDeleteTarget(null);
       showBanner({
@@ -253,6 +269,8 @@ export default function DetailsPage() {
           onUpdate={(barcode, updates) => updateItem(barcode, updates)}
           onDelete={handleDelete}
           onFilePicked={handleFilePicked}
+          expandedBarcodes={expandedBarcodes}
+          onToggleExpand={toggleExpand}
           pageIndex={pageIndex}
           pageCount={pageCount}
           onPageChange={setPageIndex}

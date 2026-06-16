@@ -209,6 +209,7 @@ function renderField(
         label={cfg.label}
         required={cfg.required}
         type="number"
+        currency={cfg.currency}
         min={cfg.min}
         step={cfg.step}
         adornStart={
