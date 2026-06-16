@@ -473,37 +473,35 @@ export function ManualProductForm({
 
       {/* ── Información del Lote ─────────────────────────────────────── */}
       {showBatches && (
-        <div className="flex flex-col gap-[14px]">
+        <div className="flex flex-col gap-5">
           <p className="body-md-semibold text-text-500">Información del Lote</p>
 
-          <div className="flex flex-col gap-5">
-            <div className="grid grid-cols-2 gap-5">
-              <FormInput
-                label="Número de Lote"
-                value={form.lot_number}
-                onChange={(v) => set("lot_number", v)}
-                placeholder="Ej: L-20230705A"
-              />
-              <FormInput
-                label="EAN-13"
-                value={form.batch_barcode}
-                onChange={(v) => set("batch_barcode", v)}
-                placeholder="7791234567890"
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-5">
+            <FormInput
+              label="Número de Lote"
+              value={form.lot_number}
+              onChange={(v) => set("lot_number", v)}
+              placeholder="Ej: L-20230705A"
+            />
+            <FormInput
+              label="EAN-13"
+              value={form.batch_barcode}
+              onChange={(v) => set("batch_barcode", v)}
+              placeholder="7791234567890"
+            />
+          </div>
 
-            <div className="grid grid-cols-2 gap-5">
-              <DateFormInput
-                label="Fecha de Elaboración"
-                value={form.manufacture_date}
-                onChange={(v) => set("manufacture_date", v)}
-              />
-              <DateFormInput
-                label="Fecha de Vencimiento"
-                value={form.expiration_date}
-                onChange={(v) => set("expiration_date", v)}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-5">
+            <DateFormInput
+              label="Fecha de Elaboración"
+              value={form.manufacture_date}
+              onChange={(v) => set("manufacture_date", v)}
+            />
+            <DateFormInput
+              label="Fecha de Vencimiento"
+              value={form.expiration_date}
+              onChange={(v) => set("expiration_date", v)}
+            />
           </div>
         </div>
       )}

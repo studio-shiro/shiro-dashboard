@@ -203,7 +203,7 @@ export function FormInput({
   return (
     <fieldset
       className={cn(
-        "w-full min-w-0 rounded-md border border-solid px-3 pb-2 transition-colors",
+        "relative h-[38px] w-full min-w-0 rounded-[6px] border border-solid transition-colors",
         disabled
           ? "cursor-not-allowed bg-[#f8f8f8]"
           : error
@@ -212,7 +212,7 @@ export function FormInput({
         error
           ? "border-danger-300"
           : focused
-            ? "border border-[rgba(255,156,122,0.5)]"
+            ? "border-[rgba(255,156,122,0.5)]"
             : filled
               ? "border-text-400"
               : "border-border-300",
@@ -228,7 +228,8 @@ export function FormInput({
         {label}
         {required && <span className="ml-px text-danger-300">*</span>}
       </legend>
-      <div className="flex items-center gap-2">
+      {/* Absolutely positioned so items-center has the full 38px to center within */}
+      <div className="absolute inset-0 flex items-center gap-2 px-3">
         {adornStart && (
           <span className="shrink-0 text-text-400">{adornStart}</span>
         )}
@@ -250,7 +251,7 @@ export function FormInput({
           step={step}
           placeholder={placeholder}
           className={cn(
-            "w-full bg-transparent text-base leading-5 text-text-500 placeholder:text-text-400 focus:outline-none",
+            "min-w-0 flex-1 bg-transparent text-base leading-5 text-text-500 placeholder:text-text-400 focus:outline-none",
             type === "number" && NO_SPINNER,
             disabled &&
               "cursor-not-allowed text-border-300 placeholder:text-border-300",

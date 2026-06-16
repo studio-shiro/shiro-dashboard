@@ -180,7 +180,7 @@ export default function DetailsPage() {
       <div className="flex flex-1 flex-col gap-2.5">
         {/* ── No products: centered single-column ── */}
         {!hasProducts && (
-          <div className="flex flex-1 flex-col items-center gap-5 overflow-y-auto pt-8">
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 overflow-y-auto">
             {/* Title is left-aligned to the form card edge (Figma) */}
             <div className="flex w-[481px] flex-col gap-1">
               <h1 className="heading-xl text-text-500">{pageHeading}</h1>
