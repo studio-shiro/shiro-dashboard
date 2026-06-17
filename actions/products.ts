@@ -161,9 +161,10 @@ export async function createProductsBulkAction(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const businessId: string = user.user_metadata.business_id;
-  let created = 0;
-  const errors: string[] = [];
+  try {
+    const businessId: string = user.user_metadata.business_id;
+    let created = 0;
+    const errors: string[] = [];
 
   // Pre-fetch all brands and categories so we can resolve names → IDs
   const [{ data: allBrands }, { data: allCategories }] = await Promise.all([
@@ -213,10 +214,10 @@ export async function createProductsBulkAction(
   for (const item of products) {
     // Resolve brand_id and category_id from names when IDs aren't already set
     const resolvedBrandId =
-      item.brand_id ??
+      item.brand_id ||
       (item.brand_name ? (brandMap.get(item.brand_name.toLowerCase()) ?? null) : null);
     const resolvedCategoryId =
-      item.category_id ??
+      item.category_id ||
       (item.category_name ? (categoryMap.get(item.category_name.toLowerCase()) ?? null) : null);
 
     const parsed = wizardProductSchema.safeParse({
@@ -234,6 +235,10 @@ export async function createProductsBulkAction(
     });
 
     if (!parsed.success) {
+      console.error(
+        `[createProductsBulkAction] Zod validation failed for "${item.name || item.barcode}":`,
+        parsed.error.issues,
+      );
       errors.push(`"${item.name || item.barcode}": datos inválidos.`);
       continue;
     }
@@ -255,21 +260,30 @@ export async function createProductsBulkAction(
       .single();
 
     if (productError || !newProduct) {
+      console.error(
+        `[createProductsBulkAction] DB insert failed for "${item.name || item.barcode}":`,
+        productError,
+      );
       errors.push(`"${item.name || item.barcode}": ${productError?.message ?? "error desconocido"}.`);
       continue;
     }
 
     if (stock_quantity > 0) {
-      await supabase.from("stock").insert({
+      const { error: stockError } = await supabase.from("stock").insert({
         product_id: newProduct.id,
         business_id: businessId,
         quantity: stock_quantity,
         alert_threshold: 0,
       });
+      if (stockError)
+        console.error(
+          `[createProductsBulkAction] stock insert failed for product ${newProduct.id}:`,
+          stockError,
+        );
     }
 
     if (item.tracks_batches && (item.lot_number || item.expiration_date)) {
-      await supabase.from("product_batches").insert({
+      const { error: batchError } = await supabase.from("product_batches").insert({
         product_id: newProduct.id,
         business_id: businessId,
         lot_number: item.lot_number,
@@ -277,11 +291,16 @@ export async function createProductsBulkAction(
         expiration_date: item.expiration_date,
         received_at: new Date().toISOString(),
       });
+      if (batchError)
+        console.error(
+          `[createProductsBulkAction] product_batches insert failed for product ${newProduct.id}:`,
+          batchError,
+        );
     }
 
     // Per CLAUDE.md: manual barcode entries enrich the global product_catalog
     if (item.source === "unknown") {
-      await supabase.from("product_catalog").upsert(
+      const { error: catalogError } = await supabase.from("product_catalog").upsert(
         {
           barcode: item.barcode,
           name: parsed.data.name,
@@ -293,6 +312,11 @@ export async function createProductsBulkAction(
         },
         { onConflict: "barcode" },
       );
+      if (catalogError)
+        console.error(
+          `[createProductsBulkAction] product_catalog upsert failed for barcode ${item.barcode}:`,
+          catalogError,
+        );
     }
 
     created++;
@@ -300,9 +324,20 @@ export async function createProductsBulkAction(
 
   revalidatePath("/products");
 
+  if (errors.length) {
+    console.warn(
+      `[createProductsBulkAction] ${errors.length} product(s) failed (${created} created):`,
+      errors,
+    );
+  }
+
   if (created === 0) {
     return { error: errors.length ? errors.join(" ") : "No se pudo crear ningún producto." };
   }
 
   return { created };
+  } catch (err) {
+    console.error("[createProductsBulkAction] Unexpected error:", err);
+    return { error: "Error inesperado al crear productos." };
+  }
 }

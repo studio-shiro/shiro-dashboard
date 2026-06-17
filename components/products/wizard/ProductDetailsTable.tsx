@@ -309,7 +309,7 @@ export function ProductDetailsTable({
                           variant="table"
                           value={item.brand_name ?? ""}
                           onChange={(v) =>
-                            onUpdate(item.barcode, { brand_name: v })
+                            onUpdate(item.barcode, { brand_name: v || null })
                           }
                           placeholder="-"
                         />
@@ -324,7 +324,7 @@ export function ProductDetailsTable({
                           variant="table"
                           value={item.category_name ?? ""}
                           onChange={(v) =>
-                            onUpdate(item.barcode, { category_name: v })
+                            onUpdate(item.barcode, { category_name: v || null })
                           }
                           placeholder="-"
                         />
@@ -467,10 +467,14 @@ export function ProductDetailsTable({
                           onChange={(v) =>
                             onUpdate(
                               item.barcode,
-                              batchUpdates(item, { batch_barcode: v || null }),
+                              batchUpdates(item, {
+                                batch_barcode:
+                                  v.replace(/\D/g, "") || null,
+                              }),
                             )
                           }
                           placeholder="-"
+                          maxLength={13}
                         />
                       ) : (
                         <span className="body-md-regular text-text-500">

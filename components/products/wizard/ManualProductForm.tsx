@@ -486,8 +486,13 @@ export function ManualProductForm({
             <FormInput
               label="EAN-13"
               value={form.batch_barcode}
-              onChange={(v) => set("batch_barcode", v)}
+              onChange={(v) => set("batch_barcode", v.replace(/\D/g, ""))}
               placeholder="7791234567890"
+              maxLength={13}
+              error={
+                form.batch_barcode.length > 0 &&
+                form.batch_barcode.length !== 13
+              }
             />
           </div>
 

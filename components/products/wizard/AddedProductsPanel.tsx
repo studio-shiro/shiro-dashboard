@@ -526,11 +526,13 @@ export function AddedProductsPanel({
                                 onUpdate(
                                   item.barcode,
                                   batchUpdates(item, {
-                                    batch_barcode: v || null,
+                                    batch_barcode:
+                                      v.replace(/\D/g, "") || null,
                                   }),
                                 )
                               }
                               placeholder="-"
+                              maxLength={13}
                             />
                           </div>
                           <div

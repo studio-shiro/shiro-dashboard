@@ -53,17 +53,27 @@ export default function UploadingPage() {
     }
 
     const startedAt = Date.now();
-    createProductsBulkAction(scannedItems).then((result) => {
-      const remaining = Math.max(0, MIN_DISPLAY_MS - (Date.now() - startedAt));
-      setTimeout(() => {
-        reset();
-        if (result.error || !result.created) {
+    createProductsBulkAction(scannedItems)
+      .then((result) => {
+        const remaining = Math.max(0, MIN_DISPLAY_MS - (Date.now() - startedAt));
+        setTimeout(() => {
+          reset();
+          if (result.error || !result.created) {
+            console.error("[UploadingPage] Upload failed:", result.error ?? "no products created");
+            router.replace("/products?uploadError=true");
+          } else {
+            router.replace(`/products?created=${result.created}`);
+          }
+        }, remaining);
+      })
+      .catch((err: unknown) => {
+        console.error("[UploadingPage] Unexpected error from action:", err);
+        const remaining = Math.max(0, MIN_DISPLAY_MS - (Date.now() - startedAt));
+        setTimeout(() => {
+          reset();
           router.replace("/products?uploadError=true");
-        } else {
-          router.replace(`/products?created=${result.created}`);
-        }
-      }, remaining);
-    });
+        }, remaining);
+      });
   }, [scannedItems, reset, router]);
 
   return (

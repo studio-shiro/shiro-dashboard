@@ -265,7 +265,7 @@
 @utility heading-sm {
   font-family: var(--font-body);
   font-size: var(--text-heading-sm);
-  font-weight: 600;
+  font-weight: 700;
   line-height: var(--leading-heading-sm);
 }
 

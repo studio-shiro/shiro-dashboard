@@ -18,6 +18,7 @@ interface FormInputProps {
   error?: boolean;
   className?: string;
   variant?: "form" | "table";
+  maxLength?: number;
   /** Formats the value with "es-AR" thousand separators (e.g. 100000 → "100.000")
    *  while still reporting the raw digit string through onChange. */
   currency?: boolean;
@@ -78,6 +79,7 @@ export function FormInput({
   className,
   variant = "form",
   currency,
+  maxLength,
 }: FormInputProps) {
   const [focused, setFocused] = useState(false);
 
@@ -186,6 +188,7 @@ export function FormInput({
           min={min}
           step={step}
           placeholder={placeholder}
+          maxLength={maxLength}
           className={cn(
             "w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none disabled:cursor-not-allowed",
             type === "number" && NO_SPINNER,
@@ -250,6 +253,7 @@ export function FormInput({
           min={min}
           step={step}
           placeholder={placeholder}
+          maxLength={maxLength}
           className={cn(
             "min-w-0 flex-1 bg-transparent text-base leading-5 text-text-500 placeholder:text-text-400 focus:outline-none",
             type === "number" && NO_SPINNER,

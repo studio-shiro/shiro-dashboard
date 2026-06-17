@@ -161,35 +161,15 @@ export default function ExcelUploadPage() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               className={cn(
-                "relative flex h-[186px] w-full overflow-hidden flex-col items-center justify-center gap-5 rounded-xl bg-white shadow-lg transition-colors",
-                // "border-2 border-dashed",
-                isDragging && "bg-accent/5",
-                // isDragging ? "border-accent bg-accent/5" : "border-border-400",
+                "relative flex h-[186px] w-full flex-col items-center justify-center gap-5 rounded-xl bg-white shadow-lg transition-colors border-2 border-dashed",
+                isDragging ? "border-accent bg-accent/5" : "border-border-400",
               )}
             >
-              <svg
-                className="pointer-events-none absolute inset-0 size-full"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                aria-hidden="true"
-              >
-                <rect
-                  x="0"
-                  y="0"
-                  width="100%"
-                  height="100%"
-                  rx="12"
-                  stroke={isDragging ? "#e84911" : "#a3a4ab"}
-                  // stroke="#a3a4ab"
-                  strokeWidth="4"
-                  strokeDasharray="20 12"
-                />
-              </svg>
               <div className="flex flex-col items-center gap-2.5">
                 <DocumentPlusIcon
                   className={cn(
                     "size-12",
-                    isDragging ? "text-accent" : "text-text-300",
+                    isDragging ? "text-accent" : "text-text-400",
                   )}
                 />
                 <div className="flex flex-col gap-0.5">
@@ -212,7 +192,7 @@ export default function ExcelUploadPage() {
           ) : (
             <div className="flex flex-col gap-4">
               <p className="heading-sm text-text-500">Archivos Subidos</p>
-              <div className="flex h-14 items-center gap-3 rounded-xl border border-[#ff9c7a] bg-[rgba(255,156,122,0.05)] p-4">
+              <div className="flex h-14 items-center gap-3 rounded-xl border border-accent-disabled bg-[rgba(255,156,122,0.05)] p-4">
                 <DocumentIcon className="size-[31px] shrink-0 text-accent" />
                 <span className="flex-1 body-md-medium text-text-500 truncate">
                   {selectedFile.name}
@@ -220,7 +200,7 @@ export default function ExcelUploadPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedFile(null)}
-                  className="shrink-0 text-text-300 transition-colors hover:text-text-500"
+                  className="shrink-0 text-text-400 transition-colors"
                 >
                   <XMarkIcon className="size-6" />
                 </button>
