@@ -117,7 +117,13 @@ export default function ExcelUploadPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-2.5">
-      {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}
+      {banner && (
+        <FeedbackBanner
+          banner={banner}
+          onClose={closeBanner}
+          className="top-32"
+        />
+      )}
 
       {/* Content */}
       <div className="flex flex-1 items-center justify-center">
