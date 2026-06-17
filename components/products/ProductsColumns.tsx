@@ -46,6 +46,7 @@ export function buildColumns(
   return [
     columnHelper.accessor("name", {
       id: "product",
+      size: 220,
       header: "Producto",
       enableSorting: true,
       cell: ({ row }) => {
@@ -80,6 +81,7 @@ export function buildColumns(
 
     columnHelper.accessor("reference", {
       id: "sku",
+      size: 90,
       header: "SKU",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -89,6 +91,7 @@ export function buildColumns(
 
     columnHelper.accessor("image_url", {
       id: "image",
+      size: 90,
       header: "Imagen",
       enableSorting: false,
       cell: ({ getValue }) => {
@@ -113,6 +116,7 @@ export function buildColumns(
 
     columnHelper.accessor((row) => row.brand?.name ?? null, {
       id: "brand",
+      size: 120,
       header: "Marca",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -124,6 +128,7 @@ export function buildColumns(
 
     columnHelper.accessor((row) => row.category?.name ?? null, {
       id: "category",
+      size: 120,
       header: "Categoría",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -135,6 +140,7 @@ export function buildColumns(
 
     columnHelper.accessor("batch_count", {
       id: "batches",
+      size: 110,
       header: "Vencimientos",
       enableSorting: false,
       cell: ({ row }) => {
@@ -193,7 +199,8 @@ export function buildColumns(
 
     columnHelper.accessor("cost_price", {
       id: "cost",
-      header: "Costo por Unidad",
+      size: 110,
+      header: "Costo Unitario",
       enableSorting: false,
       cell: ({ getValue }) => (
         <span className="body-md-regular text-text-500">
@@ -204,7 +211,8 @@ export function buildColumns(
 
     columnHelper.accessor("price", {
       id: "price",
-      header: "Precio Final por Unidad",
+      size: 140,
+      header: "Precio Final Unitario",
       enableSorting: false,
       cell: ({ getValue }) => (
         <span className="body-md-regular text-text-500">
@@ -215,6 +223,7 @@ export function buildColumns(
 
     columnHelper.accessor((row) => row.stock?.quantity ?? null, {
       id: "stock",
+      size: 80,
       header: "Stock",
       enableSorting: false,
       cell: ({ getValue }) => (
@@ -226,6 +235,7 @@ export function buildColumns(
 
     columnHelper.display({
       id: "actions",
+      size: 100,
       header: "Acciones",
       cell: ({ row }) => {
         const product = row.original;
