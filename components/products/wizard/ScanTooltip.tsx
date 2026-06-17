@@ -14,8 +14,7 @@ interface ScanTooltipProps {
   children: React.ReactNode;
 }
 
-/** Floating info bubble with a left-pointing arrow, anchored next to the
- *  barcode digit cells (Figma "Pop-up Información"). */
+/** Floating info bubble with a left-pointing arrow, anchored next to the barcode digit cells */
 export function ScanTooltip({ variant, children }: ScanTooltipProps) {
   return (
     <div

@@ -19,8 +19,7 @@ import {
   type ScanTooltipVariant,
 } from "@/components/products/wizard/ScanTooltip";
 
-// Width/gap per Figma spec — each row sums to ~460px (the fixed column
-// width in app/products/new/scan/page.tsx) regardless of digit count.
+// Width/gap spec — each row sums to ~460px (the fixed column width in app/products/new/scan/page.tsx) regardless of digit count.
 const FORMATS = [
   { label: "EAN-13", length: 13, cellWidth: 28, gap: 8 },
   { label: "ITF-14", length: 14, cellWidth: 28, gap: 5.3 },
@@ -222,7 +221,7 @@ export function BarcodeInput({
         </div>
       </div>
 
-      {/* Digit cells — width/gap come from the active format (Figma spec) */}
+      {/* Digit cells — width/gap come from the active format */}
       <div
         className="relative flex"
         style={{ gap: `${format.gap}px` }}

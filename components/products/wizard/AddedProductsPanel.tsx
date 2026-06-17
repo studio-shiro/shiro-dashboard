@@ -40,7 +40,7 @@ interface WizardTableMeta {
   onDelete: (item: WizardProduct) => void;
 }
 
-// Proportions taken from the Figma table (885px total): Producto 176,
+// Proportions taken from the design table (885px total): Producto 176,
 // SKU 92, Imagen 92, Marca 103, Categoría 92, Costo 92, Precio 105,
 // Stock 58, acciones 77. fr units keep them fluid at any panel width.
 const COLUMN_WIDTHS: Record<string, string> = {
@@ -66,7 +66,7 @@ const COL_HEADERS: Record<string, string> = {
   stock: "Stock",
 };
 
-// 4 rows per page — matches Figma: the table never scrolls internally.
+// 4 rows per page
 const PAGE_SIZE = 4;
 
 const columnHelper = createColumnHelper<WizardProduct>();
@@ -439,8 +439,7 @@ export function AddedProductsPanel({
                       role="columnheader"
                       className={cn(
                         "body-md-semibold flex min-h-[50px] items-center p-2 text-[#363636]",
-                        // No separator before the actions column (it has no
-                        // header label) — matches Figma and the scan table.
+                        // No separator before the actions column (it has no header label)
                         i < headerGroup.headers.length - 2 &&
                           "border-r border-border-200",
                       )}

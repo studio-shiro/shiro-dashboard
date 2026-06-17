@@ -159,8 +159,7 @@ export function ProductDetailsTable({
     <div className="flex w-full max-w-[1600px] flex-col gap-3">
       {/* Table */}
       <div className="overflow-hidden rounded-[10px] bg-white shadow-md">
-        {/* Header — the last header (Stock) spans through the delete column,
-            so there is no separator before the X (matches Figma) */}
+        {/* Header — the last header (Stock) spans through the delete column, so there is no separator before the X */}
         <div
           className="grid border-b border-border-200 bg-background-300"
           style={{ gridTemplateColumns: gridTemplate }}
@@ -249,9 +248,7 @@ export function ProductDetailsTable({
                         key="image"
                         className="relative flex items-center justify-center p-3"
                       >
-                        {/* Photo / image + "Imagen" pill — pill is centered
-                            over the image, or bottom-aligned with the
-                            placeholder icon (matches Figma) */}
+                        {/* Photo / image + "Imagen" pill — pill is centered over the image, or bottom-aligned with the placeholder icon */}
                         <button
                           type="button"
                           onClick={() =>
@@ -422,7 +419,7 @@ export function ProductDetailsTable({
                 })}
               </div>
 
-              {/* Batch sub-rows — header labels + input cells (matching Figma layout) */}
+              {/* Batch sub-rows — header labels + input cells */}
               {isExpanded && batchesEnabled && (
                 <>
                   {/* Sub-header row */}
@@ -444,9 +441,9 @@ export function ProductDetailsTable({
                       </div>
                     ))}
                   </div>
-                  {/* Sub-data row — each cell owns its padding; inputs have Figma-exact widths */}
+                  {/* Sub-data row */}
                   <div className="grid grid-cols-4 border-b border-border-200 bg-background-600">
-                    {/* Nro de Lote — 246px input (measured from Figma) */}
+                    {/* Nro de Lote — 246px input */}
                     <div className="p-3">
                       <FormInput
                         variant="table"
@@ -481,7 +478,7 @@ export function ProductDetailsTable({
                         </span>
                       )}
                     </div>
-                    {/* Fecha de Elaboración — 161px date picker (measured from Figma) */}
+                    {/* Fecha de Elaboración — 161px date picker */}
                     <div className="p-3">
                       <DatePickerInput
                         value={item.manufacture_date ?? null}
@@ -494,7 +491,7 @@ export function ProductDetailsTable({
                         className="w-[161px]"
                       />
                     </div>
-                    {/* Fecha de Vencimiento — 161px date picker (measured from Figma) */}
+                    {/* Fecha de Vencimiento — 161px date picker */}
                     <div className="p-3">
                       <DatePickerInput
                         value={item.expiration_date ?? null}

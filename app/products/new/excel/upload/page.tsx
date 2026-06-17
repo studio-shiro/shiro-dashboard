@@ -161,10 +161,30 @@ export default function ExcelUploadPage() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               className={cn(
-                "flex h-[186px] w-full flex-col items-center justify-center gap-5 rounded-xl border-2 border-dashed bg-white shadow-lg transition-colors",
-                isDragging ? "border-accent bg-accent/5" : "border-border-400",
+                "relative flex h-[186px] w-full overflow-hidden flex-col items-center justify-center gap-5 rounded-xl bg-white shadow-lg transition-colors",
+                // "border-2 border-dashed",
+                isDragging && "bg-accent/5",
+                // isDragging ? "border-accent bg-accent/5" : "border-border-400",
               )}
             >
+              <svg
+                className="pointer-events-none absolute inset-0 size-full"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="0"
+                  y="0"
+                  width="100%"
+                  height="100%"
+                  rx="12"
+                  stroke={isDragging ? "#e84911" : "#a3a4ab"}
+                  // stroke="#a3a4ab"
+                  strokeWidth="4"
+                  strokeDasharray="20 12"
+                />
+              </svg>
               <div className="flex flex-col items-center gap-2.5">
                 <DocumentPlusIcon
                   className={cn(

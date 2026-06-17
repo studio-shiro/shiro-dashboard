@@ -2,7 +2,7 @@ import type { WizardProduct } from "@/store/productWizard";
 
 /** Splits items into pages where a collapsed row costs 1 unit and an
  *  expanded row costs 2 — keeps every page's rendered height constant
- *  regardless of how many rows are expanded (Figma: 5 collapsed ≡
+ *  regardless of how many rows are expanded (Design: 5 collapsed ≡
  *  1 expanded + 3 collapsed, both 5 units). Order is preserved; rows never
  *  get reordered, only split across page boundaries. */
 export function paginateByCapacity(

@@ -17,7 +17,7 @@ interface DatePickerInputProps {
   value: string | null; // "YYYY-MM-DD"
   onChange: (value: string | null) => void;
   className?: string;
-  // "form" matches the Figma wizard form: 16px text, gray placeholder,
+  // "form" matches wizard form: 16px text, gray placeholder,
   // 24px outline calendar icon. "table" keeps the compact table styling.
   variant?: "table" | "form";
 }

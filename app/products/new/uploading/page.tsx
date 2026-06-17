@@ -18,7 +18,7 @@ const LOADING_MESSAGES = [
 const MESSAGE_INTERVAL = 2000;
 const FADE_DURATION = 300;
 // Even when the upload resolves fast, keep the screen long enough for the
-// user to see the messages rotate (Figma annotation: rotating phrases).
+// user to see the messages rotate
 const MIN_DISPLAY_MS = 4500;
 
 export default function UploadingPage() {

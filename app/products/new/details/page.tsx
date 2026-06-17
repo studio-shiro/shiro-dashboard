@@ -34,7 +34,7 @@ export default function DetailsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [editTarget, setEditTarget] = useState<WizardProduct | null>(null);
-  // Per Figma: the first product always starts expanded so the user
+  // The first product always starts expanded so the user
   // discovers the batch info; the rest stay collapsed until opened manually.
   const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
     () => new Set(scannedItems[0] ? [scannedItems[0].barcode] : []),
@@ -181,7 +181,7 @@ export default function DetailsPage() {
         {/* ── No products: centered single-column ── */}
         {!hasProducts && (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 overflow-y-auto">
-            {/* Title is left-aligned to the form card edge (Figma) */}
+            {/* Title is left-aligned to the form card edge */}
             <div className="flex w-[481px] flex-col gap-1">
               <h1 className="heading-xl text-text-500">{pageHeading}</h1>
               <p className="body-md-regular text-text-400">
