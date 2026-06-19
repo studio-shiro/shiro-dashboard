@@ -392,7 +392,7 @@ export function ManualProductForm({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="group relative size-16 overflow-hidden rounded-md"
+                    className="group relative size-[70px] overflow-hidden rounded-md"
                     title="Cambiar imagen"
                   >
                     {imagePreview ? (
@@ -409,14 +409,14 @@ export function ManualProductForm({
                         </div>
                       </>
                     ) : (
-                      <PhotoIcon className="size-16 text-border-400" />
+                      <PhotoIcon className="size-[70px] text-border-400" />
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute -bottom-[3px] left-1/2 flex h-[22px] w-[72px] -translate-x-1/2 items-center justify-center gap-0.5 rounded-md border border-border-400 bg-white px-2 shadow-sm"
+                    className="absolute -bottom-[10px] left-1/2 flex h-[22px] w-[72px] -translate-x-1/2 items-center justify-center gap-0.5 rounded-md border border-border-400 bg-white px-2 shadow-sm"
                   >
                     <ArrowUpTrayIcon className="size-3.5 shrink-0 text-text-500" />
                     <span className="body-sm-regular text-text-500">

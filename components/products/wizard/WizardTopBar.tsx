@@ -28,7 +28,7 @@ export function WizardTopBar() {
 
   return (
     <>
-      <header className="flex h-[84px] items-center justify-between rounded-lg bg-white px-7 py-3 shadow-sm">
+      <header className="flex h-[84px] items-center justify-between rounded-lg bg-white px-7 py-3 shadow-md">
         <div className="relative h-8 w-20">
           <Image
             src="/shiro-logo-nav.svg"
