@@ -9,6 +9,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (
+    process.env.MAINTENANCE_MODE === "true" &&
+    !pathname.startsWith("/maintenance")
+  ) {
+    return NextResponse.redirect(new URL("/maintenance", request.url));
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -34,7 +43,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const publicPaths = ["/login", "/forgot-password", "/auth/"];
+  const publicPaths = ["/login", "/forgot-password", "/auth/", "/maintenance"];
   const isPublic = publicPaths.some((p) =>
     request.nextUrl.pathname.startsWith(p),
   );
@@ -46,5 +55,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+  ],
 };
