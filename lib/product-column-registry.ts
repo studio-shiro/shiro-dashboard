@@ -19,7 +19,7 @@ export const PRODUCT_COLUMNS: ColumnDefinition[] = [
   { key: 'batches',  label: 'Vencimientos',   type: 'display', required: false, defaultEnabled: true, group: 'inventory' },
   { key: 'cost',     label: 'Costo Unitario', type: 'number',  required: true,  defaultEnabled: true, group: 'inventory' },
   { key: 'price',    label: 'Precio Final',   type: 'number',  required: true,  defaultEnabled: true, group: 'inventory' },
-  { key: 'stock',    label: 'Stock',          type: 'number',  required: false, defaultEnabled: true, group: 'inventory' },
+  { key: 'stock',    label: 'Stock',          type: 'number',  required: true,  defaultEnabled: true, group: 'inventory' },
   { key: 'actions',  label: 'Acciones',       type: 'display', required: true,  defaultEnabled: true, group: 'system' },
 ]
 

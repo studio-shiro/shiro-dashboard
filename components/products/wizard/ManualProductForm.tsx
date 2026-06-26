@@ -7,6 +7,7 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 import type { WizardProduct } from "@/store/productWizard";
+import { cn } from "@/lib/utils";
 import { FormInput } from "@/components/shared/FormInput";
 import { DateFormInput } from "@/components/shared/DateFormInput";
 import Button from "@/components/shared/Button";
@@ -19,6 +20,7 @@ interface ManualProductFormProps {
   onUpdate: (barcode: string, updates: Partial<WizardProduct>) => void;
   onCancelEdit: () => void;
   onFilePicked: (barcode: string, file: File) => void;
+  showValidation?: boolean;
 }
 
 interface FormState {
@@ -88,6 +90,7 @@ type NumberFieldConfig = {
   step?: string;
   currency?: boolean; // true → renders CurrencyDollarIcon as adornStart
   nullable: boolean; // true → empty string maps to null; false → maps to 0
+  allowZero?: boolean; // true → 0 satisfies a required field (e.g. stock)
 };
 
 type DateFieldConfig = {
@@ -111,33 +114,39 @@ const FIELD_CONFIG: Record<string, SimpleFieldConfig> = {
     type: "text",
     formKey: "reference",
     label: "SKU",
+    required: false,
     placeholder: "Ej: #000001",
   },
   stock: {
     type: "number",
     formKey: "stock_quantity",
     label: "Stock",
+    required: true,
     min: 0,
     step: "1",
     nullable: true,
+    allowZero: true,
     placeholder: "0",
   },
   brand: {
     type: "text",
     formKey: "brand_name",
     label: "Marca",
+    required: false,
     placeholder: "Ej: Jorgito",
   },
   category: {
     type: "text",
     formKey: "category_name",
     label: "Categoría",
+    required: false,
     placeholder: "Ej: Golosinas",
   },
   cost: {
     type: "number",
     formKey: "cost_price",
     label: "Costo Unitario",
+    required: true,
     min: 0,
     step: "0.01",
     currency: true,
@@ -181,8 +190,10 @@ function renderField(
   form: FormState,
   set: SetFn,
   isEditMode: boolean,
+  showValidation: boolean,
 ): React.ReactNode {
   if (cfg.type === "text") {
+    const empty = (form[cfg.formKey] as string).trim() === "";
     return (
       <FormInput
         label={cfg.label}
@@ -190,24 +201,43 @@ function renderField(
         value={form[cfg.formKey] as string}
         onChange={(v) => set(cfg.formKey as "name", v as FormState["name"])}
         placeholder={cfg.placeholder}
+        error={Boolean(cfg.required && showValidation && empty)}
       />
     );
   }
 
   if (cfg.type === "number") {
     const raw = form[cfg.formKey] as number | null;
+    const missing = cfg.allowZero ? raw === null : raw === null || raw <= 0;
+    const marginError =
+      (cfg.formKey === "cost_price" &&
+        form.price !== null &&
+        form.price > 0 &&
+        raw !== null &&
+        raw > 0 &&
+        form.price <= raw) ||
+      (cfg.formKey === "price" &&
+        form.cost_price !== null &&
+        form.cost_price > 0 &&
+        raw !== null &&
+        raw > 0 &&
+        raw <= form.cost_price);
     return (
       <FormInput
         label={cfg.label}
         required={cfg.required}
         type="number"
+        currency={cfg.currency}
         min={cfg.min}
         step={cfg.step}
         adornStart={
           cfg.currency ? <CurrencyDollarIcon className="size-6" /> : undefined
         }
         value={raw ?? ""}
-        error={cfg.required && cfg.nullable && !raw && isEditMode}
+        error={
+          Boolean(cfg.required && (isEditMode || showValidation) && missing) ||
+          Boolean(marginError)
+        }
         onChange={(v) =>
           // safe cast: formKey and the null/number transformation are always
           // co-defined in the same config entry — they can't diverge at runtime
@@ -242,6 +272,7 @@ export function ManualProductForm({
   onUpdate,
   onCancelEdit,
   onFilePicked,
+  showValidation = false,
 }: ManualProductFormProps) {
   const isEditMode = editTarget !== null;
 
@@ -343,16 +374,27 @@ export function ManualProductForm({
   const showBatches = columnVisibility.batches !== false;
 
   // ── canSubmit ───────────────────────────────────────────────────────────────
-  // Checks every required field that is currently visible.
-  const canSubmit = (FIELD_ORDER as readonly string[]).every((colId) => {
-    const cfg = FIELD_CONFIG[colId];
-    if (!cfg?.required) return true;
-    if (columnVisibility[colId] === false) return true;
-    const val = form[cfg.formKey];
-    if (cfg.type === "text") return (val as string).trim() !== "";
-    if (cfg.type === "number") return val !== null && (val as number) > 0;
-    return true;
-  });
+  const formHasMarginError =
+    form.price !== null &&
+    form.price > 0 &&
+    form.cost_price !== null &&
+    form.cost_price > 0 &&
+    form.price <= form.cost_price;
+
+  const canSubmit =
+    !formHasMarginError &&
+    (FIELD_ORDER as readonly string[]).every((colId) => {
+      const cfg = FIELD_CONFIG[colId];
+      if (!cfg?.required) return true;
+      if (columnVisibility[colId] === false) return true;
+      const val = form[cfg.formKey];
+      if (cfg.type === "text") return (val as string).trim() !== "";
+      if (cfg.type === "number") {
+        if (val === null) return false;
+        return cfg.allowZero ? (val as number) >= 0 : (val as number) > 0;
+      }
+      return true;
+    });
 
   // ── Auto-pairing ────────────────────────────────────────────────────────────
   // "product" is excluded — it lives in Row 1 alongside the image picker.
@@ -380,7 +422,7 @@ export function ManualProductForm({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="group relative size-16 overflow-hidden rounded-md"
+                    className="group relative size-[70px] overflow-hidden rounded-md"
                     title="Cambiar imagen"
                   >
                     {imagePreview ? (
@@ -397,14 +439,14 @@ export function ManualProductForm({
                         </div>
                       </>
                     ) : (
-                      <PhotoIcon className="size-full text-border-300" />
+                      <PhotoIcon className="size-[70px] text-border-400" />
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute -bottom-[3px] left-0 flex h-[22px] w-[72px] items-center justify-center gap-0.5 rounded-md border border-border-400 bg-white px-2 shadow-sm"
+                    className="absolute -bottom-[10px] left-1/2 flex h-[22px] w-[72px] -translate-x-1/2 items-center justify-center gap-0.5 rounded-md border border-border-400 bg-white px-2 shadow-sm"
                   >
                     <ArrowUpTrayIcon className="size-3.5 shrink-0 text-text-500" />
                     <span className="body-sm-regular text-text-500">
@@ -434,6 +476,7 @@ export function ManualProductForm({
                     form,
                     set,
                     isEditMode,
+                    showValidation,
                   )}
                 </div>
               )}
@@ -444,13 +487,37 @@ export function ManualProductForm({
           {pairedRows.map((pair) => (
             <div key={pair.join("-")} className="flex gap-5">
               {pair.map((colId) => (
-                <div key={colId} className="min-w-0 flex-1">
+                <div
+                  key={colId}
+                  className={cn("min-w-0 flex-1", colId === "price" && "relative")}
+                >
                   {renderField(
                     colId,
                     FIELD_CONFIG[colId]!,
                     form,
                     set,
                     isEditMode,
+                    showValidation,
+                  )}
+                  {colId === "price" && formHasMarginError && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full z-10 mt-2 w-[226px] rounded-lg bg-danger-200 py-2 pl-3 pr-2.5 shadow-lg">
+                      <svg
+                        width="17"
+                        height="9"
+                        viewBox="0 0 17 9"
+                        className="absolute -top-2 left-1/2 -translate-x-1/2 text-danger-200"
+                      >
+                        <polygon points="0,9 8.5,0 17,9" fill="currentColor" />
+                      </svg>
+                      <p className="body-sm-regular text-text-500">
+                        El{" "}
+                        <span className="body-sm-semibold">
+                          Precio Final Unitario
+                        </span>{" "}
+                        debería superar al Costo Unitario de tu producto para
+                        obtener ganancias.
+                      </p>
+                    </div>
                   )}
                 </div>
               ))}
@@ -461,37 +528,40 @@ export function ManualProductForm({
 
       {/* ── Información del Lote ─────────────────────────────────────── */}
       {showBatches && (
-        <div className="flex flex-col gap-[14px]">
-          <p className="body-sm-semibold text-text-500">Información del Lote</p>
+        <div className="flex flex-col gap-5">
+          <p className="body-md-semibold text-text-500">Información del Lote</p>
 
-          <div className="flex flex-col gap-5">
-            <div className="grid grid-cols-2 gap-5">
-              <FormInput
-                label="Número de Lote"
-                value={form.lot_number}
-                onChange={(v) => set("lot_number", v)}
-                placeholder="Ej: L-20230705A"
-              />
-              <FormInput
-                label="EAN-13"
-                value={form.batch_barcode}
-                onChange={(v) => set("batch_barcode", v)}
-                placeholder="7791234567890"
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-5">
+            <FormInput
+              label="Número de Lote"
+              value={form.lot_number}
+              onChange={(v) => set("lot_number", v)}
+              placeholder="Ej: L-20230705A"
+            />
+            <FormInput
+              label="EAN-13"
+              value={form.batch_barcode}
+              onChange={(v) => set("batch_barcode", v.replace(/\D/g, ""))}
+              placeholder="7791234567890"
+              maxLength={13}
+              error={
+                form.batch_barcode.length > 0 &&
+                form.batch_barcode.length !== 13
+              }
+            />
+          </div>
 
-            <div className="grid grid-cols-2 gap-5">
-              <DateFormInput
-                label="Fecha de Elaboración"
-                value={form.manufacture_date}
-                onChange={(v) => set("manufacture_date", v)}
-              />
-              <DateFormInput
-                label="Fecha de Vencimiento"
-                value={form.expiration_date}
-                onChange={(v) => set("expiration_date", v)}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-5">
+            <DateFormInput
+              label="Fecha de Elaboración"
+              value={form.manufacture_date}
+              onChange={(v) => set("manufacture_date", v)}
+            />
+            <DateFormInput
+              label="Fecha de Vencimiento"
+              value={form.expiration_date}
+              onChange={(v) => set("expiration_date", v)}
+            />
           </div>
         </div>
       )}

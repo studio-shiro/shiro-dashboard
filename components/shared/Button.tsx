@@ -52,7 +52,7 @@ const variantStyles: Record<NonNullable<SharedProps["variant"]>, string> = {
     "disabled:text-accent-disabled",
 };
 
-// xs = Figma SM (36px / 12px), md = Figma MD (40px / 14px), lg = Figma LG (48px / 16px)
+// xs = Variant SM (36px / 12px), md = Variant MD (40px / 14px), lg = Variant LG (48px / 16px)
 const sizeStyles: Record<NonNullable<SharedProps["size"]>, string> = {
   xs: "gap-2 rounded-md px-4 py-2.5 body-sm-semibold",
   md: "gap-2 rounded-md px-[18px] py-2.5 body-md-semibold",
@@ -60,8 +60,13 @@ const sizeStyles: Record<NonNullable<SharedProps["size"]>, string> = {
 };
 
 export default function Button(props: ButtonProps) {
-  const { children, variant = "primary", size = "md", icon: Icon, className } =
-    props;
+  const {
+    children,
+    variant = "primary",
+    size = "md",
+    icon: Icon,
+    className,
+  } = props;
 
   const classes = cn(
     "inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed",

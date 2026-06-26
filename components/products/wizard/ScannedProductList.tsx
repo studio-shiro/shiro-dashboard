@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { XMarkIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import type { WizardProduct } from "@/store/productWizard";
 import Image from "next/image";
@@ -5,6 +7,66 @@ import Image from "next/image";
 interface ScannedProductListProps {
   items: WizardProduct[];
   onRemove: (barcode: string) => void;
+}
+
+// Tooltip anchors to the name cell's top-left corner, not the cursor — its
+// position must stay fixed no matter where in the text the mouse hovers.
+// Rendered through a portal because the list scrolls (overflow-y-auto),
+// which would otherwise clip a tooltip positioned above the row.
+function ScannedProductName({ name }: { name: string }) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const [tooltipPos, setTooltipPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    setIsTruncated(el.scrollWidth > el.clientWidth);
+  }, [name]);
+
+  useEffect(() => {
+    if (!tooltipPos) return;
+    const close = () => setTooltipPos(null);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [tooltipPos]);
+
+  function handleMouseEnter() {
+    const el = textRef.current;
+    if (!el || !isTruncated) return;
+    const rect = el.getBoundingClientRect();
+    setTooltipPos({ top: rect.top, left: rect.left });
+  }
+
+  return (
+    <>
+      <p
+        ref={textRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setTooltipPos(null)}
+        className="body-md-semibold truncate text-text-500"
+      >
+        {name}
+      </p>
+      {tooltipPos &&
+        createPortal(
+          <div
+            className="pointer-events-none h-[29px] flex flex-col justify-center fixed z-50 max-w-[420px] -translate-y-[calc(100%+8px)] -translate-x-[10px] rounded-md border border-accent-disabled bg-accent-disabled/90 px-3.5 py-2.5 whitespace-nowrap shadow-sm"
+            style={{ top: tooltipPos.top, left: tooltipPos.left }}
+          >
+            <p className="body-md-semibold text-text-500">{name}</p>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
 }
 
 export function ScannedProductList({
@@ -17,7 +79,7 @@ export function ScannedProductList({
     <div className="flex flex-col gap-7">
       <p className="heading-lg text-text-500">Productos Agregados</p>
       <div className="relative">
-        <div className="flex max-h-[504px] flex-col gap-3.5 overflow-y-auto">
+        <div className="scrollbar-themed flex max-h-[504px] flex-col gap-3.5 overflow-y-auto pr-4">
           {items.map((item) => (
             <div
               key={item.barcode}
@@ -42,9 +104,7 @@ export function ScannedProductList({
 
               {/* Name */}
               <div className="w-[390px] shrink-0 px-2">
-                <p className="body-md-semibold truncate text-text-500">
-                  {item.name || "—"}
-                </p>
+                <ScannedProductName name={item.name || "—"} />
               </div>
 
               {/* Barcode */}
@@ -68,7 +128,7 @@ export function ScannedProductList({
 
         {/* Fade at bottom when list is scrollable */}
         {items.length >= 8 && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-transparent to-white" />
+          <div className="pointer-events-none absolute bottom-0 left-0 right-7 h-8 bg-gradient-to-b from-[rgba(209,208,201,0)] to-border-300" />
         )}
       </div>
     </div>

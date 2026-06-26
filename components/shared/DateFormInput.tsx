@@ -25,8 +25,7 @@ export function DateFormInput({
   return (
     <fieldset
       className={cn(
-        "w-full min-w-0 rounded-[6px] border border-solid px-3 pb-2",
-        "bg-[#f7f7f7]",
+        "relative h-[38px] w-full min-w-0 rounded-[6px] border border-solid bg-[#f7f7f7]",
         error
           ? "border-danger-300"
           : filled
@@ -44,11 +43,15 @@ export function DateFormInput({
         {label}
         {required && <span className="ml-px text-danger-300">*</span>}
       </legend>
-      <DatePickerInput
-        value={value}
-        onChange={onChange}
-        className="h-auto border-0 bg-transparent px-0 shadow-none"
-      />
+      {/* Absolutely positioned so items-center has the full 38px to center within */}
+      <div className="absolute inset-0 flex items-center px-3">
+        <DatePickerInput
+          value={value}
+          onChange={onChange}
+          variant="form"
+          className="h-auto border-0 bg-transparent px-0 shadow-none"
+        />
+      </div>
     </fieldset>
   );
 }

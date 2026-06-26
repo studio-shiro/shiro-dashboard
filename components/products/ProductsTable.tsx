@@ -17,6 +17,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   CubeIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import {
@@ -160,9 +161,9 @@ export function ProductsTable({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       {/* Table card */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border-100 bg-background-400 shadow-lg">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border-100 bg-background-100 shadow-lg">
         {/* Header — always rendered inside a real <table> for consistent column alignment */}
-        <table className="w-full border-collapse">
+        <table className="w-full table-fixed border-collapse">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr
@@ -175,6 +176,9 @@ export function ProductsTable({
                   return (
                     <th
                       key={header.id}
+                      style={{
+                        width: `${(header.getSize() / table.getTotalSize()) * 100}%`,
+                      }}
                       className={cn(
                         "px-4 py-3 text-left body-md-semibold text-text-400 border-r border-border-200 last:border-r-0",
                         canSort &&
@@ -210,31 +214,45 @@ export function ProductsTable({
             ))}
           </thead>
 
-          {/* Body — only rendered when there are results */}
-          {!isGrowable && (
+          {/* Body */}
+          {!isEmpty && (
             <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <Fragment key={row.id}>
-                  <tr className="border-b border-border-100 last:border-0 hover:bg-background-600">
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-4">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                  {expandedRows.has(row.original.id) &&
-                    row.original.batch_count > 0 && (
-                      <tr>
-                        <td colSpan={visibleColCount} className="p-0">
-                          <BatchesSubTable batches={row.original.batches} />
+              {isSearchEmpty ? (
+                <tr>
+                  <td colSpan={visibleColCount} className="py-24">
+                    <div className="flex flex-col items-center gap-2">
+                      <MagnifyingGlassIcon className="size-[81px] text-text-400" />
+                      <p className="heading-lg text-text-500">Sin Resultados</p>
+                      <p className="body-lg-regular text-text-400">
+                        No encontramos los resultados de tu búsqueda.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <Fragment key={row.id}>
+                    <tr className="border-b border-border-100 last:border-0 hover:bg-background-600">
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-4 py-4">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
                         </td>
-                      </tr>
-                    )}
-                </Fragment>
-              ))}
+                      ))}
+                    </tr>
+                    {expandedRows.has(row.original.id) &&
+                      row.original.batch_count > 0 && (
+                        <tr>
+                          <td colSpan={visibleColCount} className="p-0">
+                            <BatchesSubTable batches={row.original.batches} />
+                          </td>
+                        </tr>
+                      )}
+                  </Fragment>
+                ))
+              )}
             </tbody>
           )}
         </table>
@@ -257,12 +275,6 @@ export function ProductsTable({
                 Agregar Producto
               </Button>
             </div>
-          </div>
-        )}
-
-        {isSearchEmpty && (
-          <div className="flex flex-1 justify-center py-8">
-            <p className="body-md-semibold text-text-400">Sin Resultados</p>
           </div>
         )}
       </div>

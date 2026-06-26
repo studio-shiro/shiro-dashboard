@@ -13,17 +13,21 @@ import {
   ChevronRightIcon,
   CurrencyDollarIcon,
   PencilSquareIcon,
+  PhotoIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import type { WizardProduct } from "@/store/productWizard";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/shared/Pagination";
-import Image from "next/image";
+import { DatePickerInput } from "@/components/products/wizard/DatePickerInput";
+import { batchUpdates } from "@/components/products/wizard/ProductDetailsTable";
+import { FormInput } from "@/components/shared/FormInput";
 
 interface AddedProductsPanelProps {
   items: WizardProduct[];
   columnVisibility: Record<string, boolean>;
   onEdit: (item: WizardProduct) => void;
+  onUpdate: (barcode: string, updates: Partial<WizardProduct>) => void;
   onDelete: (item: WizardProduct) => void;
   editingBarcode: string | null;
 }
@@ -36,16 +40,19 @@ interface WizardTableMeta {
   onDelete: (item: WizardProduct) => void;
 }
 
+// Proportions taken from the design table (885px total): Producto 176,
+// SKU 92, Imagen 92, Marca 103, Categoría 92, Costo 92, Precio 105,
+// Stock 58, acciones 77. fr units keep them fluid at any panel width.
 const COLUMN_WIDTHS: Record<string, string> = {
-  product: "2fr",
-  sku: "1fr",
-  image: "80px",
-  brand: "1.2fr",
-  category: "1.2fr",
-  cost: "1.1fr",
-  price: "1.1fr",
-  stock: "0.8fr",
-  actions: "72px",
+  product: "176fr",
+  sku: "92fr",
+  image: "92fr",
+  brand: "103fr",
+  category: "92fr",
+  cost: "92fr",
+  price: "105fr",
+  stock: "58fr",
+  actions: "77fr",
 };
 
 const COL_HEADERS: Record<string, string> = {
@@ -55,11 +62,12 @@ const COL_HEADERS: Record<string, string> = {
   brand: "Marca",
   category: "Categoría",
   cost: "Costo Unitario",
-  price: "Precio Final",
+  price: "Precio Final Unitario",
   stock: "Stock",
 };
 
-const PAGE_SIZE = 8;
+// 4 rows per page
+const PAGE_SIZE = 4;
 
 const columnHelper = createColumnHelper<WizardProduct>();
 
@@ -73,11 +81,11 @@ const columns = [
       const isEditing = meta.editingBarcode === item.barcode;
       const isExpanded = meta.expandedBarcodes.has(item.barcode);
       return (
-        <div className="flex items-center gap-2 p-2.5">
+        <div className="flex items-center gap-2 p-3">
           <span
             className={cn(
               "body-md-semibold truncate underline underline-offset-2",
-              isEditing ? "text-text-300" : "text-text-400",
+              isEditing ? "text-text-300" : "text-[#363636]",
             )}
           >
             {item.name || "—"}
@@ -110,7 +118,7 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="p-2.5">
+        <div className="p-3">
           <span
             className={cn(
               "body-md-semibold",
@@ -131,11 +139,11 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="flex items-center justify-center p-2">
+        <div className="flex items-center justify-center p-3">
           {item.image_url ? (
             <div
               className={cn(
-                "size-12 overflow-hidden rounded-lg",
+                "size-[70px] overflow-hidden rounded-[10px]",
                 isEditing && "opacity-50",
               )}
             >
@@ -149,11 +157,11 @@ const columns = [
           ) : (
             <div
               className={cn(
-                "flex size-12 items-center justify-center rounded-lg bg-background-300",
+                "flex size-[70px] items-center justify-center rounded-[10px]",
                 isEditing && "opacity-50",
               )}
             >
-              <span className="body-xs-regular text-text-300">—</span>
+              <PhotoIcon className="size-16 text-border-300" />
             </div>
           )}
         </div>
@@ -168,7 +176,7 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="p-2.5">
+        <div className="p-3">
           <span
             className={cn(
               "body-md-regular",
@@ -189,7 +197,7 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="p-2.5">
+        <div className="p-3">
           <span
             className={cn(
               "body-md-regular",
@@ -210,7 +218,7 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="p-2.5">
+        <div className="p-3">
           <span
             className={cn(
               "body-md-regular",
@@ -233,7 +241,7 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="p-2.5">
+        <div className="p-3">
           <span
             className={cn(
               "body-md-regular",
@@ -256,7 +264,7 @@ const columns = [
       const item = row.original;
       const isEditing = editingBarcode === item.barcode;
       return (
-        <div className="p-2.5">
+        <div className="p-3">
           <span
             className={cn(
               "body-md-regular",
@@ -318,6 +326,7 @@ export function AddedProductsPanel({
   items,
   columnVisibility,
   onEdit,
+  onUpdate,
   onDelete,
   editingBarcode,
 }: AddedProductsPanelProps) {
@@ -350,6 +359,8 @@ export function AddedProductsPanel({
       return next;
     });
   }
+
+  const batchesEnabled = columnVisibility.batches !== false;
 
   const tanstackVisibility = {
     product: true,
@@ -385,12 +396,13 @@ export function AddedProductsPanel({
     .map((col) => COLUMN_WIDTHS[col.id])
     .join(" ");
 
+  // Added products Table
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-hidden">
+    <div className="flex flex-col gap-5">
       <h2 className="heading-lg text-text-500">Productos Agregados</h2>
 
       {items.length === 0 && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 py-16 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 px-5 py-16 text-center">
           <div className="flex size-16 items-center justify-center rounded-full bg-background-300">
             <CurrencyDollarIcon className="size-8 text-border-400" />
           </div>
@@ -407,112 +419,172 @@ export function AddedProductsPanel({
       )}
 
       {items.length > 0 && (
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto pb-2">
-            <div
-              role="table"
-              aria-label="Productos agregados"
-              className="overflow-hidden rounded-xl shadow-lg"
-            >
-              {/* Header */}
-              {table.getHeaderGroups().map((headerGroup) => (
-                <div key={headerGroup.id} role="rowgroup">
-                  <div
-                    role="row"
-                    className="grid border-b border-border-200 bg-background-300"
-                    style={{ gridTemplateColumns: gridTemplate }}
-                  >
-                    {headerGroup.headers.map((header, i) => (
-                      <div
-                        key={header.id}
-                        role="columnheader"
-                        className={cn(
-                          "body-md-semibold p-2.5 text-text-400",
-                          i < headerGroup.headers.length - 1 &&
-                            "border-r border-border-200",
-                        )}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              {/* Rows */}
-              <div role="rowgroup">
-                {table.getRowModel().rows.map((row) => {
-                  const item = row.original;
-                  const isExpanded = expandedBarcodes.has(item.barcode);
-
-                  return (
+        <div className="flex flex-col gap-3">
+          <div
+            role="table"
+            aria-label="Productos agregados"
+            className="overflow-hidden rounded-xl bg-white shadow-[0px_12px_16px_-4px_rgba(112,113,116,0.1),0px_4px_6px_-2px_rgba(112,113,116,0.05)]"
+          >
+            {/* Header */}
+            {table.getHeaderGroups().map((headerGroup) => (
+              <div key={headerGroup.id} role="rowgroup">
+                <div
+                  role="row"
+                  className="grid border-b border-border-200 bg-background-300"
+                  style={{ gridTemplateColumns: gridTemplate }}
+                >
+                  {headerGroup.headers.map((header, i) => (
                     <div
-                      key={row.id}
-                      className="border-b border-border-200 last:border-0"
-                    >
-                      <div
-                        role="row"
-                        className="grid items-center"
-                        style={{ gridTemplateColumns: gridTemplate }}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <div role="cell" key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {isExpanded && item.tracks_batches && (
-                        <>
-                          <div className="grid grid-cols-4 border-t border-border-200 bg-background-600">
-                            {[
-                              "Nro. Lote",
-                              "EAN-13",
-                              "Fecha Elaboración",
-                              "Fecha Vencimiento",
-                            ].map((label) => (
-                              <div
-                                key={label}
-                                className="body-md-semibold p-2.5 text-text-400"
-                              >
-                                {label}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="grid grid-cols-4 border-t border-border-200 bg-background-600 px-2.5 py-2">
-                            <span className="body-md-regular p-0.5 text-text-500">
-                              {item.lot_number || "—"}
-                            </span>
-                            <span className="body-md-regular p-0.5 text-text-500">
-                              {item.batch_barcode || "—"}
-                            </span>
-                            <span className="body-md-regular p-0.5 text-text-500">
-                              {item.manufacture_date || "—"}
-                            </span>
-                            <span className="body-md-regular p-0.5 text-text-500">
-                              {item.expiration_date || "—"}
-                            </span>
-                          </div>
-                        </>
+                      key={header.id}
+                      role="columnheader"
+                      className={cn(
+                        "body-md-semibold flex min-h-[50px] items-center p-2 text-[#363636]",
+                        // No separator before the actions column (it has no header label)
+                        i < headerGroup.headers.length - 2 &&
+                          "border-r border-border-200",
                       )}
-
-                      {isExpanded && !item.tracks_batches && (
-                        <div className="border-t border-border-200 bg-background-300 px-5 py-3">
-                          <p className="body-md-regular text-text-300">
-                            Este producto no tiene seguimiento de lote activado.
-                          </p>
-                        </div>
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
                       )}
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
               </div>
+            ))}
+
+            {/* Rows */}
+            <div role="rowgroup">
+              {table.getRowModel().rows.map((row) => {
+                const item = row.original;
+                const isExpanded = expandedBarcodes.has(item.barcode);
+                const isRowEditing = editingBarcode === item.barcode;
+
+                return (
+                  <div
+                    key={row.id}
+                    className="border-b border-border-200 last:border-0"
+                  >
+                    <div
+                      role="row"
+                      className="grid items-center"
+                      style={{ gridTemplateColumns: gridTemplate }}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <div role="cell" key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {isExpanded && batchesEnabled && (
+                      <>
+                        <div className="grid grid-cols-4 border-t border-border-200 bg-background-600">
+                          {[
+                            "Número de Lote",
+                            "EAN-13",
+                            "Fecha de Elaboración",
+                            "Fecha de Vencimiento",
+                          ].map((label) => (
+                            <div
+                              key={label}
+                              className="body-md-semibold px-3 py-2 text-[#363636]"
+                            >
+                              {label}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Editable inline, like the scan table. Unlike scan,
+                              EAN-13 is editable here: it's manually entered. */}
+                        <div className="grid grid-cols-4 border-t border-border-200 bg-background-600">
+                          <div className="p-3">
+                            <FormInput
+                              variant="table"
+                              value={item.lot_number ?? ""}
+                              disabled={isRowEditing}
+                              onChange={(v) =>
+                                onUpdate(
+                                  item.barcode,
+                                  batchUpdates(item, {
+                                    lot_number: v || null,
+                                  }),
+                                )
+                              }
+                              placeholder="-"
+                            />
+                          </div>
+                          <div className="p-3">
+                            <FormInput
+                              variant="table"
+                              value={item.batch_barcode ?? ""}
+                              disabled={isRowEditing}
+                              onChange={(v) =>
+                                onUpdate(
+                                  item.barcode,
+                                  batchUpdates(item, {
+                                    batch_barcode:
+                                      v.replace(/\D/g, "") || null,
+                                  }),
+                                )
+                              }
+                              placeholder="-"
+                              maxLength={13}
+                            />
+                          </div>
+                          <div
+                            className={cn(
+                              "p-3",
+                              isRowEditing && "pointer-events-none opacity-50",
+                            )}
+                          >
+                            <DatePickerInput
+                              value={item.manufacture_date ?? null}
+                              onChange={(v) =>
+                                onUpdate(
+                                  item.barcode,
+                                  batchUpdates(item, {
+                                    manufacture_date: v,
+                                  }),
+                                )
+                              }
+                            />
+                          </div>
+                          <div
+                            className={cn(
+                              "p-3",
+                              isRowEditing && "pointer-events-none opacity-50",
+                            )}
+                          >
+                            <DatePickerInput
+                              value={item.expiration_date ?? null}
+                              onChange={(v) =>
+                                onUpdate(
+                                  item.barcode,
+                                  batchUpdates(item, {
+                                    expiration_date: v,
+                                  }),
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {isExpanded && !batchesEnabled && (
+                      <div className="border-t border-border-200 bg-background-300 px-5 py-3">
+                        <p className="body-md-regular text-text-300">
+                          Este producto no tiene seguimiento de lote activado.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

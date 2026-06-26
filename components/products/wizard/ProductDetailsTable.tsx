@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
   XMarkIcon,
   ChevronLeftIcon,
@@ -13,6 +14,7 @@ import type { WizardProduct } from "@/store/productWizard";
 import { cn } from "@/lib/utils";
 import { FIXED_COLUMN_IDS } from "@/components/products/ProductsColumns";
 import { DatePickerInput } from "@/components/products/wizard/DatePickerInput";
+import { FormInput } from "@/components/shared/FormInput";
 
 const COL_WIDTHS: Record<string, string> = {
   product: "2fr",
@@ -50,12 +52,17 @@ const COL_HEADERS: Record<string, string> = {
   _delete: "",
 };
 
-const inputCls =
-  "w-full h-[30px] rounded-[6px] border border-solid border-border-400 bg-white px-2 body-md-regular text-text-500 placeholder:text-text-500 shadow-sm focus:border-accent focus:outline-none";
+const REQUIRED_HEADER_COLS = new Set(["product", "cost", "price", "stock"]);
 
 function getPageItems(current: number, count: number): (number | "ellipsis")[] {
   if (count <= 4) return Array.from({ length: count }, (_, i) => i);
-  const pages = new Set<number>([0, count - 1, current - 1, current, current + 1]);
+  const pages = new Set<number>([
+    0,
+    count - 1,
+    current - 1,
+    current,
+    current + 1,
+  ]);
   if (current <= 2) {
     pages.add(1);
     pages.add(2);
@@ -79,7 +86,7 @@ function getPageItems(current: number, count: number): (number | "ellipsis")[] {
  * There is no per-row switch for tracks_batches: it is derived from the batch
  * fields the user fills in (batch_barcode is excluded — the scan pre-fills it).
  */
-function batchUpdates(
+export function batchUpdates(
   item: WizardProduct,
   updates: Partial<WizardProduct>,
 ): Partial<WizardProduct> {
@@ -97,10 +104,14 @@ interface ProductDetailsTableProps {
   onUpdate: (barcode: string, updates: Partial<WizardProduct>) => void;
   onDelete: (item: WizardProduct) => void;
   onFilePicked: (barcode: string, file: File) => void;
+  expandedBarcodes: Set<string>;
+  onToggleExpand: (barcode: string) => void;
   pageIndex: number;
   pageCount: number;
   onPageChange: (page: number) => void;
   columnVisibility: Record<string, boolean>;
+  allowBarcodeEdit?: boolean;
+  showValidation?: boolean;
 }
 
 export function ProductDetailsTable({
@@ -108,21 +119,30 @@ export function ProductDetailsTable({
   onUpdate,
   onDelete,
   onFilePicked,
+  expandedBarcodes,
+  onToggleExpand,
   pageIndex,
   pageCount,
   onPageChange,
   columnVisibility,
+  allowBarcodeEdit = false,
+  showValidation = false,
 }: ProductDetailsTableProps) {
-  // Per Figma: the first product always starts expanded so the user discovers
-  // the batch info; the rest stay collapsed until opened manually.
-  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
-    () => new Set(items[0] ? [items[0].barcode] : []),
-  );
   const [localPreviews, setLocalPreviews] = useState<Map<string, string>>(
     new Map(),
   );
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const blobUrls = useRef<string[]>([]);
+  const errorCellRef = useRef<HTMLDivElement | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     return () => {
@@ -141,15 +161,6 @@ export function ProductDetailsTable({
 
   const gridTemplate = visibleCols.map((c) => COL_WIDTHS[c]).join(" ");
 
-  function toggleExpand(barcode: string) {
-    setExpandedBarcodes((prev) => {
-      const next = new Set(prev);
-      if (next.has(barcode)) next.delete(barcode);
-      else next.add(barcode);
-      return next;
-    });
-  }
-
   function handleImageChange(barcode: string, file: File) {
     const localUrl = URL.createObjectURL(file);
     blobUrls.current.push(localUrl);
@@ -159,12 +170,38 @@ export function ProductDetailsTable({
 
   const headerCols = visibleCols.filter((col) => col !== "_delete");
 
+  const hasMarginError = items.some(
+    (item) =>
+      item.price !== null &&
+      item.price > 0 &&
+      item.cost_price !== null &&
+      item.cost_price > 0 &&
+      item.price <= item.cost_price,
+  );
+
+  const firstErrorBarcode = items.find(
+    (item) =>
+      item.price !== null &&
+      item.price > 0 &&
+      item.cost_price !== null &&
+      item.cost_price > 0 &&
+      item.price <= item.cost_price,
+  )?.barcode;
+
+  useEffect(() => {
+    if (!showValidation || !firstErrorBarcode || !errorCellRef.current) {
+      setTooltipPos(null);
+      return;
+    }
+    const rect = errorCellRef.current.getBoundingClientRect();
+    setTooltipPos({ top: rect.bottom + 4, left: rect.left + rect.width / 2 });
+  }, [showValidation, firstErrorBarcode]);
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="relative flex w-full max-w-[1600px] flex-col gap-3">
       {/* Table */}
       <div className="overflow-hidden rounded-[10px] bg-white shadow-md">
-        {/* Header — the last header (Stock) spans through the delete column,
-            so there is no separator before the X (matches Figma) */}
+        {/* Header — the last header (Stock) spans through the delete column, so there is no separator before the X */}
         <div
           className="grid border-b border-border-200 bg-background-300"
           style={{ gridTemplateColumns: gridTemplate }}
@@ -183,6 +220,9 @@ export function ProductDetailsTable({
               }
             >
               {COL_HEADERS[col]}
+              {REQUIRED_HEADER_COLS.has(col) && (
+                <span className="ml-px text-danger-300">*</span>
+              )}
             </div>
           ))}
         </div>
@@ -194,7 +234,7 @@ export function ProductDetailsTable({
 
           return (
             <div key={item.barcode}>
-              {/* Main data row — no separator between data rows (matches Figma) */}
+              {/* Main data row — no separator between data rows */}
               <div
                 className="grid items-center"
                 style={{ gridTemplateColumns: gridTemplate }}
@@ -207,23 +247,17 @@ export function ProductDetailsTable({
                         key="product"
                         className="flex items-center gap-2 p-3"
                       >
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.name}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, { name: e.target.value })
-                          }
+                          onChange={(v) => onUpdate(item.barcode, { name: v })}
                           placeholder="Nombre del producto"
-                          className={cn(
-                            inputCls,
-                            "px-4",
-                            !item.name && "border-danger-300",
-                          )}
+                          error={showValidation && !item.name}
                         />
                         {batchesEnabled && (
                           <button
                             type="button"
-                            onClick={() => toggleExpand(item.barcode)}
+                            onClick={() => onToggleExpand(item.barcode)}
                             className="shrink-0 text-text-500"
                           >
                             <ChevronRightIcon
@@ -241,16 +275,13 @@ export function ProductDetailsTable({
                   if (col === "sku")
                     return (
                       <div key="sku" className="p-3">
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.reference}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, {
-                              reference: e.target.value,
-                            })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { reference: v })
                           }
                           placeholder="-"
-                          className={inputCls}
                         />
                       </div>
                     );
@@ -262,9 +293,7 @@ export function ProductDetailsTable({
                         key="image"
                         className="relative flex items-center justify-center p-3"
                       >
-                        {/* Photo / image + "Imagen" pill — pill is centered
-                            over the image, or bottom-aligned with the
-                            placeholder icon (matches Figma) */}
+                        {/* Photo / image + "Imagen" pill — pill is centered over the image, or bottom-aligned with the placeholder icon */}
                         <button
                           type="button"
                           onClick={() =>
@@ -321,16 +350,13 @@ export function ProductDetailsTable({
                   if (col === "brand")
                     return (
                       <div key="brand" className="p-3">
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.brand_name ?? ""}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, {
-                              brand_name: e.target.value,
-                            })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { brand_name: v || null })
                           }
                           placeholder="-"
-                          className={inputCls}
                         />
                       </div>
                     );
@@ -339,16 +365,13 @@ export function ProductDetailsTable({
                   if (col === "category")
                     return (
                       <div key="category" className="p-3">
-                        <input
-                          type="text"
+                        <FormInput
+                          variant="table"
                           value={item.category_name ?? ""}
-                          onChange={(e) =>
-                            onUpdate(item.barcode, {
-                              category_name: e.target.value,
-                            })
+                          onChange={(v) =>
+                            onUpdate(item.barcode, { category_name: v || null })
                           }
                           placeholder="-"
-                          className={inputCls}
                         />
                       </div>
                     );
@@ -357,49 +380,71 @@ export function ProductDetailsTable({
                   if (col === "cost")
                     return (
                       <div key="cost" className="p-3">
-                        <div className="flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white pl-1 pr-4 shadow-sm focus-within:border-accent">
-                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.cost_price ?? ""}
-                            onChange={(e) =>
-                              onUpdate(item.barcode, {
-                                cost_price: e.target.value
-                                  ? Number(e.target.value)
-                                  : null,
-                              })
-                            }
-                            placeholder="-"
-                            className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none"
-                          />
-                        </div>
+                        <FormInput
+                          variant="table"
+                          type="number"
+                          currency
+                          value={item.cost_price || ""}
+                          onChange={(v) =>
+                            onUpdate(item.barcode, {
+                              cost_price: v ? Number(v) : null,
+                            })
+                          }
+                          placeholder="0"
+                          min={0}
+                          step="0.01"
+                          adornStart={
+                            <CurrencyDollarIcon className="size-5 shrink-0" />
+                          }
+                          error={
+                            showValidation &&
+                            (!item.cost_price ||
+                              item.cost_price <= 0 ||
+                              (item.price !== null &&
+                                item.price > 0 &&
+                                item.price <= item.cost_price))
+                          }
+                        />
                       </div>
                     );
 
                   /* ── Precio Final ── */
                   if (col === "price")
                     return (
-                      <div key="price" className="p-3">
-                        <div className="flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid border-border-400 bg-white pl-1 pr-4 shadow-sm focus-within:border-accent">
-                          <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.price ?? ""}
-                            onChange={(e) =>
-                              onUpdate(item.barcode, {
-                                price: e.target.value
-                                  ? Number(e.target.value)
-                                  : null,
-                              })
-                            }
-                            placeholder="-"
-                            className="w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none"
-                          />
-                        </div>
+                      <div
+                        key="price"
+                        className="relative p-3"
+                        ref={
+                          item.barcode === firstErrorBarcode
+                            ? errorCellRef
+                            : undefined
+                        }
+                      >
+                        <FormInput
+                          variant="table"
+                          type="number"
+                          currency
+                          value={item.price || ""}
+                          onChange={(v) =>
+                            onUpdate(item.barcode, {
+                              price: v ? Number(v) : null,
+                            })
+                          }
+                          placeholder="0"
+                          min={0}
+                          step="0.01"
+                          adornStart={
+                            <CurrencyDollarIcon className="size-5 shrink-0" />
+                          }
+                          error={
+                            showValidation &&
+                            (!item.price ||
+                              item.price <= 0 ||
+                              (item.cost_price !== null &&
+                                item.cost_price > 0 &&
+                                item.price <= item.cost_price))
+                          }
+                        />
                       </div>
                     );
 
@@ -407,17 +452,19 @@ export function ProductDetailsTable({
                   if (col === "stock")
                     return (
                       <div key="stock" className="p-3">
-                        <input
+                        <FormInput
+                          variant="table"
                           type="number"
-                          min="0"
-                          step="1"
-                          value={item.stock_quantity}
-                          onChange={(e) =>
+                          value={item.stock_quantity || ""}
+                          onChange={(v) =>
                             onUpdate(item.barcode, {
-                              stock_quantity: Number(e.target.value) || 0,
+                              stock_quantity: Number(v) || 0,
                             })
                           }
-                          className={cn(inputCls, "px-4")}
+                          placeholder="0"
+                          min={0}
+                          step={1}
+                          error={showValidation && item.stock_quantity <= 0}
                         />
                       </div>
                     );
@@ -443,7 +490,7 @@ export function ProductDetailsTable({
                 })}
               </div>
 
-              {/* Batch sub-rows — header labels + input cells (matching Figma layout) */}
+              {/* Batch sub-rows — header labels + input cells */}
               {isExpanded && batchesEnabled && (
                 <>
                   {/* Sub-header row */}
@@ -465,32 +512,47 @@ export function ProductDetailsTable({
                       </div>
                     ))}
                   </div>
-                  {/* Sub-data row — each cell owns its padding; inputs have Figma-exact widths */}
+                  {/* Sub-data row */}
                   <div className="grid grid-cols-4 border-b border-border-200 bg-background-600">
-                    {/* Nro de Lote — 246px input (measured from Figma) */}
+                    {/* Nro de Lote — 246px input */}
                     <div className="p-3">
-                      <input
-                        type="text"
+                      <FormInput
+                        variant="table"
                         value={item.lot_number ?? ""}
-                        onChange={(e) =>
+                        onChange={(v) =>
                           onUpdate(
                             item.barcode,
-                            batchUpdates(item, {
-                              lot_number: e.target.value || null,
-                            }),
+                            batchUpdates(item, { lot_number: v || null }),
                           )
                         }
                         placeholder="-"
-                        className={cn(inputCls, "w-[246px]")}
+                        className="w-[246px]"
                       />
                     </div>
-                    {/* EAN-13 — read-only text, value comes from the barcode scan */}
-                    <div className="flex items-center p-3">
-                      <span className="body-md-regular text-text-500">
-                        {item.batch_barcode ?? ""}
-                      </span>
+                    {/* EAN-13 — read-only when scanned; editable when sourced from Excel */}
+                    <div className="p-3">
+                      {allowBarcodeEdit ? (
+                        <FormInput
+                          variant="table"
+                          value={item.batch_barcode ?? ""}
+                          onChange={(v) =>
+                            onUpdate(
+                              item.barcode,
+                              batchUpdates(item, {
+                                batch_barcode: v.replace(/\D/g, "") || null,
+                              }),
+                            )
+                          }
+                          placeholder="-"
+                          maxLength={13}
+                        />
+                      ) : (
+                        <span className="body-md-regular text-text-500">
+                          {item.batch_barcode ?? ""}
+                        </span>
+                      )}
                     </div>
-                    {/* Fecha de Elaboración — 161px date picker (measured from Figma) */}
+                    {/* Fecha de Elaboración — 161px date picker */}
                     <div className="p-3">
                       <DatePickerInput
                         value={item.manufacture_date ?? null}
@@ -503,7 +565,7 @@ export function ProductDetailsTable({
                         className="w-[161px]"
                       />
                     </div>
-                    {/* Fecha de Vencimiento — 161px date picker (measured from Figma) */}
+                    {/* Fecha de Vencimiento — 161px date picker */}
                     <div className="p-3">
                       <DatePickerInput
                         value={item.expiration_date ?? null}
@@ -523,6 +585,32 @@ export function ProductDetailsTable({
           );
         })}
       </div>
+
+      {/* Margin error tooltip — rendered via portal to escape overflow-hidden */}
+      {mounted &&
+        tooltipPos &&
+        createPortal(
+          <div
+            className="fixed z-50 w-[226px] -translate-x-1/2 rounded-lg bg-danger-200 py-2 pl-3 pr-2.5 shadow-lg"
+            style={{ top: tooltipPos.top, left: tooltipPos.left }}
+          >
+            <svg
+              width="17"
+              height="9"
+              viewBox="0 0 17 9"
+              className="absolute -top-2 left-1/2 -translate-x-1/2 text-danger-200"
+            >
+              <polygon points="0,9 8.5,0 17,9" fill="currentColor" />
+            </svg>
+            <p className="body-sm-regular text-text-500">
+              El{" "}
+              <span className="body-sm-semibold">Precio Final Unitario</span>{" "}
+              debería superar al Costo Unitario de tu producto para obtener
+              ganancias.
+            </p>
+          </div>,
+          document.body,
+        )}
 
       {/* Pagination */}
       {pageCount > 1 && (

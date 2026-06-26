@@ -17,8 +17,9 @@ import { AddedProductsPanel } from "@/components/products/wizard/AddedProductsPa
 import { FeedbackBanner } from "@/components/shared/FeedbackBanner";
 import { DEFAULT_COLUMN_VISIBILITY } from "@/components/products/ProductsColumns";
 import { getProductColumnsAction } from "@/actions/product-columns";
+import { paginateByCapacity } from "@/lib/wizard-pagination";
 
-const PAGE_SIZE = 5;
+const PAGE_CAPACITY = 5;
 
 export default function DetailsPage() {
   const router = useRouter();
@@ -33,11 +34,17 @@ export default function DetailsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<WizardProduct | null>(null);
   const [editTarget, setEditTarget] = useState<WizardProduct | null>(null);
+  // The first product always starts expanded so the user
+  // discovers the batch info; the rest stay collapsed until opened manually.
+  const [expandedBarcodes, setExpandedBarcodes] = useState<Set<string>>(
+    () => new Set(scannedItems[0] ? [scannedItems[0].barcode] : []),
+  );
   const { banner, showBanner, closeBanner } = useFeedbackBanner();
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
   const [isUploading, setIsUploading] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
   const pendingFiles = useRef<Map<string, File>>(new Map());
 
   // Guard
@@ -56,12 +63,28 @@ export default function DetailsPage() {
     void getProductColumnsAction().then(setColumnVisibility);
   }, []);
 
-
-  const pageCount = Math.ceil(scannedItems.length / PAGE_SIZE);
-  const pageItems = scannedItems.slice(
-    pageIndex * PAGE_SIZE,
-    pageIndex * PAGE_SIZE + PAGE_SIZE,
+  const pages = paginateByCapacity(
+    scannedItems,
+    expandedBarcodes,
+    PAGE_CAPACITY,
   );
+  const pageCount = pages.length;
+  const pageItems = pages[pageIndex] ?? [];
+
+  // Keeps pageIndex valid after anything that can shrink the page count —
+  // deleting an item or collapsing rows that previously forced a split.
+  useEffect(() => {
+    setPageIndex((prev) => Math.min(prev, Math.max(0, pageCount - 1)));
+  }, [pageCount]);
+
+  function toggleExpand(barcode: string) {
+    setExpandedBarcodes((prev) => {
+      const next = new Set(prev);
+      if (next.has(barcode)) next.delete(barcode);
+      else next.add(barcode);
+      return next;
+    });
+  }
 
   function handleFilePicked(barcode: string, file: File) {
     pendingFiles.current.set(barcode, file);
@@ -100,23 +123,36 @@ export default function DetailsPage() {
       // If we were editing this item, cancel edit
       if (editTarget?.barcode === deleteTarget.barcode) setEditTarget(null);
       setDeleteTarget(null);
-      showBanner({ type: "success", message: "Producto eliminado correctamente." }, 3000);
-
-      // Scan/excel: fix pagination
-      if (method !== "manual") {
-        const newCount = scannedItems.length - 1;
-        const maxPage = Math.ceil(newCount / PAGE_SIZE) - 1;
-        if (pageIndex > maxPage) setPageIndex(Math.max(0, maxPage));
-      }
+      showBanner(
+        { type: "success", message: "Producto eliminado correctamente." },
+        3000,
+      );
     } catch {
       setDeleteTarget(null);
-      showBanner({ type: "error", message: "El producto no se pudo eliminar." });
+      showBanner({
+        type: "error",
+        message: "El producto no se pudo eliminar.",
+      });
     }
   }
 
   const canSubmit =
     scannedItems.length > 0 &&
-    scannedItems.every((p) => p.name && p.price !== null && p.price > 0);
+    scannedItems.every(
+      (p) =>
+        p.name.trim() !== "" &&
+        p.price !== null &&
+        p.price > 0 &&
+        p.cost_price !== null &&
+        p.cost_price > 0 &&
+        p.stock_quantity > 0 &&
+        p.price > p.cost_price,
+    );
+
+  // Clear validation highlights once all required fields are valid
+  useEffect(() => {
+    if (canSubmit) setShowValidation(false);
+  }, [canSubmit]);
 
   // ── Manual method layout ────────────────────────────────────────────────────
   if (method === "manual") {
@@ -132,10 +168,14 @@ export default function DetailsPage() {
         onAdd={(product) => addItem(product)}
         onUpdate={(barcode, updates) => {
           updateItem(barcode, updates);
-          showBanner({ type: "success", message: "Producto actualizado correctamente." }, 3000);
+          showBanner(
+            { type: "success", message: "Producto actualizado correctamente." },
+            3000,
+          );
         }}
         onCancelEdit={() => setEditTarget(null)}
         onFilePicked={handleFilePicked}
+        showValidation={showValidation}
       />
     );
 
@@ -143,37 +183,41 @@ export default function DetailsPage() {
       <div className="flex flex-1 flex-col gap-2.5">
         {/* ── No products: centered single-column ── */}
         {!hasProducts && (
-          <div className="flex flex-1 flex-col items-center gap-5 overflow-y-auto pt-8">
-            <div className="flex flex-col items-center gap-2 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 overflow-y-auto">
+            {/* Title is left-aligned to the form card edge */}
+            <div className="flex w-[481px] flex-col gap-1">
               <h1 className="heading-xl text-text-500">{pageHeading}</h1>
               <p className="body-md-regular text-text-400">
                 Completá la información del producto para agregarlo a tu
                 inventario.
               </p>
             </div>
-            <div className="w-120">{formElement}</div>
+            <div className="w-[481px]">{formElement}</div>
           </div>
         )}
 
         {/* ── With products: two-column layout ── */}
         {hasProducts && (
-          <div className="flex flex-1 gap-[27px] overflow-hidden pt-4">
+          <div className="flex flex-1 gap-9 overflow-hidden pt-4">
             {/* Left: heading + form */}
-            <div className="flex w-120 shrink-0 flex-col gap-4 overflow-y-auto">
-              <h1 className="heading-xl text-text-500">{pageHeading}</h1>
-              <p className="body-md-regular text-text-400">
-                Completá la información del producto para agregarlo a tu
-                inventario.
-              </p>
+            <div className="flex w-[481px] shrink-0 flex-col gap-5">
+              <div className="flex flex-col gap-1">
+                <h1 className="heading-xl text-text-500">{pageHeading}</h1>
+                <p className="body-md-regular text-text-400">
+                  Completá la información del producto para agregarlo a tu
+                  inventario.
+                </p>
+              </div>
               {formElement}
             </div>
 
-            {/* Right: added products panel */}
-            <div className="flex flex-1 flex-col overflow-hidden">
+            {/* Right: self-centers vertically within the row (form determines row height) */}
+            <div className="flex-1 self-center">
               <AddedProductsPanel
                 items={scannedItems}
                 columnVisibility={columnVisibility}
                 onEdit={(item) => setEditTarget(item)}
+                onUpdate={(barcode, updates) => updateItem(barcode, updates)}
                 onDelete={handleDelete}
                 editingBarcode={editTarget?.barcode ?? null}
               />
@@ -181,9 +225,7 @@ export default function DetailsPage() {
           </div>
         )}
 
-        {banner && (
-          <FeedbackBanner banner={banner} onClose={closeBanner} />
-        )}
+        {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}
 
         <WizardProgressBar steps={["complete", "current"]} />
         <WizardBottomNav
@@ -193,6 +235,7 @@ export default function DetailsPage() {
           }}
           nextLabel={isUploading ? "Subiendo imágenes..." : "Subir Productos"}
           nextDisabled={!canSubmit || isUploading}
+          onNextAttempt={() => setShowValidation(true)}
         />
 
         {deleteTarget && (
@@ -209,11 +252,11 @@ export default function DetailsPage() {
   // ── Scan / Excel layout ────────────────────────────────────────
   return (
     <div className="flex flex-1 flex-col gap-2.5">
-      {/* Content — 24px heading→table gap (matches Figma) */}
-      <div className="flex flex-1 flex-col gap-6 overflow-hidden">
-        <div className="flex items-end justify-between pt-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="heading-xl text-text-500">
+      {/* Content — 24px heading→table gap */}
+      <div className="flex flex-1 flex-col items-center gap-6 overflow-hidden">
+        <div className="flex w-full max-w-[1600px] text-left items-start justify-start pt-4">
+          <div className="flex w-full flex-col gap-1">
+            <h1 className="heading-xl w-full text-text-500">
               Edita tu Producto Nuevo
             </h1>
             <p className="body-md-regular text-text-400">
@@ -223,19 +266,21 @@ export default function DetailsPage() {
           </div>
         </div>
 
-        {banner && (
-          <FeedbackBanner banner={banner} onClose={closeBanner} />
-        )}
+        {banner && <FeedbackBanner banner={banner} onClose={closeBanner} />}
 
         <ProductDetailsTable
           items={pageItems}
           onUpdate={(barcode, updates) => updateItem(barcode, updates)}
           onDelete={handleDelete}
           onFilePicked={handleFilePicked}
+          expandedBarcodes={expandedBarcodes}
+          onToggleExpand={toggleExpand}
           pageIndex={pageIndex}
           pageCount={pageCount}
           onPageChange={setPageIndex}
           columnVisibility={columnVisibility}
+          allowBarcodeEdit={method === "excel"}
+          showValidation={showValidation}
         />
       </div>
 
@@ -260,6 +305,7 @@ export default function DetailsPage() {
         }}
         nextLabel={isUploading ? "Subiendo imágenes..." : "Subir Productos"}
         nextDisabled={!canSubmit || isUploading}
+        onNextAttempt={() => setShowValidation(true)}
       />
 
       {deleteTarget && (

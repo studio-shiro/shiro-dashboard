@@ -15,9 +15,10 @@ export type FeedbackBannerState = {
 interface FeedbackBannerProps {
   banner: NonNullable<FeedbackBannerState>;
   onClose: () => void;
+  className?: string;
 }
 
-export function FeedbackBanner({ banner, onClose }: FeedbackBannerProps) {
+export function FeedbackBanner({ banner, onClose, className }: FeedbackBannerProps) {
   const isSuccess = banner.type === "success";
 
   const color = isSuccess ? "#006922" : "#cd2b31";
@@ -26,7 +27,7 @@ export function FeedbackBanner({ banner, onClose }: FeedbackBannerProps) {
   return (
     <div
       role="alert"
-      className="fixed right-6 top-4 z-50 flex w-full max-w-[441px] items-center justify-between gap-4 rounded-lg px-3 py-4"
+      className={cn("fixed right-5 top-24 z-50 flex w-full max-w-[443px] items-center justify-between gap-4 rounded-lg px-3 py-4", className)}
       style={{ backgroundColor: bg, borderLeft: `5px solid ${color}` }}
     >
       <div className="flex items-center gap-2">
@@ -35,7 +36,7 @@ export function FeedbackBanner({ banner, onClose }: FeedbackBannerProps) {
         ) : (
           <ExclamationTriangleIcon className="size-6 shrink-0" style={{ color }} />
         )}
-        <p className="body-md-regular leading-snug" style={{ color }}>
+        <p className="body-lg-regular leading-snug" style={{ color }}>
           {banner.message}
         </p>
       </div>
