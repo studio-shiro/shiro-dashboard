@@ -51,6 +51,8 @@ const COL_HEADERS: Record<string, string> = {
   _delete: "",
 };
 
+const REQUIRED_HEADER_COLS = new Set(["product", "cost", "price", "stock"]);
+
 function getPageItems(current: number, count: number): (number | "ellipsis")[] {
   if (count <= 4) return Array.from({ length: count }, (_, i) => i);
   const pages = new Set<number>([
@@ -178,6 +180,9 @@ export function ProductDetailsTable({
               }
             >
               {COL_HEADERS[col]}
+              {REQUIRED_HEADER_COLS.has(col) && (
+                <span className="ml-px text-danger-300">*</span>
+              )}
             </div>
           ))}
         </div>
@@ -339,7 +344,7 @@ export function ProductDetailsTable({
                           variant="table"
                           type="number"
                           currency
-                          value={item.cost_price ?? ""}
+                          value={item.cost_price || ""}
                           onChange={(v) =>
                             onUpdate(item.barcode, {
                               cost_price: v ? Number(v) : null,
@@ -363,7 +368,7 @@ export function ProductDetailsTable({
                           variant="table"
                           type="number"
                           currency
-                          value={item.price ?? ""}
+                          value={item.price || ""}
                           onChange={(v) =>
                             onUpdate(item.barcode, {
                               price: v ? Number(v) : null,
@@ -468,8 +473,7 @@ export function ProductDetailsTable({
                             onUpdate(
                               item.barcode,
                               batchUpdates(item, {
-                                batch_barcode:
-                                  v.replace(/\D/g, "") || null,
+                                batch_barcode: v.replace(/\D/g, "") || null,
                               }),
                             )
                           }

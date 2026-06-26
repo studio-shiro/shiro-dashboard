@@ -135,9 +135,6 @@ export default function DetailsPage() {
     }
   }
 
-  // All visible fields are required except image and batch/expiration fields.
-  // Applies to every method (manual, scan, excel).
-  const requireCol = (colId: string) => columnVisibility[colId] !== false;
   const canSubmit =
     scannedItems.length > 0 &&
     scannedItems.every(
@@ -145,11 +142,8 @@ export default function DetailsPage() {
         p.name.trim() !== "" &&
         p.price !== null &&
         p.price > 0 &&
-        (!requireCol("sku") || p.reference.trim() !== "") &&
-        (!requireCol("brand") || Boolean(p.brand_name)) &&
-        (!requireCol("category") || Boolean(p.category_name)) &&
-        (!requireCol("cost") || (p.cost_price !== null && p.cost_price > 0)) &&
-        (!requireCol("stock") || p.stock_quantity !== null),
+        p.cost_price !== null &&
+        p.cost_price > 0,
     );
 
   // ── Manual method layout ────────────────────────────────────────────────────

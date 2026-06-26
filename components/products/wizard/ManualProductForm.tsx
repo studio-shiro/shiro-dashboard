@@ -112,7 +112,7 @@ const FIELD_CONFIG: Record<string, SimpleFieldConfig> = {
     type: "text",
     formKey: "reference",
     label: "SKU",
-    required: true,
+    required: false,
     placeholder: "Ej: #000001",
   },
   stock: {
@@ -130,14 +130,14 @@ const FIELD_CONFIG: Record<string, SimpleFieldConfig> = {
     type: "text",
     formKey: "brand_name",
     label: "Marca",
-    required: true,
+    required: false,
     placeholder: "Ej: Jorgito",
   },
   category: {
     type: "text",
     formKey: "category_name",
     label: "Categoría",
-    required: true,
+    required: false,
     placeholder: "Ej: Golosinas",
   },
   cost: {

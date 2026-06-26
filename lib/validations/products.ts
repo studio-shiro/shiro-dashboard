@@ -21,7 +21,7 @@ export const wizardProductSchema = z.object({
   reference: z.string().optional(),
   description: z.string().nullable().optional(),
   price: z.number().positive("El precio final es requerido"),
-  cost_price: z.number().nonnegative().nullable().optional(),
+  cost_price: z.number().positive("El costo unitario es requerido"),
   category_id: z.string().nullable().optional(),
   brand_id: z.string().nullable().optional(),
   barcode: z.string().optional(),
