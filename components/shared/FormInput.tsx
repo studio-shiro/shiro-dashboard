@@ -165,10 +165,13 @@ export function FormInput({
         className={cn(
           "flex h-[30px] w-full items-center gap-2 overflow-hidden rounded-[6px] border border-solid shadow-sm",
           adornStart ? "pl-1 pr-4" : "px-2",
-          error ? "border-danger-300" : "border-border-400",
           disabled
             ? "cursor-not-allowed bg-[#f8f8f8] opacity-50"
-            : "bg-white focus-within:border-accent",
+            : error
+              ? "bg-danger-300/5"
+              : "bg-white",
+          error ? "border-danger-300" : "border-border-400",
+          !disabled && "focus-within:border-accent",
           className,
         )}
       >

@@ -19,6 +19,7 @@ interface ManualProductFormProps {
   onUpdate: (barcode: string, updates: Partial<WizardProduct>) => void;
   onCancelEdit: () => void;
   onFilePicked: (barcode: string, file: File) => void;
+  showValidation?: boolean;
 }
 
 interface FormState {
@@ -188,8 +189,10 @@ function renderField(
   form: FormState,
   set: SetFn,
   isEditMode: boolean,
+  showValidation: boolean,
 ): React.ReactNode {
   if (cfg.type === "text") {
+    const empty = (form[cfg.formKey] as string).trim() === "";
     return (
       <FormInput
         label={cfg.label}
@@ -197,6 +200,7 @@ function renderField(
         value={form[cfg.formKey] as string}
         onChange={(v) => set(cfg.formKey as "name", v as FormState["name"])}
         placeholder={cfg.placeholder}
+        error={Boolean(cfg.required && showValidation && empty)}
       />
     );
   }
@@ -216,7 +220,7 @@ function renderField(
           cfg.currency ? <CurrencyDollarIcon className="size-6" /> : undefined
         }
         value={raw ?? ""}
-        error={Boolean(cfg.required && isEditMode && missing)}
+        error={Boolean(cfg.required && (isEditMode || showValidation) && missing)}
         onChange={(v) =>
           // safe cast: formKey and the null/number transformation are always
           // co-defined in the same config entry — they can't diverge at runtime
@@ -251,6 +255,7 @@ export function ManualProductForm({
   onUpdate,
   onCancelEdit,
   onFilePicked,
+  showValidation = false,
 }: ManualProductFormProps) {
   const isEditMode = editTarget !== null;
 
@@ -446,6 +451,7 @@ export function ManualProductForm({
                     form,
                     set,
                     isEditMode,
+                    showValidation,
                   )}
                 </div>
               )}
@@ -463,6 +469,7 @@ export function ManualProductForm({
                     form,
                     set,
                     isEditMode,
+                    showValidation,
                   )}
                 </div>
               ))}

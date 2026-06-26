@@ -110,6 +110,7 @@ interface ProductDetailsTableProps {
   onPageChange: (page: number) => void;
   columnVisibility: Record<string, boolean>;
   allowBarcodeEdit?: boolean;
+  showValidation?: boolean;
 }
 
 export function ProductDetailsTable({
@@ -124,6 +125,7 @@ export function ProductDetailsTable({
   onPageChange,
   columnVisibility,
   allowBarcodeEdit = false,
+  showValidation = false,
 }: ProductDetailsTableProps) {
   const [localPreviews, setLocalPreviews] = useState<Map<string, string>>(
     new Map(),
@@ -212,7 +214,7 @@ export function ProductDetailsTable({
                           value={item.name}
                           onChange={(v) => onUpdate(item.barcode, { name: v })}
                           placeholder="Nombre del producto"
-                          error={!item.name}
+                          error={showValidation && !item.name}
                         />
                         {batchesEnabled && (
                           <button
@@ -356,6 +358,7 @@ export function ProductDetailsTable({
                           adornStart={
                             <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
                           }
+                          error={showValidation && (!item.cost_price || item.cost_price <= 0)}
                         />
                       </div>
                     );
@@ -380,6 +383,7 @@ export function ProductDetailsTable({
                           adornStart={
                             <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
                           }
+                          error={showValidation && (!item.price || item.price <= 0)}
                         />
                       </div>
                     );
@@ -391,14 +395,16 @@ export function ProductDetailsTable({
                         <FormInput
                           variant="table"
                           type="number"
-                          value={item.stock_quantity}
+                          value={item.stock_quantity || ""}
                           onChange={(v) =>
                             onUpdate(item.barcode, {
                               stock_quantity: Number(v) || 0,
                             })
                           }
+                          placeholder="0"
                           min={0}
                           step={1}
+                          error={showValidation && item.stock_quantity <= 0}
                         />
                       </div>
                     );

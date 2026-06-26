@@ -44,6 +44,7 @@ export default function DetailsPage() {
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
   const [isUploading, setIsUploading] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
   const pendingFiles = useRef<Map<string, File>>(new Map());
 
   // Guard
@@ -143,8 +144,14 @@ export default function DetailsPage() {
         p.price !== null &&
         p.price > 0 &&
         p.cost_price !== null &&
-        p.cost_price > 0,
+        p.cost_price > 0 &&
+        p.stock_quantity > 0,
     );
+
+  // Clear validation highlights once all required fields are valid
+  useEffect(() => {
+    if (canSubmit) setShowValidation(false);
+  }, [canSubmit]);
 
   // ── Manual method layout ────────────────────────────────────────────────────
   if (method === "manual") {
@@ -167,6 +174,7 @@ export default function DetailsPage() {
         }}
         onCancelEdit={() => setEditTarget(null)}
         onFilePicked={handleFilePicked}
+        showValidation={showValidation}
       />
     );
 
@@ -226,6 +234,7 @@ export default function DetailsPage() {
           }}
           nextLabel={isUploading ? "Subiendo imágenes..." : "Subir Productos"}
           nextDisabled={!canSubmit || isUploading}
+          onNextAttempt={() => setShowValidation(true)}
         />
 
         {deleteTarget && (
@@ -270,6 +279,7 @@ export default function DetailsPage() {
           onPageChange={setPageIndex}
           columnVisibility={columnVisibility}
           allowBarcodeEdit={method === "excel"}
+          showValidation={showValidation}
         />
       </div>
 
@@ -294,6 +304,7 @@ export default function DetailsPage() {
         }}
         nextLabel={isUploading ? "Subiendo imágenes..." : "Subir Productos"}
         nextDisabled={!canSubmit || isUploading}
+        onNextAttempt={() => setShowValidation(true)}
       />
 
       {deleteTarget && (
