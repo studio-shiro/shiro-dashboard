@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import {
   XMarkIcon,
   ChevronLeftIcon,
@@ -132,6 +133,16 @@ export function ProductDetailsTable({
   );
   const fileInputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const blobUrls = useRef<string[]>([]);
+  const errorCellRef = useRef<HTMLDivElement | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     return () => {
@@ -176,6 +187,15 @@ export function ProductDetailsTable({
       item.cost_price > 0 &&
       item.price <= item.cost_price,
   )?.barcode;
+
+  useEffect(() => {
+    if (!showValidation || !firstErrorBarcode || !errorCellRef.current) {
+      setTooltipPos(null);
+      return;
+    }
+    const rect = errorCellRef.current.getBoundingClientRect();
+    setTooltipPos({ top: rect.bottom + 4, left: rect.left + rect.width / 2 });
+  }, [showValidation, firstErrorBarcode]);
 
   return (
     <div className="relative flex w-full max-w-[1600px] flex-col gap-3">
@@ -391,27 +411,15 @@ export function ProductDetailsTable({
                   /* ── Precio Final ── */
                   if (col === "price")
                     return (
-                      <div key="price" className="relative p-3">
-                        {showValidation && item.barcode === firstErrorBarcode && (
-                          <div className="absolute left-1/2 -translate-x-1/2 top-full z-20 mt-1 w-[226px] rounded-lg bg-danger-200 py-2 pl-3 pr-2.5 shadow-lg">
-                            <svg
-                              width="17"
-                              height="9"
-                              viewBox="0 0 17 9"
-                              className="absolute -top-2 left-1/2 -translate-x-1/2 text-danger-200"
-                            >
-                              <polygon points="0,9 8.5,0 17,9" fill="currentColor" />
-                            </svg>
-                            <p className="body-sm-regular text-text-500">
-                              El{" "}
-                              <span className="body-sm-semibold">
-                                Precio Final Unitario
-                              </span>{" "}
-                              debería superar al Costo Unitario de tu producto
-                              para obtener ganancias.
-                            </p>
-                          </div>
-                        )}
+                      <div
+                        key="price"
+                        className="relative p-3"
+                        ref={
+                          item.barcode === firstErrorBarcode
+                            ? errorCellRef
+                            : undefined
+                        }
+                      >
                         <FormInput
                           variant="table"
                           type="number"
@@ -577,6 +585,32 @@ export function ProductDetailsTable({
           );
         })}
       </div>
+
+      {/* Margin error tooltip — rendered via portal to escape overflow-hidden */}
+      {mounted &&
+        tooltipPos &&
+        createPortal(
+          <div
+            className="fixed z-50 w-[226px] -translate-x-1/2 rounded-lg bg-danger-200 py-2 pl-3 pr-2.5 shadow-lg"
+            style={{ top: tooltipPos.top, left: tooltipPos.left }}
+          >
+            <svg
+              width="17"
+              height="9"
+              viewBox="0 0 17 9"
+              className="absolute -top-2 left-1/2 -translate-x-1/2 text-danger-200"
+            >
+              <polygon points="0,9 8.5,0 17,9" fill="currentColor" />
+            </svg>
+            <p className="body-sm-regular text-text-500">
+              El{" "}
+              <span className="body-sm-semibold">Precio Final Unitario</span>{" "}
+              debería superar al Costo Unitario de tu producto para obtener
+              ganancias.
+            </p>
+          </div>,
+          document.body,
+        )}
 
       {/* Pagination */}
       {pageCount > 1 && (
