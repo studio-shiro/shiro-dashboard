@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rokkitt, Montserrat } from "next/font/google";
 import "./globals.css";
+import OfflineDetector from "@/components/errors/OfflineDetector";
 
 // const rokkitt = Rokkitt({
 //   subsets: ["latin"],
@@ -35,6 +36,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // throw new Error("testing");
+
   return (
     <html
       lang="es"
@@ -42,6 +45,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-[var(--font-body)]">
         {children}
+        <OfflineDetector />
       </body>
     </html>
   );
