@@ -145,7 +145,8 @@ export default function DetailsPage() {
         p.price > 0 &&
         p.cost_price !== null &&
         p.cost_price > 0 &&
-        p.stock_quantity > 0,
+        p.stock_quantity > 0 &&
+        p.price > p.cost_price,
     );
 
   // Clear validation highlights once all required fields are valid

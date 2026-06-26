@@ -159,8 +159,26 @@ export function ProductDetailsTable({
 
   const headerCols = visibleCols.filter((col) => col !== "_delete");
 
+  const hasMarginError = items.some(
+    (item) =>
+      item.price !== null &&
+      item.price > 0 &&
+      item.cost_price !== null &&
+      item.cost_price > 0 &&
+      item.price <= item.cost_price,
+  );
+
+  const firstErrorBarcode = items.find(
+    (item) =>
+      item.price !== null &&
+      item.price > 0 &&
+      item.cost_price !== null &&
+      item.cost_price > 0 &&
+      item.price <= item.cost_price,
+  )?.barcode;
+
   return (
-    <div className="flex w-full max-w-[1600px] flex-col gap-3">
+    <div className="relative flex w-full max-w-[1600px] flex-col gap-3">
       {/* Table */}
       <div className="overflow-hidden rounded-[10px] bg-white shadow-md">
         {/* Header — the last header (Stock) spans through the delete column, so there is no separator before the X */}
@@ -356,9 +374,16 @@ export function ProductDetailsTable({
                           min={0}
                           step="0.01"
                           adornStart={
-                            <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
+                            <CurrencyDollarIcon className="size-5 shrink-0" />
                           }
-                          error={showValidation && (!item.cost_price || item.cost_price <= 0)}
+                          error={
+                            showValidation &&
+                            (!item.cost_price ||
+                              item.cost_price <= 0 ||
+                              (item.price !== null &&
+                                item.price > 0 &&
+                                item.price <= item.cost_price))
+                          }
                         />
                       </div>
                     );
@@ -366,7 +391,27 @@ export function ProductDetailsTable({
                   /* ── Precio Final ── */
                   if (col === "price")
                     return (
-                      <div key="price" className="p-3">
+                      <div key="price" className="relative p-3">
+                        {showValidation && item.barcode === firstErrorBarcode && (
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full z-20 mt-1 w-[226px] rounded-lg bg-danger-200 py-2 pl-3 pr-2.5 shadow-lg">
+                            <svg
+                              width="17"
+                              height="9"
+                              viewBox="0 0 17 9"
+                              className="absolute -top-2 left-1/2 -translate-x-1/2 text-danger-200"
+                            >
+                              <polygon points="0,9 8.5,0 17,9" fill="currentColor" />
+                            </svg>
+                            <p className="body-sm-regular text-text-500">
+                              El{" "}
+                              <span className="body-sm-semibold">
+                                Precio Final Unitario
+                              </span>{" "}
+                              debería superar al Costo Unitario de tu producto
+                              para obtener ganancias.
+                            </p>
+                          </div>
+                        )}
                         <FormInput
                           variant="table"
                           type="number"
@@ -381,9 +426,16 @@ export function ProductDetailsTable({
                           min={0}
                           step="0.01"
                           adornStart={
-                            <CurrencyDollarIcon className="size-5 shrink-0 text-text-500" />
+                            <CurrencyDollarIcon className="size-5 shrink-0" />
                           }
-                          error={showValidation && (!item.price || item.price <= 0)}
+                          error={
+                            showValidation &&
+                            (!item.price ||
+                              item.price <= 0 ||
+                              (item.cost_price !== null &&
+                                item.cost_price > 0 &&
+                                item.price <= item.cost_price))
+                          }
                         />
                       </div>
                     );

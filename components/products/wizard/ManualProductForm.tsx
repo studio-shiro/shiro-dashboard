@@ -7,6 +7,7 @@ import {
   PhotoIcon,
 } from "@heroicons/react/24/outline";
 import type { WizardProduct } from "@/store/productWizard";
+import { cn } from "@/lib/utils";
 import { FormInput } from "@/components/shared/FormInput";
 import { DateFormInput } from "@/components/shared/DateFormInput";
 import Button from "@/components/shared/Button";
@@ -208,6 +209,19 @@ function renderField(
   if (cfg.type === "number") {
     const raw = form[cfg.formKey] as number | null;
     const missing = cfg.allowZero ? raw === null : raw === null || raw <= 0;
+    const marginError =
+      (cfg.formKey === "cost_price" &&
+        form.price !== null &&
+        form.price > 0 &&
+        raw !== null &&
+        raw > 0 &&
+        form.price <= raw) ||
+      (cfg.formKey === "price" &&
+        form.cost_price !== null &&
+        form.cost_price > 0 &&
+        raw !== null &&
+        raw > 0 &&
+        raw <= form.cost_price);
     return (
       <FormInput
         label={cfg.label}
@@ -220,7 +234,10 @@ function renderField(
           cfg.currency ? <CurrencyDollarIcon className="size-6" /> : undefined
         }
         value={raw ?? ""}
-        error={Boolean(cfg.required && (isEditMode || showValidation) && missing)}
+        error={
+          Boolean(cfg.required && (isEditMode || showValidation) && missing) ||
+          Boolean(marginError)
+        }
         onChange={(v) =>
           // safe cast: formKey and the null/number transformation are always
           // co-defined in the same config entry — they can't diverge at runtime
@@ -357,19 +374,27 @@ export function ManualProductForm({
   const showBatches = columnVisibility.batches !== false;
 
   // ── canSubmit ───────────────────────────────────────────────────────────────
-  // Checks every required field that is currently visible.
-  const canSubmit = (FIELD_ORDER as readonly string[]).every((colId) => {
-    const cfg = FIELD_CONFIG[colId];
-    if (!cfg?.required) return true;
-    if (columnVisibility[colId] === false) return true;
-    const val = form[cfg.formKey];
-    if (cfg.type === "text") return (val as string).trim() !== "";
-    if (cfg.type === "number") {
-      if (val === null) return false;
-      return cfg.allowZero ? (val as number) >= 0 : (val as number) > 0;
-    }
-    return true;
-  });
+  const formHasMarginError =
+    form.price !== null &&
+    form.price > 0 &&
+    form.cost_price !== null &&
+    form.cost_price > 0 &&
+    form.price <= form.cost_price;
+
+  const canSubmit =
+    !formHasMarginError &&
+    (FIELD_ORDER as readonly string[]).every((colId) => {
+      const cfg = FIELD_CONFIG[colId];
+      if (!cfg?.required) return true;
+      if (columnVisibility[colId] === false) return true;
+      const val = form[cfg.formKey];
+      if (cfg.type === "text") return (val as string).trim() !== "";
+      if (cfg.type === "number") {
+        if (val === null) return false;
+        return cfg.allowZero ? (val as number) >= 0 : (val as number) > 0;
+      }
+      return true;
+    });
 
   // ── Auto-pairing ────────────────────────────────────────────────────────────
   // "product" is excluded — it lives in Row 1 alongside the image picker.
@@ -462,7 +487,10 @@ export function ManualProductForm({
           {pairedRows.map((pair) => (
             <div key={pair.join("-")} className="flex gap-5">
               {pair.map((colId) => (
-                <div key={colId} className="min-w-0 flex-1">
+                <div
+                  key={colId}
+                  className={cn("min-w-0 flex-1", colId === "price" && "relative")}
+                >
                   {renderField(
                     colId,
                     FIELD_CONFIG[colId]!,
@@ -470,6 +498,26 @@ export function ManualProductForm({
                     set,
                     isEditMode,
                     showValidation,
+                  )}
+                  {colId === "price" && formHasMarginError && (
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full z-10 mt-2 w-[226px] rounded-lg bg-danger-200 py-2 pl-3 pr-2.5 shadow-lg">
+                      <svg
+                        width="17"
+                        height="9"
+                        viewBox="0 0 17 9"
+                        className="absolute -top-2 left-1/2 -translate-x-1/2 text-danger-200"
+                      >
+                        <polygon points="0,9 8.5,0 17,9" fill="currentColor" />
+                      </svg>
+                      <p className="body-sm-regular text-text-500">
+                        El{" "}
+                        <span className="body-sm-semibold">
+                          Precio Final Unitario
+                        </span>{" "}
+                        debería superar al Costo Unitario de tu producto para
+                        obtener ganancias.
+                      </p>
+                    </div>
                   )}
                 </div>
               ))}

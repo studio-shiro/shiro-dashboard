@@ -23,6 +23,7 @@ export function WizardTopBar() {
 
   function handleConfirmCancel() {
     reset();
+    setShowCancel(false);
     router.push("/products");
   }
 

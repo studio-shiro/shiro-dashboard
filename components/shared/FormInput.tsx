@@ -176,7 +176,7 @@ export function FormInput({
         )}
       >
         {adornStart && (
-          <span className="shrink-0 text-text-400">{adornStart}</span>
+          <span className={cn("shrink-0", error ? "text-danger-300" : "text-text-400")}>{adornStart}</span>
         )}
         <input
           ref={isCurrency ? inputRef : undefined}
@@ -195,6 +195,7 @@ export function FormInput({
           className={cn(
             "w-full bg-transparent body-md-regular text-text-500 placeholder:text-text-500 focus:outline-none disabled:cursor-not-allowed",
             type === "number" && NO_SPINNER,
+            error && "text-danger-300",
           )}
         />
         {adornEnd && (
@@ -213,7 +214,7 @@ export function FormInput({
         disabled
           ? "cursor-not-allowed bg-[#f8f8f8]"
           : error
-            ? "bg-[rgba(231,183,184,0.2)]"
+            ? "bg-danger-300/5"
             : "bg-[#f7f7f7]",
         error
           ? "border-danger-300"
@@ -237,7 +238,7 @@ export function FormInput({
       {/* Absolutely positioned so items-center has the full 38px to center within */}
       <div className="absolute inset-0 flex items-center gap-2 px-3">
         {adornStart && (
-          <span className="shrink-0 text-text-400">{adornStart}</span>
+          <span className={cn("shrink-0", error ? "text-danger-300" : "text-text-400")}>{adornStart}</span>
         )}
         <input
           ref={isCurrency ? inputRef : undefined}
@@ -260,6 +261,7 @@ export function FormInput({
           className={cn(
             "min-w-0 flex-1 bg-transparent text-base leading-5 text-text-500 placeholder:text-text-400 focus:outline-none",
             type === "number" && NO_SPINNER,
+            error && "text-danger-300",
             disabled &&
               "cursor-not-allowed text-border-300 placeholder:text-border-300",
           )}

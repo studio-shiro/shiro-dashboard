@@ -266,7 +266,7 @@ export function BarcodeInput({
 
       {/* Enter hint */}
       <div className="flex items-center justify-end gap-1 text-text-400">
-        <ArrowUturnRightIcon className="size-3.5 -scale-y-100 rotate-180" />
+        <ArrowUturnRightIcon className="size-3.5 -scale-y-100" />
         <span className="body-sm-regular">Enter</span>
       </div>
     </div>
